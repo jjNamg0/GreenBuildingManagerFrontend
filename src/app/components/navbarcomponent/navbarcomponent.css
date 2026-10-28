@@ -1,0 +1,143 @@
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: var(--gb-campo);
+  border-bottom: 1px solid var(--gb-borde);
+}
+
+.barra-admin {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: var(--gb-alto-barra);
+  padding: 0 1.5rem;
+  background: var(--gb-campo);
+  border-bottom: 1px solid var(--gb-borde);
+}
+
+@media (min-width: 992px) {
+  .barra-admin {
+    margin-left: var(--gb-ancho-lateral);
+  }
+}
+
+.barra-interior {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: var(--gb-alto-barra);
+  padding: 0 1.5rem;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gb-texto);
+  font-size: 1.05rem;
+  text-decoration: none;
+}
+
+.marca .gb-icono {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+}
+
+.menu {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.enlaces {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+  margin: 0 auto;
+}
+
+.enlaces a {
+  display: flex;
+  align-items: center;
+  height: var(--gb-alto-barra);
+  padding: 0 0.9rem;
+  border-bottom: 2px solid transparent;
+  color: var(--gb-texto-medio);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.enlaces a:hover {
+  color: var(--gb-texto);
+}
+
+.enlaces a.activo {
+  border-bottom-color: var(--gb-verde);
+  color: var(--gb-verde);
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gb-verde);
+  color: var(--gb-sobre-acento);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (max-width: 1199.98px) {
+  .barra-interior {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+  }
+
+  .menu.abierto {
+    display: flex;
+  }
+
+  .enlaces {
+    flex-direction: column;
+    margin: 0;
+  }
+
+  .enlaces a {
+    height: auto;
+    padding: 0.65rem 0.75rem;
+    border-bottom: none;
+    border-left: 2px solid transparent;
+  }
+
+  .enlaces a.activo {
+    border-left-color: var(--gb-verde);
+  }
+
+  .acciones {
+    flex-wrap: wrap;
+  }
+}

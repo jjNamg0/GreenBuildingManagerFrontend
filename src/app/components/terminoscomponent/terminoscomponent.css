@@ -1,0 +1,21 @@
+.legal {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.legal h2 {
+  font-size: 1.05rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.6rem;
+  color: var(--gb-texto);
+}
+
+.legal p,
+.legal li {
+  color: var(--gb-texto-medio);
+  line-height: 1.7;
+}
+
+.legal ul {
+  padding-left: 1.2rem;
+}

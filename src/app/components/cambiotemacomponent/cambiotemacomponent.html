@@ -1,0 +1,5 @@
+<button class="cambio-tema" type="button" (click)="alternar()"
+        [attr.aria-label]="tema.esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        [title]="tema.esOscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
+  <i class="bi" [class.bi-sun]="tema.esOscuro" [class.bi-moon-stars]="!tema.esOscuro" [class.girando]="girando"></i>
+</button>
