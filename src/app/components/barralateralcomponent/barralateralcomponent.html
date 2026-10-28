@@ -1,0 +1,36 @@
+<div class="fondo-lateral d-lg-none" *ngIf="abierta" (click)="cerrar.emit()"></div>
+
+<aside class="lateral" [class.abierta]="abierta">
+  <div class="marca">
+    <span class="gb-icono"><i class="bi bi-buildings"></i></span>
+    <div class="lh-sm">
+      <div class="fw-semibold">Green Building</div>
+      <div class="small texto-verde">Panel administrativo</div>
+    </div>
+    <button class="btn-gb-fantasma d-lg-none ms-auto px-2" type="button" aria-label="Cerrar menú" (click)="cerrar.emit()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <div class="etiqueta-mayuscula px-4 pt-4 pb-2">Operación</div>
+
+  <nav class="px-3">
+    <a
+      *ngFor="let enlace of enlaces"
+      class="enlace"
+      [routerLink]="enlace.ruta"
+      routerLinkActive="activo"
+      [routerLinkActiveOptions]="{ exact: enlace.exacto }"
+      (click)="cerrar.emit()"
+    >
+      <i class="bi" [ngClass]="enlace.icono"></i>{{ enlace.texto }}
+    </a>
+  </nav>
+
+  <div class="mt-auto p-3">
+    <div class="gb-caja p-3 small">
+      <div class="fw-medium">Cundinamarca</div>
+      <div class="texto-tenue">Conjuntos residenciales</div>
+    </div>
+  </div>
+</aside>

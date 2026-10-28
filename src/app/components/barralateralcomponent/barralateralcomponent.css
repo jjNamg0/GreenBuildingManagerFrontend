@@ -1,0 +1,74 @@
+.lateral {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1030;
+  display: flex;
+  flex-direction: column;
+  width: var(--gb-ancho-lateral);
+  height: 100vh;
+  background: var(--gb-campo);
+  border-right: 1px solid var(--gb-borde);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: var(--gb-alto-barra);
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--gb-borde);
+}
+
+.marca .gb-icono {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+}
+
+.enlace {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 10px;
+  color: var(--gb-texto-medio);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.enlace:hover {
+  background: var(--gb-superficie);
+  color: var(--gb-texto);
+}
+
+.enlace.activo {
+  background: var(--gb-verde);
+  color: var(--gb-sobre-acento);
+}
+
+.enlace .bi {
+  font-size: 1.1rem;
+}
+
+.fondo-lateral {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 991.98px) {
+  .lateral {
+    z-index: 1045;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .lateral.abierta {
+    transform: translateX(0);
+  }
+}

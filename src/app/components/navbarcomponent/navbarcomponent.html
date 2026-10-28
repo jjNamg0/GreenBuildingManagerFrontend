@@ -1,0 +1,67 @@
+<ng-container *ngIf="auth.isAdmin; else barraGeneral">
+  <app-barralateralcomponent [abierta]="menuAbierto" (cerrar)="cerrarMenu()"/>
+
+  <header class="barra-admin">
+    <button class="btn-gb-fantasma d-lg-none px-2" type="button" aria-label="Abrir menú" (click)="menuAbierto = true">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+    <div class="d-none d-sm-flex align-items-center gap-2 texto-tenue">
+      <i class="bi bi-shield-check texto-verde"></i>
+      <span>Panel de administración</span>
+    </div>
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <app-cambiotemacomponent/>
+      <div class="text-end lh-sm d-none d-sm-block">
+        <div class="fw-medium">{{ auth.usuario?.nombre }} {{ auth.usuario?.apellido }}</div>
+        <div class="small texto-verde">Administrador</div>
+      </div>
+      <span class="avatar d-inline-flex">{{ iniciales }}</span>
+      <button class="btn-gb-borde btn-gb-sm" type="button" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i><span class="d-none d-md-inline">Cerrar sesión</span>
+      </button>
+    </div>
+  </header>
+</ng-container>
+
+<ng-template #barraGeneral>
+  <header class="barra">
+    <div class="barra-interior">
+      <a class="marca" routerLink="/" (click)="cerrarMenu()">
+        <span class="gb-icono"><i class="bi bi-buildings"></i></span>
+        <span class="fw-semibold">Green Building Manager</span>
+      </a>
+
+      <button class="btn-gb-fantasma d-xl-none ms-auto px-2" type="button" aria-label="Abrir menú"
+              (click)="menuAbierto = !menuAbierto">
+        <i class="bi fs-4" [class.bi-list]="!menuAbierto" [class.bi-x-lg]="menuAbierto"></i>
+      </button>
+
+      <div class="menu" [class.abierto]="menuAbierto">
+        <nav class="enlaces">
+          <ng-container *ngIf="auth.isLoggedIn">
+            <a routerLink="/mi-conjunto" routerLinkActive="activo" (click)="cerrarMenu()">Mi conjunto</a>
+            <a routerLink="/mis-reservas" routerLinkActive="activo" (click)="cerrarMenu()">Mis reservas</a>
+            <a routerLink="/eventos" routerLinkActive="activo" (click)="cerrarMenu()">Eventos</a>
+            <a routerLink="/para-ti" routerLinkActive="activo" (click)="cerrarMenu()">Para ti</a>
+          </ng-container>
+        </nav>
+
+        <div class="acciones">
+          <app-cambiotemacomponent/>
+          <ng-container *ngIf="!auth.isLoggedIn">
+            <a class="btn-gb-borde btn-gb-sm" routerLink="/login" (click)="cerrarMenu()">Iniciar sesión</a>
+            <a class="btn-gb btn-gb-sm" routerLink="/registro" (click)="cerrarMenu()">Registrarse</a>
+          </ng-container>
+          <ng-container *ngIf="auth.isLoggedIn">
+            <div class="text-xl-end lh-sm">
+              <div class="fw-medium">{{ auth.usuario?.nombre }} {{ auth.usuario?.apellido }}</div>
+              <div class="small texto-verde">Residente</div>
+            </div>
+            <button class="btn-gb-borde btn-gb-sm" type="button" (click)="logout()">Cerrar sesión</button>
+            <span class="avatar d-none d-xl-inline-flex">{{ iniciales }}</span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </header>
+</ng-template>
