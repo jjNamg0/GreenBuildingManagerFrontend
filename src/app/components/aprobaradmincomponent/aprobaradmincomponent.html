@@ -1,0 +1,163 @@
+<div class="gb-auth">
+  <div class="gb-auth-tarjeta tarjeta-ancha">
+
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3">
+        <i class="bi bi-person-check"></i>
+      </span>
+
+      <h1 class="h4 mb-1">Solicitud de administrador</h1>
+
+      <p class="texto-tenue mb-0" *ngIf="solicitud as solicitudActual">
+        Esta persona pidió una cuenta de administrador en Green Building Manager
+      </p>
+    </div>
+
+    <div class="text-center texto-tenue py-3" *ngIf="cargando">
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      Cargando solicitud...
+    </div>
+
+    <div class="gb-alerta peligro mb-3" *ngIf="error">
+      <i class="bi bi-exclamation-circle"></i>
+      <span>{{ error }}</span>
+    </div>
+
+    <div class="gb-alerta mb-3" *ngIf="resultado">
+      <i class="bi bi-check-circle texto-verde"></i>
+      <span>{{ resultado }}</span>
+    </div>
+
+    <div *ngIf="solicitud as solicitudActual">
+
+      <div class="gb-caja mb-4">
+        <div class="fila">
+          <span class="texto-tenue">Nombre</span>
+          <strong>{{ solicitudActual.nombre }} {{ solicitudActual.apellido }}</strong>
+        </div>
+
+        <div class="fila">
+          <span class="texto-tenue">Correo</span>
+          <strong>{{ solicitudActual.email }}</strong>
+        </div>
+
+        <div class="fila">
+          <span class="texto-tenue">Solicitada</span>
+          <span class="numeros">
+            {{ solicitudActual.fechaSolicitud | date: 'dd/MM/yyyy h:mm a' }}
+          </span>
+        </div>
+
+        <div class="fila">
+          <span class="texto-tenue">Vence</span>
+          <span class="numeros">
+            {{ solicitudActual.expiraEn | date: 'dd/MM/yyyy h:mm a' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button
+          class="btn-gb-peligro flex-fill py-2"
+          type="button"
+          [disabled]="procesando"
+          (click)="pedirConfirmacion('rechazar')">
+
+          <i class="bi bi-x-lg"></i>
+          Rechazar
+        </button>
+
+        <button
+          class="btn-gb flex-fill py-2"
+          type="button"
+          [disabled]="procesando"
+          (click)="pedirConfirmacion('aprobar')">
+
+          <i class="bi bi-check-lg"></i>
+          Aprobar
+        </button>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-4" *ngIf="!cargando">
+      <a class="small texto-tenue" routerLink="/">
+        <i class="bi bi-box-arrow-in-right me-1"></i>
+        Ir al inicio de sesión
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<ng-container *ngIf="mostrarConfirmacion && solicitud as solicitudActual">
+
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ accionPendiente === 'aprobar' ? 'Aprobar administrador' : 'Rechazar solicitud' }}
+          </h5>
+
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cancelarConfirmacion()">
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+          <p class="mb-2" *ngIf="accionPendiente === 'aprobar'">
+            ¿Seguro que quieres darle acceso de administrador a
+            <strong>{{ solicitudActual.nombre }} {{ solicitudActual.apellido }}</strong>
+            ({{ solicitudActual.email }})?
+            Podrá ver y cambiar toda la información del sistema.
+          </p>
+
+          <p class="mb-2" *ngIf="accionPendiente === 'rechazar'">
+            ¿Seguro que quieres rechazar la solicitud de
+            <strong>{{ solicitudActual.nombre }} {{ solicitudActual.apellido }}</strong>?
+            Le avisaremos por correo.
+          </p>
+
+          <p class="mb-0 small texto-tenue">
+            Esta acción no se puede deshacer.
+          </p>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn-gb-borde"
+            (click)="cancelarConfirmacion()">
+            Volver
+          </button>
+
+          <button
+            type="button"
+            [class.btn-gb]="accionPendiente === 'aprobar'"
+            [class.btn-gb-peligro-lleno]="accionPendiente === 'rechazar'"
+            [disabled]="procesando"
+            (click)="confirmar()">
+
+            {{ accionPendiente === 'aprobar' ? 'Sí, aprobar' : 'Sí, rechazar' }}
+
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-backdrop show"></div>
+
+</ng-container>

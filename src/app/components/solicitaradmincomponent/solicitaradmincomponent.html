@@ -1,0 +1,109 @@
+<div class="container py-5">
+  <div class="mb-4">
+    <div class="sobretitulo mb-2">Acceso de administración</div>
+    <h1 class="titulo-pagina">Solicitar cuenta de administrador</h1>
+    <p class="texto-tenue mb-0">Green Building revisa cada solicitud antes de dar acceso al panel administrativo.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="gb-tarjeta p-4">
+        <div *ngIf="enviada" class="gb-vacio py-4">
+          <span class="gb-icono gb-icono-grande"><i class="bi bi-envelope-check"></i></span>
+          <h2 class="h5">Solicitud enviada</h2>
+          <p class="texto-tenue">{{ mensajeEnviada }}</p>
+          <a class="btn-gb" routerLink="/">Volver al inicio</a>
+        </div>
+
+        <form *ngIf="!enviada" (ngSubmit)="solicitar()" novalidate>
+          <div class="d-flex gap-3 mb-4">
+            <span class="gb-icono"><i class="bi bi-person-badge"></i></span>
+            <div>
+              <h2 class="h5 mb-1">Tus datos</h2>
+              <p class="small texto-tenue mb-0">
+                Si la solicitud se aprueba, te llega un código a este correo para activar la cuenta.
+              </p>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input id="nombre" name="nombre" class="form-control" autocomplete="given-name"
+                     [(ngModel)]="nombre" (ngModelChange)="error = ''" />
+            </div>
+            <div class="col-sm-6">
+              <label for="apellido" class="form-label">Apellido</label>
+              <input id="apellido" name="apellido" class="form-control" autocomplete="family-name"
+                     [(ngModel)]="apellido" (ngModelChange)="error = ''" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <input id="correo" name="correo" type="email" class="form-control" placeholder="nombre@correo.com"
+                   autocomplete="email" [(ngModel)]="email" (ngModelChange)="error = ''" />
+          </div>
+
+          <div class="row g-3 mb-1">
+            <div class="col-sm-6">
+              <label for="contrasena" class="form-label">Contraseña</label>
+              <div class="input-group">
+                <input id="contrasena" name="contrasena" class="form-control" autocomplete="new-password"
+                       [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="password" (ngModelChange)="error = ''" />
+                <button class="btn-gb-borde" type="button"
+                        [attr.aria-label]="verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                        (click)="verContrasena = !verContrasena">
+                  <i class="bi" [class.bi-eye]="!verContrasena" [class.bi-eye-slash]="verContrasena"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <label for="confirmacion" class="form-label">Confirmar contraseña</label>
+              <input id="confirmacion" name="confirmacion" class="form-control" autocomplete="new-password"
+                     [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="confirmacion" (ngModelChange)="error = ''" />
+            </div>
+          </div>
+          <div class="form-text mb-3">Mínimo 8 caracteres, con mayúscula, minúscula, número y carácter especial.</div>
+
+          <div class="gb-alerta peligro mb-3" *ngIf="error">
+            <i class="bi bi-exclamation-circle"></i><span>{{ error }}</span>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button class="btn-gb" type="submit" [disabled]="cargando">
+              <span *ngIf="cargando" class="spinner-border spinner-border-sm"></span>
+              {{ cargando ? 'Enviando...' : 'Enviar solicitud' }}
+              <i class="bi bi-send" *ngIf="!cargando"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="gb-tarjeta p-4">
+        <div class="etiqueta-mayuscula mb-3">Cómo funciona</div>
+        <ol class="pasos">
+          <li>
+            <span class="numero">1</span>
+            <div><div class="fw-medium">Envías la solicitud</div><div class="small texto-tenue">Con tu nombre y tu correo.</div></div>
+          </li>
+          <li>
+            <span class="numero">2</span>
+            <div><div class="fw-medium">Green Building la revisa</div><div class="small texto-tenue">Le llega un correo para aprobarla o rechazarla.</div></div>
+          </li>
+          <li>
+            <span class="numero">3</span>
+            <div><div class="fw-medium">Activas tu cuenta</div><div class="small texto-tenue">Con el código que te llega por correo.</div></div>
+          </li>
+        </ol>
+        <div class="gb-alerta info mt-3">
+          <i class="bi bi-shield-lock"></i>
+          <span>Los administradores confirman cada inicio de sesión con un código.</span>
+        </div>
+      </div>
+      <p class="text-center small mt-3 mb-0"><a routerLink="/login">Volver al inicio de sesión</a></p>
+    </div>
+  </div>
+</div>

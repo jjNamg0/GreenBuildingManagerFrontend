@@ -14,6 +14,13 @@ import { Cambiotemacomponent } from './components/cambiotemacomponent/cambiotema
 import { Noencontradocomponent } from './components/noencontradocomponent/noencontradocomponent';
 import { Terminoscomponent } from './components/terminoscomponent/terminoscomponent';
 import { Privacidadcomponent } from './components/privacidadcomponent/privacidadcomponent';
+import { Logincomponent } from './components/logincomponent/logincomponent';
+import { Registrocomponent } from './components/registrocomponent/registrocomponent';
+import { Verificarcodigocomponent } from './components/verificarcodigocomponent/verificarcodigocomponent';
+import { Olvidecontrasenacomponent } from './components/olvidecontrasenacomponent/olvidecontrasenacomponent';
+import { Solicitaradmincomponent } from './components/solicitaradmincomponent/solicitaradmincomponent';
+import { Aprobaradmincomponent } from './components/aprobaradmincomponent/aprobaradmincomponent';
+import { Googlecallbackcomponent } from './components/googlecallbackcomponent/googlecallbackcomponent';
 import { Authinterceptor } from './interceptors/authinterceptor';
 
 registerLocaleData(localeEsCo);
@@ -30,7 +37,19 @@ registerLocaleData(localeEsCo);
     Terminoscomponent,
     Privacidadcomponent,
   ],
-  imports: [BrowserModule, CommonModule, FormsModule, AppRoutingModule],
+  imports: [
+    BrowserModule,
+    CommonModule,
+    FormsModule,
+    AppRoutingModule,
+    Logincomponent,
+    Registrocomponent,
+    Verificarcodigocomponent,
+    Olvidecontrasenacomponent,
+    Solicitaradmincomponent,
+    Aprobaradmincomponent,
+    Googlecallbackcomponent,
+  ],
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
