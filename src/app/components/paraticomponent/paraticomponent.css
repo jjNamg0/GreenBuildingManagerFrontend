@@ -1,0 +1,55 @@
+.titulo-seccion {
+  padding-left: 0.75rem;
+  border-left: 4px solid var(--gb-verde);
+}
+
+.icono-chico {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.foto {
+  position: relative;
+}
+
+.foto .arriba {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+}
+
+.evento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.fecha {
+  min-width: 84px;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background: var(--gb-campo);
+  text-align: center;
+}
+
+.dia {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.vacio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}

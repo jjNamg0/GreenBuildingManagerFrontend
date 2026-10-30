@@ -1,0 +1,66 @@
+<div class="container-xxl py-4 px-3 px-lg-4">
+  <section class="gb-tarjeta encabezado p-4 mb-4">
+    <div>
+      <div class="sobretitulo mb-2">Agenda comunitaria</div>
+      <h1 class="titulo-pagina">Eventos del conjunto</h1>
+      <p class="texto-tenue mb-0">Participa en las actividades sociales, deportivas y comunitarias de las zonas comunes de tu conjunto.</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <div class="gb-segmentos">
+        <button type="button" [class.activo]="!pasados" (click)="cambiarVista(false)">Próximos<span *ngIf="!pasados && !cargando">&nbsp;({{ eventos.length }})</span></button>
+        <button type="button" [class.activo]="pasados" (click)="cambiarVista(true)">Pasados</button>
+      </div>
+      <div class="interruptor gb-caja">
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" role="switch" id="solo-ninos" [(ngModel)]="soloNinos" />
+          <label class="form-check-label small" for="solo-ninos">Solo fiestas para niños</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="text-center texto-tenue py-5" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando eventos...
+  </div>
+  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+
+  <div class="row g-4" *ngIf="!cargando && !error">
+    <div class="col-md-6 col-xl-4" *ngFor="let e of filtrados">
+      <article class="gb-tarjeta evento h-100" [class.cancelado]="e.estado === 'CANCELADO'">
+        <div class="foto">
+          <img class="imagen-tarjeta" [src]="imagenDe(e)" [alt]="e.nombre" (error)="usarImagenRespaldo($event)" />
+          <div class="fecha">
+            <div class="dia numeros">{{ e.inicio | date: 'dd' }}</div>
+            <div class="mes">{{ e.inicio | date: 'MMM' }}</div>
+          </div>
+          <span class="gb-insignia sobre-imagen categoria"><i class="bi" [ngClass]="iconoCategoria(e.categoria)"></i>{{ etiquetaCategoria(e.categoria) }}</span>
+        </div>
+        <div class="p-4 d-flex flex-column flex-grow-1">
+          <div class="mb-2" *ngIf="e.fiestaNinos || e.estado === 'CANCELADO'">
+            <span class="gb-insignia exito me-1" *ngIf="e.fiestaNinos">
+              <i class="bi bi-balloon"></i>Fiesta para niños<span *ngIf="e.edadMinima !== null && e.edadMaxima !== null"> · De {{ e.edadMinima }} a {{ e.edadMaxima }} años</span>
+            </span>
+            <span class="gb-insignia peligro" *ngIf="e.estado === 'CANCELADO'">Cancelado</span>
+          </div>
+          <h2 class="h5 mb-2">{{ e.nombre }}</h2>
+          <p class="texto-tenue descripcion mb-3">{{ e.descripcion }}</p>
+          <div class="gb-caja p-3 mt-auto small d-flex flex-column gap-1">
+            <span><i class="bi bi-door-open texto-verde me-2"></i>{{ e.espacioNombre }}</span>
+            <span class="texto-tenue"><i class="bi bi-clock me-2"></i>{{ e.inicio | date: 'EEEE d MMMM' }} · {{ e.inicio | date: 'h:mm a' }} a {{ e.fin | date: 'h:mm a' }}</span>
+          </div>
+          <div class="motivo small mt-2" *ngIf="e.motivoCancelacion">Motivo: {{ e.motivoCancelacion }}</div>
+        </div>
+      </article>
+    </div>
+
+    <div class="col-12" *ngIf="filtrados.length === 0 || !pasados">
+      <div class="gb-tarjeta gb-vacio">
+        <span class="gb-icono gb-icono-grande"><i class="bi bi-calendar3"></i></span>
+        <h2 class="h5">{{ filtrados.length === 0 ? (pasados ? 'No hay eventos pasados' : 'No hay eventos programados en tu conjunto') : 'No hay más eventos programados en tu conjunto' }}</h2>
+        <p class="texto-tenue mb-0 mx-auto texto-angosto">
+          La administración publica aquí las fiestas, asambleas y actividades del conjunto cuando las programe.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

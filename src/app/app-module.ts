@@ -21,6 +21,11 @@ import { Olvidecontrasenacomponent } from './components/olvidecontrasenacomponen
 import { Solicitaradmincomponent } from './components/solicitaradmincomponent/solicitaradmincomponent';
 import { Aprobaradmincomponent } from './components/aprobaradmincomponent/aprobaradmincomponent';
 import { Googlecallbackcomponent } from './components/googlecallbackcomponent/googlecallbackcomponent';
+import { Miconjuntocomponent } from './components/miconjuntocomponent/miconjuntocomponent';
+import { Reservarespaciocomponent } from './components/reservarespaciocomponent/reservarespaciocomponent';
+import { Misreservascomponent } from './components/misreservascomponent/misreservascomponent';
+import { Eventoscomponent } from './components/eventoscomponent/eventoscomponent';
+import { Paraticomponent } from './components/paraticomponent/paraticomponent';
 import { Authinterceptor } from './interceptors/authinterceptor';
 
 registerLocaleData(localeEsCo);
@@ -36,6 +41,11 @@ registerLocaleData(localeEsCo);
     Noencontradocomponent,
     Terminoscomponent,
     Privacidadcomponent,
+    Miconjuntocomponent,
+    Reservarespaciocomponent,
+    Misreservascomponent,
+    Eventoscomponent,
+    Paraticomponent,
   ],
   imports: [
     BrowserModule,

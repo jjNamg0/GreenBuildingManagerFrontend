@@ -1,0 +1,76 @@
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.interruptor {
+  padding: 0.5rem 0.9rem;
+}
+
+.evento {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.evento.cancelado {
+  opacity: 0.65;
+}
+
+.foto {
+  position: relative;
+}
+
+.fecha {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  min-width: 54px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  background: var(--gb-velo);
+  border: 1px solid var(--gb-borde);
+  text-align: center;
+}
+
+.dia {
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--gb-verde);
+}
+
+.mes {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.categoria {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+.descripcion {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.motivo {
+  padding: 0.3rem 0.6rem;
+  border-left: 2px solid var(--gb-rojo);
+  border-radius: 4px;
+  background: rgba(240, 97, 109, 0.08);
+  color: var(--gb-rojo-texto);
+}
+
+.texto-angosto {
+  max-width: 460px;
+}

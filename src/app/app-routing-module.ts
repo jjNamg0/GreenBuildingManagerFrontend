@@ -9,7 +9,14 @@ import { Aprobaradmincomponent } from './components/aprobaradmincomponent/aproba
 import { Googlecallbackcomponent } from './components/googlecallbackcomponent/googlecallbackcomponent';
 import { Terminoscomponent } from './components/terminoscomponent/terminoscomponent';
 import { Privacidadcomponent } from './components/privacidadcomponent/privacidadcomponent';
+import { Miconjuntocomponent } from './components/miconjuntocomponent/miconjuntocomponent';
+import { Reservarespaciocomponent } from './components/reservarespaciocomponent/reservarespaciocomponent';
+import { Misreservascomponent } from './components/misreservascomponent/misreservascomponent';
+import { Eventoscomponent } from './components/eventoscomponent/eventoscomponent';
+import { Paraticomponent } from './components/paraticomponent/paraticomponent';
 import { Noencontradocomponent } from './components/noencontradocomponent/noencontradocomponent';
+import { authguard } from './guards/authguard';
+import { conjuntoguard } from './guards/conjuntoguard';
 
 const routes: Routes = [
   {
@@ -61,6 +68,36 @@ const routes: Routes = [
     path: 'privacidad',
     component: Privacidadcomponent,
     title: 'Green Building Manager — Política de privacidad',
+  },
+  {
+    path: 'mi-conjunto',
+    component: Miconjuntocomponent,
+    canActivate: [authguard],
+    title: 'Green Building Manager — Mi conjunto',
+  },
+  {
+    path: 'reservar/:espacioId',
+    component: Reservarespaciocomponent,
+    canActivate: [authguard, conjuntoguard],
+    title: 'Green Building Manager — Reservar espacio',
+  },
+  {
+    path: 'mis-reservas',
+    component: Misreservascomponent,
+    canActivate: [authguard, conjuntoguard],
+    title: 'Green Building Manager — Mis reservas',
+  },
+  {
+    path: 'eventos',
+    component: Eventoscomponent,
+    canActivate: [authguard, conjuntoguard],
+    title: 'Green Building Manager — Eventos del conjunto',
+  },
+  {
+    path: 'para-ti',
+    component: Paraticomponent,
+    canActivate: [authguard, conjuntoguard],
+    title: 'Green Building Manager — Para ti',
   },
   {
     path: '**',
