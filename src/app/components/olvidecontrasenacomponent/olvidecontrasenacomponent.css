@@ -1,0 +1,18 @@
+.paso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+}
+
+.gb-segmentos button:disabled {
+  opacity: 1;
+}
+
+.tarjeta-ancha {
+  max-width: 560px;
+}

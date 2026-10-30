@@ -1,0 +1,84 @@
+<div class="gb-auth">
+  <div class="gb-auth-tarjeta tarjeta-ancha">
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3"><i class="bi bi-key"></i></span>
+      <h1 class="h4 mb-1">Restablecer contraseña</h1>
+      <p class="texto-tenue mb-0">Recupera el acceso a tu cuenta con un código que llega a tu correo</p>
+    </div>
+
+    <div class="gb-segmentos mb-4" role="presentation">
+      <button type="button" [class.activo]="paso === 'email'" (click)="volverAlEmail()">
+        <span class="paso">1</span>Solicitar código
+      </button>
+      <button type="button" [class.activo]="paso === 'codigo'" disabled>
+        <span class="paso">2</span>Nueva contraseña
+      </button>
+    </div>
+
+    <form *ngIf="paso === 'email'" (ngSubmit)="pedirCodigo()" novalidate>
+      <h2 class="h6 mb-1">Paso 1: Solicitar código</h2>
+      <p class="small texto-tenue mb-3">Escribe tu correo y te enviamos un código para crear una contraseña nueva.</p>
+      <div class="mb-3">
+        <label for="correo" class="form-label">Correo</label>
+        <input id="correo" name="correo" type="email" class="form-control" placeholder="nombre@correo.com"
+               autocomplete="email" [(ngModel)]="email" (ngModelChange)="error = ''" />
+      </div>
+      <div class="gb-alerta peligro mb-3" *ngIf="error">
+        <i class="bi bi-exclamation-circle"></i><span>{{ error }}</span>
+      </div>
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando">
+        <span *ngIf="cargando" class="spinner-border spinner-border-sm"></span>
+        <i class="bi bi-send" *ngIf="!cargando"></i>Enviar código
+      </button>
+    </form>
+
+    <form *ngIf="paso === 'codigo'" (ngSubmit)="cambiarContrasena()" novalidate>
+      <h2 class="h6 mb-1">Paso 2: Nueva contraseña</h2>
+      <p class="small texto-tenue mb-3">
+        Escribe el código que llegó a <strong class="text-body">{{ email }}</strong> y tu contraseña nueva.
+      </p>
+
+      <div class="gb-codigo mb-3">
+        <div class="gb-codigo-casilla" *ngFor="let casilla of casillas; let i = index"
+             [class.vacia]="!casilla" [class.actual]="enfocado && i === codigo.length">{{ casilla }}</div>
+        <input class="gb-codigo-entrada" name="codigo" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" aria-label="Código de 6 números" [ngModel]="codigo" (ngModelChange)="alCambiarCodigo($event)"
+               (focus)="enfocado = true" (blur)="enfocado = false" />
+      </div>
+
+      <div class="mb-3">
+        <label for="contrasena" class="form-label">Contraseña nueva</label>
+        <div class="input-group">
+          <input id="contrasena" name="contrasena" class="form-control" autocomplete="new-password"
+                 [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="password" (ngModelChange)="error = ''" />
+          <button class="btn-gb-borde" type="button"
+                  [attr.aria-label]="verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  (click)="verContrasena = !verContrasena">
+            <i class="bi" [class.bi-eye]="!verContrasena" [class.bi-eye-slash]="verContrasena"></i>
+          </button>
+        </div>
+        <div class="form-text">Mínimo 8 caracteres, con mayúscula, minúscula, número y carácter especial.</div>
+      </div>
+      <div class="mb-3">
+        <label for="confirmacion" class="form-label">Confirmar contraseña</label>
+        <input id="confirmacion" name="confirmacion" class="form-control" autocomplete="new-password"
+               [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="confirmacion" (ngModelChange)="error = ''" />
+      </div>
+
+      <div class="gb-alerta peligro mb-3" *ngIf="error">
+        <i class="bi bi-exclamation-circle"></i><span>{{ error }}</span>
+      </div>
+
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando">
+        <span *ngIf="cargando" class="spinner-border spinner-border-sm"></span>Cambiar contraseña
+      </button>
+      <div class="text-center mt-3">
+        <button class="btn btn-link btn-sm p-0" type="button" (click)="volverAlEmail()">Usar otro correo o pedir otro código</button>
+      </div>
+    </form>
+
+    <div class="text-center mt-4">
+      <a class="small texto-tenue" routerLink="/login"><i class="bi bi-arrow-left me-1"></i>Volver al inicio de sesión</a>
+    </div>
+  </div>
+</div>

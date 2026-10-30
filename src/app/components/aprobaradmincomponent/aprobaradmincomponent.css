@@ -1,0 +1,16 @@
+.fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gb-borde);
+  font-size: 0.875rem;
+}
+
+.fila:last-child {
+  border-bottom: none;
+}
+
+.tarjeta-ancha {
+  max-width: 520px;
+}

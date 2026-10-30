@@ -1,0 +1,84 @@
+<div class="gb-auth">
+  <div class="gb-auth-tarjeta">
+    <span class="gb-icono mb-3"><i class="bi bi-person-plus"></i></span>
+    <h1 class="h4 mb-1">Registro de residente</h1>
+    <p class="texto-tenue mb-4">
+      Escoge tu conjunto. Después de verificar tu correo, la administración acepta tu solicitud y te asigna tu unidad.
+    </p>
+
+    <form (ngSubmit)="registrar()" novalidate>
+      <div class="row g-2 mb-3">
+        <div class="col-sm-6">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input id="nombre" name="nombre" class="form-control" autocomplete="given-name"
+                 [(ngModel)]="nombre" (ngModelChange)="error = ''" />
+        </div>
+        <div class="col-sm-6">
+          <label for="apellido" class="form-label">Apellido</label>
+          <input id="apellido" name="apellido" class="form-control" autocomplete="family-name"
+                 [(ngModel)]="apellido" (ngModelChange)="error = ''" />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="correo" class="form-label">Correo</label>
+        <input id="correo" name="correo" type="email" class="form-control" placeholder="nombre@correo.com"
+               autocomplete="email" [(ngModel)]="email" (ngModelChange)="error = ''" />
+      </div>
+
+      <div class="mb-3">
+        <label for="conjunto" class="form-label">Conjunto al que quieres entrar</label>
+        <select id="conjunto" name="conjunto" class="form-select" [(ngModel)]="conjuntoId" (ngModelChange)="error = ''"
+                [disabled]="cargandoConjuntos || !!errorConjuntos">
+          <option [ngValue]="0">{{ cargandoConjuntos ? 'Cargando conjuntos...' : 'Escoge un conjunto' }}</option>
+          <option *ngFor="let c of opciones" [ngValue]="c.id">{{ c.nombre }} · {{ c.municipio }}</option>
+        </select>
+        <div class="form-text texto-amarillo" *ngIf="errorConjuntos">
+          {{ errorConjuntos }}
+          <button class="btn-gb-fantasma btn-gb-sm" type="button" (click)="cargarConjuntos()">Reintentar</button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="contrasena" class="form-label">Contraseña</label>
+        <div class="input-group">
+          <input id="contrasena" name="contrasena" class="form-control" autocomplete="new-password"
+                 [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="password" (ngModelChange)="error = ''" />
+          <button class="btn-gb-borde" type="button"
+                  [attr.aria-label]="verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  (click)="verContrasena = !verContrasena">
+            <i class="bi" [class.bi-eye]="!verContrasena" [class.bi-eye-slash]="verContrasena"></i>
+          </button>
+        </div>
+        <div class="form-text">Mínimo 8 caracteres, con mayúscula, minúscula, número y carácter especial.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="confirmacion" class="form-label">Confirmar contraseña</label>
+        <input id="confirmacion" name="confirmacion" class="form-control" autocomplete="new-password"
+               [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="confirmacion" (ngModelChange)="error = ''" />
+      </div>
+
+      <div class="gb-alerta peligro mb-3" *ngIf="error">
+        <i class="bi bi-exclamation-circle"></i><span>{{ error }}</span>
+      </div>
+
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando">
+        <span *ngIf="cargando" class="spinner-border spinner-border-sm"></span>
+        {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <div class="gb-separador my-3"><span>o</span></div>
+    <button class="btn-gb-borde w-100 py-2" type="button" (click)="entrarConGoogle()">
+      <i class="bi bi-google"></i>Continuar con Google
+    </button>
+
+    <p class="text-center small mt-3 mb-0 texto-tenue">
+      Al registrarte aceptas nuestros <a routerLink="/terminos">Términos de uso</a> y nuestra
+      <a routerLink="/privacidad">Política de privacidad</a>.
+    </p>
+
+    <p class="text-center small mt-3 mb-0 texto-tenue">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+  </div>
+</div>
