@@ -1,0 +1,181 @@
+<div class="container-xxl py-4 px-3 px-lg-4">
+  <a class="small d-inline-flex align-items-center gap-2 mb-3" routerLink="/mi-conjunto">
+    <i class="bi bi-arrow-left"></i>Volver a mi conjunto
+  </a>
+
+  <div class="text-center texto-tenue py-5" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando espacio...
+  </div>
+
+  <div class="gb-tarjeta gb-vacio" *ngIf="!cargando && error">
+    <span class="gb-icono gb-icono-grande"><i class="bi bi-calendar-x"></i></span>
+    <p class="texto-tenue mb-3">{{ error }}</p>
+    <a class="btn-gb" routerLink="/mi-conjunto">Ver espacios</a>
+  </div>
+
+  <ng-container *ngIf="espacio">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+      <div>
+        <h1 class="titulo-pagina">Reservar {{ espacio.nombre }}</h1>
+        <p class="texto-tenue mb-0">
+          {{ etiquetaTipo }} · {{ conjuntoNombre }} · Abre de {{ textoHora(espacio.horaApertura) }} a {{ textoHora(espacio.horaCierre) }}
+        </p>
+      </div>
+      <span class="gb-insignia punto" [class.pendiente]="espacio.requiereAprobacion" [class.exito]="!espacio.requiereAprobacion">
+        {{ espacio.requiereAprobacion ? 'Requiere aprobación' : 'Confirmación inmediata' }}
+      </span>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="gb-tarjeta p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+              <h2 class="h5 mb-1"><i class="bi bi-calendar3 texto-verde me-2"></i>Seleccionar fecha</h2>
+              <p class="small texto-tenue mb-0">Puedes reservar hasta con {{ espacio.anticipacionMaximaDias }} días de anticipación.</p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 controles-fecha">
+              <div class="gb-segmentos dias">
+                <button type="button" *ngFor="let dia of diasCercanos" [class.activo]="dia === fecha" (click)="elegirDia(dia)">
+                  {{ dia + 'T00:00:00' | date: 'EEE d MMM' }}
+                </button>
+              </div>
+              <input type="date" class="form-control form-control-sm otra-fecha" aria-label="Otra fecha"
+                [min]="fechaMinima" [max]="fechaMaxima" [(ngModel)]="fecha" (ngModelChange)="cambiarFecha()" />
+            </div>
+          </div>
+
+          <div class="leyenda mb-3">
+            <span><span class="muestra libre"></span>Libre</span>
+            <span><span class="muestra ocupado"></span>{{ esPorCupo ? 'Lleno' : 'Ocupado' }}</span>
+            <span><span class="muestra pasado"></span>Ya pasó</span>
+            <span><span class="muestra elegido"></span>Tu horario</span>
+          </div>
+
+          <div class="text-center texto-tenue py-4" *ngIf="cargandoDisponibilidad">
+            <span class="spinner-border spinner-border-sm me-2"></span>Revisando disponibilidad...
+          </div>
+
+          <div class="cuadricula" *ngIf="!cargandoDisponibilidad">
+            <button
+              type="button"
+              class="bloque"
+              *ngFor="let b of bloques"
+              [class.libre]="b.libre && !b.pasado"
+              [class.ocupado]="!b.libre && !b.pasado"
+              [class.pasado]="b.pasado"
+              [class.elegido]="estaSeleccionado(b)"
+              [disabled]="!b.libre || b.pasado"
+              (click)="elegirBloque(b)"
+            >
+              <span class="fw-semibold">{{ textoHora(b.inicio) }}</span>
+              <span class="small" *ngIf="estaSeleccionado(b)">Tu horario <i class="bi bi-check-lg"></i></span>
+              <ng-container *ngIf="!estaSeleccionado(b)">
+                <span class="small" *ngIf="!esPorCupo">{{ b.pasado ? 'Ya pasó' : b.libre ? 'Libre' : 'Ocupado' }}</span>
+                <span class="small" *ngIf="esPorCupo">{{ b.pasado ? 'Ya pasó' : b.ocupadas + ' de ' + espacio.capacidad }}</span>
+              </ng-container>
+            </button>
+          </div>
+        </div>
+
+        <div class="gb-tarjeta p-4 mt-4 d-flex gap-3">
+          <span class="gb-icono"><i class="bi bi-info-circle"></i></span>
+          <div class="small">
+            <div class="fw-semibold mb-1">{{ esPorCupo ? 'Espacio por cupo' : 'Espacio de uso exclusivo' }}</div>
+            <div class="texto-tenue" *ngIf="!esPorCupo">
+              Mientras dure tu reserva, nadie más puede reservar este espacio en ese horario.
+            </div>
+            <div class="texto-tenue" *ngIf="esPorCupo">
+              Varias personas pueden reservar el mismo horario hasta llenar la capacidad de {{ espacio.capacidad }} personas.
+              Cada bloque muestra cuántos cupos ya están ocupados.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <form class="gb-tarjeta p-4 resumen" (ngSubmit)="pedirConfirmacion()" novalidate>
+          <h2 class="h4 mb-4">Tu reserva</h2>
+          <div class="mb-3">
+            <label for="hora" class="form-label">Hora de inicio</label>
+            <select id="hora" name="hora" class="form-select" [(ngModel)]="horaInicio" (ngModelChange)="cambiarDetalle()">
+              <option value="">Escoge la hora</option>
+              <option *ngFor="let h of opcionesHora" [value]="h">{{ textoHora(h) }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="duracion" class="form-label">Duración</label>
+            <select id="duracion" name="duracion" class="form-select" [(ngModel)]="duracion" (ngModelChange)="cambiarDetalle()">
+              <option *ngFor="let d of opcionesDuracion" [ngValue]="d">{{ textoDuracion(d) }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <label for="personas" class="form-label">Número de personas</label>
+              <span class="small texto-tenue">Capacidad: {{ espacio.capacidad }}</span>
+            </div>
+            <input id="personas" name="personas" type="number" min="1" [max]="espacio.capacidad" class="form-control"
+              [(ngModel)]="personas" (ngModelChange)="cambiarDetalle()" />
+            <div class="form-text" *ngIf="esPorCupo && horaInicio">Quedan {{ cuposLibres }} cupos en ese horario.</div>
+          </div>
+          <div class="mb-4">
+            <label for="observaciones" class="form-label">Observaciones <span class="texto-tenue">(opcional)</span></label>
+            <textarea id="observaciones" name="observaciones" rows="2" maxlength="500" class="form-control"
+              placeholder="Reunión familiar de cumpleaños" [(ngModel)]="observaciones"></textarea>
+          </div>
+
+          <div class="gb-caja p-3 mb-3" *ngIf="horaInicio">
+            <div class="etiqueta-mayuscula texto-verde mb-2">Resumen</div>
+            <div class="fila"><span class="texto-tenue">Fecha</span><span>{{ fecha + 'T00:00:00' | date: 'EEEE d MMMM y' }}</span></div>
+            <div class="fila"><span class="texto-tenue">Horario</span><span>{{ textoHora(horaInicio) }} a {{ textoHora(horaFin) }}</span></div>
+            <div class="fila"><span class="texto-tenue">Unidad</span><span>{{ unidadDescripcion }}</span></div>
+            <div class="fila align-items-center" *ngIf="espacio.costo > 0">
+              <span class="texto-tenue">Costo</span>
+              <span class="h5 mb-0 texto-verde">{{ espacio.costo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+          </div>
+
+          <div class="gb-alerta pendiente mb-3" *ngIf="espacio.requiereAprobacion">
+            <i class="bi bi-clock texto-amarillo"></i><span>Esta reserva queda pendiente hasta que la administración la apruebe.</span>
+          </div>
+          <div class="gb-alerta pendiente mb-3" *ngIf="conflicto && !errorFormulario">
+            <i class="bi bi-exclamation-triangle texto-amarillo"></i><span>{{ conflicto }}</span>
+          </div>
+          <div class="gb-alerta peligro mb-3" *ngIf="errorFormulario">
+            <i class="bi bi-exclamation-circle"></i><span>{{ errorFormulario }}</span>
+          </div>
+
+          <button class="btn-gb w-100 py-2" type="submit" [disabled]="guardando">
+            <span class="spinner-border spinner-border-sm" *ngIf="guardando"></span>Reservar
+            <i class="bi bi-arrow-right" *ngIf="!guardando"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-container *ngIf="mostrarConfirmacion && espacio">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-calendar-check texto-verde me-2"></i>Confirmar reserva</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" (click)="cancelarConfirmacion()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">
+            ¿Quieres reservar <strong>{{ espacio.nombre }}</strong> el {{ fecha + 'T00:00:00' | date: 'EEEE d MMMM' }}, de
+            {{ textoHora(horaInicio) }} a {{ textoHora(horaFin) }}, para {{ personas }} {{ personas === 1 ? 'persona' : 'personas' }}?
+          </p>
+          <p class="mb-0 small texto-tenue" *ngIf="espacio.requiereAprobacion">Quedará pendiente hasta que la administración la apruebe.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-borde" (click)="cancelarConfirmacion()">Volver</button>
+          <button type="button" class="btn-gb" (click)="confirmar()">Sí, reservar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>

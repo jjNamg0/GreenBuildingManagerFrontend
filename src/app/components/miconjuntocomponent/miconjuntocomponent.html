@@ -1,0 +1,166 @@
+<div class="container-xxl py-4 px-3 px-lg-4">
+  <div class="text-center texto-tenue py-5" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando tu conjunto...
+  </div>
+
+  <div class="gb-tarjeta gb-vacio" *ngIf="!cargando && error">
+    <span class="gb-icono gb-icono-grande"><i class="bi bi-house-exclamation"></i></span>
+    <h1 class="h5">Hola, {{ auth.usuario?.nombre }}</h1>
+    <p class="texto-tenue mx-auto texto-angosto">{{ error }}</p>
+    <button class="btn-gb-borde" type="button" (click)="cargar()"><i class="bi bi-arrow-clockwise"></i>Volver a intentar</button>
+  </div>
+
+  <div class="gb-tarjeta gb-vacio" *ngIf="!cargando && !error && perfil && !perfil.unidadId && perfil.conjuntoSolicitadoId">
+    <span class="gb-icono gb-icono-grande"><i class="bi bi-hourglass-split"></i></span>
+    <h1 class="h5">Hola, {{ auth.usuario?.nombre }}</h1>
+    <p class="texto-tenue mx-auto texto-angosto">
+      Pediste entrar a <strong>{{ perfil.conjuntoSolicitadoNombre }}</strong>. La administración debe aceptar tu
+      solicitud y asignarte tu unidad. Te avisaremos por correo.
+    </p>
+    <button class="btn-gb-borde" type="button" (click)="cargar()"><i class="bi bi-arrow-clockwise"></i>Revisar de nuevo</button>
+  </div>
+
+  <div class="gb-tarjeta gb-vacio" *ngIf="!cargando && !error && perfil && !perfil.unidadId && !perfil.conjuntoSolicitadoId">
+    <span class="gb-icono gb-icono-grande"><i class="bi bi-buildings"></i></span>
+    <h1 class="h5">Hola, {{ auth.usuario?.nombre }}</h1>
+    <p class="texto-tenue mx-auto texto-angosto">
+      Todavía no perteneces a ningún conjunto. Escoge el tuyo y la administración revisará tu solicitud.
+    </p>
+    <div class="mx-auto texto-angosto mb-3">
+      <select class="form-select" aria-label="Conjunto al que quieres entrar" [(ngModel)]="conjuntoElegido"
+        (ngModelChange)="errorSolicitud = ''">
+        <option [ngValue]="0">Escoge un conjunto</option>
+        <option *ngFor="let c of opciones" [ngValue]="c.id">{{ c.nombre }} · {{ c.municipio }}</option>
+      </select>
+    </div>
+    <div class="gb-alerta peligro mx-auto texto-angosto mb-3" *ngIf="errorSolicitud">
+      <i class="bi bi-exclamation-circle"></i><span>{{ errorSolicitud }}</span>
+    </div>
+    <button class="btn-gb" type="button" [disabled]="enviandoSolicitud" (click)="solicitar()">
+      <span class="spinner-border spinner-border-sm" *ngIf="enviandoSolicitud"></span>Pedir entrar
+    </button>
+  </div>
+
+  <ng-container *ngIf="miConjunto">
+    <section class="encabezado gb-tarjeta p-4 mb-4">
+      <div>
+        <div class="sobretitulo mb-2">Tu conjunto residencial</div>
+        <h1 class="titulo-grande mb-2">{{ miConjunto.conjunto.nombre }}</h1>
+        <div class="d-flex flex-wrap gap-3 texto-tenue small">
+          <span><i class="bi bi-geo-alt texto-verde me-1"></i>{{ miConjunto.conjunto.direccion }}, {{ miConjunto.conjunto.municipio }}</span>
+          <span *ngIf="miConjunto.conjunto.telefono"><i class="bi bi-telephone texto-verde me-1"></i>Administración: {{ miConjunto.conjunto.telefono }}</span>
+        </div>
+        <p class="texto-tenue small mt-2 mb-0" *ngIf="miConjunto.conjunto.descripcion">{{ miConjunto.conjunto.descripcion }}</p>
+      </div>
+      <div class="unidad gb-caja">
+        <span class="gb-icono"><i class="bi bi-building"></i></span>
+        <div>
+          <div class="etiqueta-mayuscula">Tu unidad</div>
+          <div class="h5 texto-verde mb-1">{{ miConjunto.unidad.descripcion }}</div>
+          <span class="gb-insignia neutro">{{ etiquetaTipoConjunto(miConjunto.conjunto.tipo) }}</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="gb-metrica d-flex align-items-center gap-3">
+          <span class="gb-icono"><i class="bi bi-calendar-check"></i></span>
+          <div>
+            <div class="etiqueta-mayuscula">Mis reservas activas</div>
+            <div class="valor">{{ reservasActivas }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <a class="gb-metrica d-flex align-items-center gap-3 enlace-metrica" routerLink="/eventos">
+          <span class="gb-icono"><i class="bi bi-calendar-event"></i></span>
+          <div class="min-w-0">
+            <div class="etiqueta-mayuscula">Próximo evento</div>
+            <ng-container *ngIf="proximoEvento">
+              <div class="fw-semibold text-capitalize">{{ proximoEvento.inicio | date: 'EEEE h:mm a' }}</div>
+              <div class="small texto-tenue text-truncate">{{ proximoEvento.nombre }}</div>
+            </ng-container>
+            <div class="texto-tenue" *ngIf="!proximoEvento">Sin eventos programados</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <div class="gb-metrica d-flex align-items-center gap-3">
+          <span class="gb-icono"><i class="bi bi-door-open"></i></span>
+          <div>
+            <div class="etiqueta-mayuscula">Espacios para reservar</div>
+            <div class="valor">{{ espaciosDisponibles }}</div>
+            <div class="small texto-amarillo" *ngIf="espaciosEnMantenimiento > 0">{{ espaciosEnMantenimiento }} en mantenimiento</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+      <div>
+        <div class="etiqueta-mayuscula mb-1">Áreas comunes</div>
+        <h2 class="h3 mb-1">Espacios de esparcimiento</h2>
+        <p class="texto-tenue mb-0">Consulta la disponibilidad y reserva los espacios comunales de tu conjunto</p>
+      </div>
+      <div class="gb-pildoras">
+        <button type="button" [class.activo]="filtro === 'todos'" (click)="filtro = 'todos'">Todos</button>
+        <button type="button" [class.activo]="filtro === 'EXCLUSIVO'" (click)="filtro = 'EXCLUSIVO'">Exclusivos</button>
+        <button type="button" [class.activo]="filtro === 'POR_CUPO'" (click)="filtro = 'POR_CUPO'">Por cupo</button>
+        <button type="button" [class.activo]="filtro === 'NO_RESERVABLE'" (click)="filtro = 'NO_RESERVABLE'">Uso libre</button>
+      </div>
+    </div>
+
+    <div class="gb-tarjeta gb-vacio" *ngIf="espaciosFiltrados.length === 0">
+      <span class="gb-icono gb-icono-grande"><i class="bi bi-tree"></i></span>
+      <p class="texto-tenue mb-0">
+        {{ miConjunto.espacios.length === 0 ? 'Tu conjunto todavía no tiene espacios registrados.' : 'No hay espacios con ese filtro.' }}
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-xl-4" *ngFor="let espacio of espaciosFiltrados">
+        <article class="espacio gb-tarjeta h-100">
+          <div class="foto">
+            <img class="imagen-tarjeta" [src]="imagenDe(espacio)" [alt]="espacio.nombre" (error)="usarImagenRespaldo($event)" />
+            <span class="gb-insignia sobre-imagen arriba">{{ etiquetaTipoEspacio(espacio.tipo) }}</span>
+            <span class="gb-insignia sobre-imagen abajo">Modalidad: {{ etiquetaModo(espacio.modoReserva) }}</span>
+            <span class="mantenimiento" *ngIf="espacio.enMantenimiento"><i class="bi bi-tools me-2"></i>En mantenimiento</span>
+          </div>
+          <div class="p-3 d-flex flex-column flex-grow-1">
+            <h3 class="h5 mb-3">{{ espacio.nombre }}</h3>
+            <div class="datos gb-caja mb-3">
+              <span><i class="bi bi-clock texto-verde"></i>{{ hora(espacio.horaApertura) }} a {{ hora(espacio.horaCierre) }}</span>
+              <span><i class="bi bi-people texto-verde"></i>Capacidad {{ espacio.capacidad }} pers.</span>
+              <span *ngIf="espacio.costo > 0"><i class="bi bi-cash-coin texto-verde"></i>{{ espacio.costo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              <span *ngIf="espacio.costo === 0" class="texto-verde"><i class="bi bi-check-circle"></i>Sin costo</span>
+              <span *ngIf="espacio.edadMinima > 0"><i class="bi bi-person texto-verde"></i>Desde {{ espacio.edadMinima }} años</span>
+            </div>
+            <div class="gb-alerta pendiente mb-3" *ngIf="espacio.requiereAprobacion && espacio.modoReserva !== 'NO_RESERVABLE'">
+              <i class="bi bi-info-circle texto-amarillo"></i><span>La reserva requiere aprobación de la administración.</span>
+            </div>
+            <div class="gb-alerta mb-3" *ngIf="!espacio.requiereAprobacion && espacio.modoReserva !== 'NO_RESERVABLE'">
+              <i class="bi bi-lightning-charge texto-verde"></i><span>Se confirma de inmediato.</span>
+            </div>
+            <div class="small mb-3" *ngIf="espacio.reglas">
+              <div class="etiqueta-mayuscula mb-1">Reglas de uso</div>
+              <div class="texto-tenue">{{ espacio.reglas }}</div>
+            </div>
+            <div class="mt-auto">
+              <a class="btn-gb w-100" *ngIf="espacio.modoReserva !== 'NO_RESERVABLE' && !espacio.enMantenimiento"
+                [routerLink]="['/reservar', espacio.id]">
+                <i class="bi" [class.bi-calendar-plus]="espacio.modoReserva === 'EXCLUSIVO'"
+                  [class.bi-person-plus]="espacio.modoReserva === 'POR_CUPO'"></i>
+                {{ espacio.modoReserva === 'POR_CUPO' ? 'Reservar cupo' : 'Reservar espacio' }}
+              </a>
+              <div class="no-disponible" *ngIf="espacio.enMantenimiento"><i class="bi bi-slash-circle"></i>No disponible por mantenimiento</div>
+              <div class="no-disponible" *ngIf="espacio.modoReserva === 'NO_RESERVABLE' && !espacio.enMantenimiento">
+                <i class="bi bi-tree"></i>De uso libre, no necesita reserva
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </ng-container>
+</div>

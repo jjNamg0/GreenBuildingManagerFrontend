@@ -1,0 +1,81 @@
+<div class="container-xxl py-4 px-3 px-lg-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <div class="sobretitulo mb-2">Pensado para ti</div>
+      <h1 class="titulo-pagina">Te recomendamos</h1>
+      <p class="texto-tenue mb-0">Según tus reservas, tu conjunto y los eventos que vienen.</p>
+    </div>
+    <div class="gb-caja px-3 py-2 small d-flex align-items-center gap-2" *ngIf="!cargando && !sinRecomendaciones">
+      <span class="texto-tenue">{{ recomendaciones.espacios.length }} espacios · {{ recomendaciones.eventos.length }} eventos</span>
+      <span class="gb-icono icono-chico"><i class="bi bi-stars"></i></span>
+    </div>
+  </div>
+
+  <div class="text-center texto-tenue py-5" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Buscando recomendaciones...
+  </div>
+  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+
+  <ng-container *ngIf="!cargando && !error">
+    <section class="mb-5" *ngIf="recomendaciones.espacios.length > 0">
+      <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-3">
+        <h2 class="h3 mb-0 titulo-seccion">Espacios que te pueden gustar</h2>
+        <span class="small texto-tenue">Áreas comunes de tu conjunto</span>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-xl-4" *ngFor="let r of recomendaciones.espacios">
+          <article class="gb-tarjeta tarjeta h-100">
+            <div class="foto">
+              <img class="imagen-tarjeta" [src]="imagenDe(r.espacio)" [alt]="r.espacio.nombre" (error)="usarImagenRespaldo($event)" />
+              <span class="gb-insignia sobre-imagen arriba">{{ etiquetaTipo(r.espacio.tipo) }}</span>
+            </div>
+            <div class="p-4 d-flex flex-column flex-grow-1">
+              <span class="gb-insignia exito align-self-start mb-2"><i class="bi bi-lightbulb"></i>{{ r.razon }}</span>
+              <h3 class="h5 mb-2">{{ r.espacio.nombre }}</h3>
+              <p class="small texto-tenue mb-3" *ngIf="r.espacio.reglas">{{ r.espacio.reglas }}</p>
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+                <span class="small texto-tenue"><i class="bi bi-clock me-1"></i>{{ hora(r.espacio.horaApertura) }} - {{ hora(r.espacio.horaCierre) }}</span>
+                <a class="btn-gb btn-gb-sm" [routerLink]="['/reservar', r.espacio.id]" *ngIf="r.espacio.modoReserva !== 'NO_RESERVABLE'">Reservar</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-5" *ngIf="recomendaciones.eventos.length > 0">
+      <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-3">
+        <h2 class="h3 mb-0 titulo-seccion">Eventos que te pueden interesar</h2>
+        <span class="small texto-tenue">Actividades programadas en tu conjunto</span>
+      </div>
+      <div class="d-flex flex-column gap-3">
+        <article class="gb-tarjeta evento" *ngFor="let r of recomendaciones.eventos">
+          <div class="fecha">
+            <div class="etiqueta-mayuscula texto-verde">{{ r.evento.inicio | date: 'EEEE' }}</div>
+            <div class="dia numeros">{{ r.evento.inicio | date: 'dd' }}</div>
+            <div class="small texto-tenue">{{ r.evento.inicio | date: 'MMMM' }}</div>
+          </div>
+          <div class="flex-grow-1">
+            <span class="gb-insignia exito mb-2"><i class="bi bi-lightbulb"></i>{{ r.razon }}</span>
+            <h3 class="h5 mb-1">{{ r.evento.nombre }}</h3>
+            <div class="small texto-tenue d-flex flex-wrap gap-3">
+              <span><i class="bi bi-geo-alt me-1"></i>{{ r.evento.espacioNombre }}</span>
+              <span><i class="bi bi-clock me-1"></i>{{ r.evento.inicio | date: 'h:mm a' }} – {{ r.evento.fin | date: 'h:mm a' }}</span>
+            </div>
+          </div>
+          <a class="btn-gb-borde" routerLink="/eventos">Ver evento<i class="bi bi-arrow-right"></i></a>
+        </article>
+      </div>
+    </section>
+
+    <section class="gb-tarjeta vacio p-4" *ngIf="sinRecomendaciones">
+      <span class="gb-icono gb-icono-grande"><i class="bi bi-magic"></i></span>
+      <div class="flex-grow-1">
+        <div class="etiqueta-mayuscula mb-1">Para empezar</div>
+        <h2 class="h5 mb-1">Todavía no tenemos recomendaciones para ti. Reserva un espacio para empezar</h2>
+        <p class="small texto-tenue mb-0">A medida que uses las zonas comunes y participes en los eventos, ajustaremos esta página a tus gustos.</p>
+      </div>
+      <a class="btn-gb" routerLink="/mi-conjunto"><i class="bi bi-grid"></i>Ver espacios</a>
+    </section>
+  </ng-container>
+</div>
