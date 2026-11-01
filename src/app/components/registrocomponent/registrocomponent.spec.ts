@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Registrocomponent } from './registrocomponent';
 
 describe('Registrocomponent', () => {
@@ -8,12 +7,12 @@ describe('Registrocomponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Registrocomponent],
+      declarations: [Registrocomponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Registrocomponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

@@ -13,6 +13,7 @@ const ERRORES_GOOGLE: Record<string, string> = {
 
 @Component({
   selector: 'app-logincomponent',
+  standalone: false,
   templateUrl: './logincomponent.html',
   styleUrl: './logincomponent.css',
 })

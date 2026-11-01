@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Verificarcodigocomponent } from './verificarcodigocomponent';
 
 describe('Verificarcodigocomponent', () => {
@@ -8,12 +7,12 @@ describe('Verificarcodigocomponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Verificarcodigocomponent],
+      declarations: [Verificarcodigocomponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Verificarcodigocomponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

@@ -1,0 +1,237 @@
+<div class="p-3 p-lg-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <div class="sobretitulo mb-2">Residentes y administración</div>
+      <h1 class="titulo-pagina">Usuarios</h1>
+      <p class="texto-tenue mb-0">Activa o desactiva cuentas y asigna a cada residente su unidad</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="gb-insignia pendiente punto insignia-boton" type="button" *ngIf="solicitudes > 0" (click)="verSolicitudes()">
+        {{ solicitudes }} {{ solicitudes === 1 ? 'solicitud' : 'solicitudes' }} de conjunto
+      </button>
+      <span class="gb-insignia pendiente punto" *ngIf="sinVerificar > 0">{{ sinVerificar }} sin verificar</span>
+      <span class="gb-insignia info punto" *ngIf="sinUnidad > 0">{{ sinUnidad }} residentes sin conjunto</span>
+    </div>
+  </div>
+
+  <div class="gb-tarjeta p-3 mb-3">
+    <div class="row g-2">
+      <div class="col-md-8 position-relative">
+        <i class="bi bi-search icono-buscador"></i>
+        <input class="form-control ps-5" type="search" placeholder="Buscar por nombre, correo o conjunto"
+          aria-label="Buscar usuario" [(ngModel)]="busqueda" (ngModelChange)="alFiltrar()" />
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" aria-label="Filtrar por rol" [(ngModel)]="rol" (ngModelChange)="alFiltrar()">
+          <option value="">Todos los roles</option>
+          <option value="RESIDENTE">Residentes</option>
+          <option value="ADMIN">Administradores</option>
+          <option value="SOLICITUD">Con solicitud de conjunto</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center texto-tenue py-4" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando usuarios...
+  </div>
+  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+
+  <div class="gb-tarjeta overflow-hidden" *ngIf="!cargando && !error">
+    <div class="table-responsive">
+      <table class="gb-tabla">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Rol</th>
+            <th>Unidad</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of paginados">
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <span class="avatar">{{ iniciales(u) }}</span>
+                <div>
+                  <div class="fw-semibold">{{ u.nombre }} {{ u.apellido }} <span class="gb-insignia info ms-1" *ngIf="esYo(u)">Tú</span></div>
+                  <div class="small texto-tenue">{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ u.rol === 'ADMIN' ? 'Administrador' : 'Residente' }}</td>
+            <td class="small">
+              <ng-container *ngIf="u.unidadDescripcion">
+                <div>{{ u.unidadDescripcion }}</div>
+                <div class="texto-tenue">{{ u.conjuntoNombre }}</div>
+              </ng-container>
+              <ng-container *ngIf="!u.unidadDescripcion && u.conjuntoSolicitadoId">
+                <div class="texto-amarillo">Solicita entrar a</div>
+                <div class="texto-tenue">{{ u.conjuntoSolicitadoNombre }}</div>
+              </ng-container>
+              <span class="texto-amarillo" *ngIf="!u.unidadDescripcion && !u.conjuntoSolicitadoId && u.rol === 'RESIDENTE'">Sin conjunto</span>
+              <span class="texto-bajo" *ngIf="u.rol === 'ADMIN'">No aplica</span>
+            </td>
+            <td>
+              <div class="d-flex flex-wrap gap-1">
+                <span class="gb-insignia punto" [class.exito]="u.activo" [class.neutro]="!u.activo">{{ u.activo ? 'Activo' : 'Desactivado' }}</span>
+                <span class="gb-insignia pendiente" *ngIf="!u.verificado">Sin verificar</span>
+              </div>
+            </td>
+            <td class="text-end text-nowrap">
+              <ng-container *ngIf="u.rol === 'RESIDENTE'">
+                <ng-container *ngIf="u.conjuntoSolicitadoId; else sinSolicitud">
+                  <button class="btn-gb-fantasma btn-gb-sm texto-verde" type="button" (click)="abrirAsignacion(u)">
+                    <i class="bi bi-check2-circle"></i>Aceptar
+                  </button>
+                  <button class="btn-gb-fantasma btn-gb-sm texto-rojo" type="button" (click)="abrirRechazo(u)">
+                    <i class="bi bi-x-circle"></i>Rechazar
+                  </button>
+                </ng-container>
+                <ng-template #sinSolicitud>
+                  <button class="btn-gb-fantasma btn-gb-sm texto-verde" type="button" (click)="abrirAsignacion(u)">
+                    <i class="bi bi-house-door"></i>Unidad
+                  </button>
+                </ng-template>
+              </ng-container>
+              <button class="btn-gb-fantasma btn-gb-sm" type="button" *ngIf="!esYo(u)" (click)="pedirConfirmacion(u)"
+                [class.texto-rojo]="u.activo" [class.texto-verde]="!u.activo">{{ u.activo ? 'Desactivar' : 'Activar' }}</button>
+            </td>
+          </tr>
+          <tr *ngIf="filtrados.length === 0">
+            <td colspan="5" class="text-center texto-tenue py-4">No hay usuarios con esos filtros.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gb-paginacion" *ngIf="filtrados.length > 0">
+      <span>Mostrando {{ paginados.length }} de {{ filtrados.length }} usuarios</span>
+      <div class="d-flex gap-1" *ngIf="totalPaginas > 1">
+        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina === 1" (click)="pagina = pagina - 1" aria-label="Página anterior"><i class="bi bi-chevron-left"></i></button>
+        <button *ngFor="let p of paginas" type="button" class="btn-gb-sm" [class.btn-gb]="p === pagina" [class.btn-gb-fantasma]="p !== pagina" (click)="pagina = p">{{ p }}</button>
+        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina === totalPaginas" (click)="pagina = pagina + 1" aria-label="Página siguiente"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="mostrarConfirmacion && usuarioPendiente">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body p-4">
+          <div class="d-flex gap-3">
+            <span class="gb-icono" [class.icono-peligro]="usuarioPendiente.activo">
+              <i class="bi" [class.bi-person-x]="usuarioPendiente.activo" [class.bi-person-check]="!usuarioPendiente.activo"></i>
+            </span>
+            <div>
+              <h5 class="mb-2">{{ usuarioPendiente.activo ? 'Desactivar usuario' : 'Activar usuario' }}</h5>
+              <p class="mb-2" *ngIf="usuarioPendiente.activo">
+                ¿Seguro que quieres desactivar a <strong>{{ usuarioPendiente.nombre }} {{ usuarioPendiente.apellido }}</strong>? No podrá
+                iniciar sesión hasta que lo actives de nuevo.
+              </p>
+              <p class="mb-2" *ngIf="!usuarioPendiente.activo">
+                ¿Seguro que quieres activar a <strong>{{ usuarioPendiente.nombre }} {{ usuarioPendiente.apellido }}</strong>? Podrá volver a iniciar sesión.
+              </p>
+              <p class="mb-0 small texto-tenue">Puedes cambiarlo de nuevo cuando quieras.</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-borde" (click)="cancelarConfirmacion()">Volver</button>
+          <button type="button" [disabled]="procesando" (click)="confirmarCambioEstado()"
+            [class.btn-gb-peligro-lleno]="usuarioPendiente.activo" [class.btn-gb]="!usuarioPendiente.activo">
+            {{ usuarioPendiente.activo ? 'Sí, desactivar' : 'Sí, activar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>
+
+<ng-container *ngIf="mostrarAsignacion && usuarioAsignando">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title d-flex align-items-center gap-2">
+            <span class="gb-icono"><i class="bi bi-building"></i></span>
+            {{ aceptando ? 'Aceptar a' : 'Unidad de' }} {{ usuarioAsignando.nombre }} {{ usuarioAsignando.apellido }}
+          </h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrarAsignacion()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="gb-caja p-3 mb-3" *ngIf="aceptando">
+            Pidió entrar a <strong>{{ usuarioAsignando.conjuntoSolicitadoNombre }}</strong>. Escoge su unidad para aceptar la
+            solicitud; le avisaremos por correo.
+          </div>
+          <div class="gb-caja p-3 mb-3" *ngIf="usuarioAsignando.unidadDescripcion">
+            <div class="etiqueta-mayuscula mb-1">Asignación actual</div>
+            <div>{{ usuarioAsignando.unidadDescripcion }} en {{ usuarioAsignando.conjuntoNombre }}</div>
+          </div>
+          <div class="mb-3">
+            <label for="asignar-conjunto" class="form-label">Conjunto residencial</label>
+            <select id="asignar-conjunto" class="form-select" [(ngModel)]="conjuntoElegido" (ngModelChange)="cargarUnidades(true)"
+              [disabled]="aceptando">
+              <option [ngValue]="0">Escoge un conjunto</option>
+              <option *ngFor="let c of conjuntos" [ngValue]="c.id">{{ c.nombre }} · {{ c.municipio }}</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label for="asignar-unidad" class="form-label">Unidad asignada</label>
+            <select id="asignar-unidad" class="form-select" [(ngModel)]="unidadElegida" [disabled]="!conjuntoElegido">
+              <option [ngValue]="0">Escoge una unidad</option>
+              <option *ngFor="let u of unidades" [ngValue]="u.id">{{ u.descripcion }}</option>
+            </select>
+            <div class="form-text" *ngIf="conjuntoElegido && unidades.length === 0">
+              Este conjunto no tiene unidades activas. Agrégalas desde Conjuntos.
+            </div>
+          </div>
+          <div class="gb-alerta peligro" *ngIf="errorAsignacion"><i class="bi bi-exclamation-circle"></i><span>{{ errorAsignacion }}</span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-fantasma texto-rojo me-auto" *ngIf="usuarioAsignando.unidadId"
+            [disabled]="guardandoAsignacion" (click)="guardarAsignacion(true)">Quitar unidad</button>
+          <button type="button" class="btn-gb-borde" (click)="cerrarAsignacion()">Volver</button>
+          <button type="button" class="btn-gb" [disabled]="guardandoAsignacion" (click)="guardarAsignacion(false)">
+            {{ aceptando ? 'Aceptar solicitud' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>
+
+<ng-container *ngIf="mostrarRechazo && usuarioRechazando">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title d-flex align-items-center gap-2">
+            <span class="gb-icono icono-peligro"><i class="bi bi-x-circle"></i></span>
+            Rechazar a {{ usuarioRechazando.nombre }} {{ usuarioRechazando.apellido }}
+          </h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrarRechazo()"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            No aceptarás su solicitud para entrar a <strong>{{ usuarioRechazando.conjuntoSolicitadoNombre }}</strong>. Podrá
+            pedir entrar a otro conjunto.
+          </p>
+          <label for="motivo-rechazo" class="form-label">Motivo</label>
+          <textarea id="motivo-rechazo" class="form-control" rows="3" maxlength="500" [(ngModel)]="motivoRechazo"
+            (ngModelChange)="errorRechazo = ''" placeholder="Le llegará al residente por correo"></textarea>
+          <div class="gb-alerta peligro mt-3" *ngIf="errorRechazo"><i class="bi bi-exclamation-circle"></i><span>{{ errorRechazo }}</span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-borde" (click)="cerrarRechazo()">Volver</button>
+          <button type="button" class="btn-gb-peligro-lleno" [disabled]="rechazando" (click)="confirmarRechazo()">Rechazar solicitud</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>

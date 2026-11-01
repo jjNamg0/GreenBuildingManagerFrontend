@@ -1,0 +1,26 @@
+.modos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.5rem;
+}
+
+.modo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--gb-borde);
+  border-radius: 8px;
+  background: var(--gb-campo);
+  cursor: pointer;
+}
+
+.modo.activo {
+  border-color: var(--gb-verde);
+  background: var(--gb-verde-tenue);
+}
+
+.modo .form-check-input {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}

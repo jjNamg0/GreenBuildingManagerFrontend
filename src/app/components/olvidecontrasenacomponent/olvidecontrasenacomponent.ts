@@ -3,14 +3,12 @@ import { Router } from '@angular/router';
 import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
 import { soloDigitos, validarContrasena, validarEmail } from '../../services/validaciones';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-olvidecontrasenacomponent',
+  standalone: false,
   templateUrl: './olvidecontrasenacomponent.html',
   styleUrl: './olvidecontrasenacomponent.css',
-  imports: [FormsModule,CommonModule],
 })
 export class Olvidecontrasenacomponent {
   paso: 'email' | 'codigo' = 'email';
@@ -66,17 +64,15 @@ export class Olvidecontrasenacomponent {
       return;
     }
     this.cargando = true;
-    this.auth
-      .restablecerContrasena(this.email, this.codigo, this.password)
-      .subscribe((resultado) => {
-        this.cargando = false;
-        if (!resultado.exito) {
-          this.error = resultado.mensaje;
-          return;
-        }
-        this.toastService.mostrar(resultado.datos.mensaje);
-        this.router.navigate(['/login']);
-      });
+    this.auth.restablecerContrasena(this.email, this.codigo, this.password).subscribe((resultado) => {
+      this.cargando = false;
+      if (!resultado.exito) {
+        this.error = resultado.mensaje;
+        return;
+      }
+      this.toastService.mostrar(resultado.datos.mensaje);
+      this.router.navigate(['/login']);
+    });
   }
 
   volverAlEmail(): void {

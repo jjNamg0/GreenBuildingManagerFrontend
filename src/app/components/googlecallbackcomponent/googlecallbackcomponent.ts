@@ -5,6 +5,7 @@ import { Authservice } from '../../services/authservice';
 
 @Component({
   selector: 'app-googlecallbackcomponent',
+  standalone: false,
   templateUrl: './googlecallbackcomponent.html',
   styleUrl: './googlecallbackcomponent.css',
 })

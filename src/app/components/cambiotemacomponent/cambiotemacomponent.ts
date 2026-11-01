@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {Temaservice} from '../../services/temaservice';
+import { Component } from '@angular/core';
+import { Temaservice } from '../../services/temaservice';
 
 @Component({
   selector: 'app-cambiotemacomponent',
@@ -10,8 +10,7 @@ import {Temaservice} from '../../services/temaservice';
 export class Cambiotemacomponent {
   girando = false;
 
-  constructor(public tema: Temaservice) {
-  }
+  constructor(public tema: Temaservice) {}
 
   alternar(): void {
     this.girando = true;

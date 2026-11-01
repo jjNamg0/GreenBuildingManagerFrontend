@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {Router} from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-footercomponent',
@@ -8,8 +8,7 @@ import {Router} from '@angular/router';
   styleUrl: './footercomponent.css',
 })
 export class Footercomponent {
-  constructor(private router: Router) {
-  }
+  constructor(private router: Router) {}
 
   get mostrar(): boolean {
     const ruta = this.router.url.split('?')[0];

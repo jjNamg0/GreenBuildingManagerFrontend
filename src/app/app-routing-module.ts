@@ -14,8 +14,13 @@ import { Reservarespaciocomponent } from './components/reservarespaciocomponent/
 import { Misreservascomponent } from './components/misreservascomponent/misreservascomponent';
 import { Eventoscomponent } from './components/eventoscomponent/eventoscomponent';
 import { Paraticomponent } from './components/paraticomponent/paraticomponent';
+import { Adminconjuntoscomponent } from './components/adminconjuntoscomponent/adminconjuntoscomponent';
+import { Conjuntoformcomponent } from './components/conjuntoformcomponent/conjuntoformcomponent';
+import { Conjuntodetallecomponent } from './components/conjuntodetallecomponent/conjuntodetallecomponent';
+import { Adminusuarioscomponent } from './components/adminusuarioscomponent/adminusuarioscomponent';
 import { Noencontradocomponent } from './components/noencontradocomponent/noencontradocomponent';
 import { authguard } from './guards/authguard';
+import { adminguard } from './guards/adminguard';
 import { conjuntoguard } from './guards/conjuntoguard';
 
 const routes: Routes = [
@@ -98,6 +103,36 @@ const routes: Routes = [
     component: Paraticomponent,
     canActivate: [authguard, conjuntoguard],
     title: 'Green Building Manager — Para ti',
+  },
+  {
+    path: 'admin/conjuntos',
+    component: Adminconjuntoscomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Conjuntos',
+  },
+  {
+    path: 'admin/conjuntos/nuevo',
+    component: Conjuntoformcomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Nuevo conjunto',
+  },
+  {
+    path: 'admin/conjuntos/:id/editar',
+    component: Conjuntoformcomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Editar conjunto',
+  },
+  {
+    path: 'admin/conjuntos/:id',
+    component: Conjuntodetallecomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Detalle del conjunto',
+  },
+  {
+    path: 'admin/usuarios',
+    component: Adminusuarioscomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Usuarios',
   },
   {
     path: '**',

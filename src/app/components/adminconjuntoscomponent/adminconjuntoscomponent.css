@@ -1,0 +1,13 @@
+.icono-buscador {
+  position: absolute;
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gb-texto-bajo);
+  z-index: 1;
+}
+
+.icono-peligro {
+  background: rgba(240, 97, 109, 0.15);
+  color: var(--gb-rojo);
+}

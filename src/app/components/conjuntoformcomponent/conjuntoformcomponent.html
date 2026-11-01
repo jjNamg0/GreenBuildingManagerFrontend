@@ -1,0 +1,103 @@
+<div class="p-3 p-lg-4">
+  <a class="small d-inline-flex align-items-center gap-2 mb-3" routerLink="/admin/conjuntos">
+    <i class="bi bi-arrow-left"></i>Volver a conjuntos
+  </a>
+  <div class="mb-4">
+    <div class="sobretitulo mb-2">{{ idEditando ? 'Editando conjunto' : 'Creando conjunto en Cundinamarca' }}</div>
+    <h1 class="titulo-pagina">{{ titulo }}</h1>
+  </div>
+
+  <div class="text-center texto-tenue py-3" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando conjunto...
+  </div>
+
+  <div class="row g-4">
+    <div class="col-xl-6">
+      <form class="gb-tarjeta p-4" (ngSubmit)="guardar()" novalidate>
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre del conjunto <span class="texto-verde">*</span></label>
+          <input id="nombre" name="nombre" class="form-control" maxlength="150" placeholder="Conjunto Residencial Bosque Alto"
+            [(ngModel)]="conjunto.nombre" (ngModelChange)="error = ''" />
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label for="tipo" class="form-label">Tipo <span class="texto-verde">*</span></label>
+            <select id="tipo" name="tipo" class="form-select" [(ngModel)]="conjunto.tipo">
+              <option *ngFor="let t of tiposConjunto" [value]="t.valor">{{ t.etiqueta }}</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label for="municipio" class="form-label">Municipio <span class="texto-verde">*</span></label>
+            <select id="municipio" name="municipio" class="form-select" [(ngModel)]="conjunto.municipio" (ngModelChange)="error = ''">
+              <option value="">Escoge uno</option>
+              <option *ngFor="let m of municipios" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="direccion" class="form-label">Dirección <span class="texto-verde">*</span></label>
+          <div class="input-group">
+            <input id="direccion" name="direccion" class="form-control" maxlength="200" placeholder="Carrera 7 Este # 12-40"
+              [(ngModel)]="conjunto.direccion" (ngModelChange)="error = ''" />
+            <button class="btn-gb-borde texto-verde" type="button" (click)="buscarDireccion()" [disabled]="buscandoDireccion">
+              <span class="spinner-border spinner-border-sm" *ngIf="buscandoDireccion"></span>
+              <i class="bi bi-search" *ngIf="!buscandoDireccion"></i>Buscar en el mapa
+            </button>
+          </div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label for="telefono" class="form-label">Teléfono <span class="texto-tenue">(opcional)</span></label>
+            <input id="telefono" name="telefono" class="form-control" maxlength="20" placeholder="+57 601 861 9000"
+              [(ngModel)]="conjunto.telefono" />
+          </div>
+          <div class="col-sm-6">
+            <label for="imagen" class="form-label">Imagen <span class="texto-tenue">(opcional)</span></label>
+            <input id="imagen" name="imagen" class="form-control" placeholder="bosque-alto.webp" [(ngModel)]="conjunto.imagen" />
+            <div class="form-text">Nombre del archivo dentro de la carpeta assets/images.</div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="descripcion" class="form-label">Descripción <span class="texto-tenue">(opcional)</span></label>
+          <textarea id="descripcion" name="descripcion" class="form-control" rows="3"
+            placeholder="Número de torres o manzanas, zonas comunes, áreas verdes..." [(ngModel)]="conjunto.descripcion"></textarea>
+        </div>
+
+        <div class="gb-caja d-flex justify-content-between align-items-center p-3 mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt texto-verde"></i>
+            <div>
+              <div class="etiqueta-mayuscula">Ubicación en el mapa</div>
+              <div class="small numeros texto-verde" *ngIf="conjunto.latitud !== null">{{ conjunto.latitud }}, {{ conjunto.longitud }}</div>
+              <div class="small texto-rojo" *ngIf="conjunto.latitud === null">Sin marcar todavía</div>
+            </div>
+          </div>
+          <span class="gb-insignia punto" [class.exito]="conjunto.latitud !== null" [class.pendiente]="conjunto.latitud === null">
+            {{ conjunto.latitud !== null ? 'Marcada' : 'Pendiente' }}
+          </span>
+        </div>
+
+        <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+
+        <div class="d-flex justify-content-end gap-2">
+          <a class="btn-gb-borde" routerLink="/admin/conjuntos">Cancelar</a>
+          <button class="btn-gb" type="submit" [disabled]="guardando || cargando">
+            <span class="spinner-border spinner-border-sm" *ngIf="guardando"></span>
+            <i class="bi bi-plus-circle" *ngIf="!guardando && !idEditando"></i>
+            {{ idEditando ? 'Guardar cambios' : 'Crear conjunto' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="gb-tarjeta overflow-hidden h-100 d-flex flex-column">
+        <div class="p-3 border-bottom">
+          <div class="fw-semibold"><i class="bi bi-geo-alt texto-verde me-2"></i>Ubicación del conjunto</div>
+          <div class="small texto-tenue">Haz clic en el mapa para marcar dónde queda la entrada del conjunto</div>
+        </div>
+        <div #contenedorMapa class="mapa-formulario flex-grow-1" role="region" aria-label="Mapa para ubicar el conjunto"></div>
+      </div>
+    </div>
+  </div>
+</div>
