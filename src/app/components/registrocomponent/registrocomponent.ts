@@ -1,7 +1,4 @@
-
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
@@ -11,10 +8,9 @@ import { validarContrasena, validarEmail, validarNombre } from '../../services/v
 
 @Component({
   selector: 'app-registrocomponent',
-  standalone: true,
+  standalone: false,
   templateUrl: './registrocomponent.html',
   styleUrl: './registrocomponent.css',
-  imports: [CommonModule, FormsModule],
 })
 export class Registrocomponent implements OnInit {
   nombre = '';
@@ -44,15 +40,12 @@ export class Registrocomponent implements OnInit {
   cargarConjuntos(): void {
     this.cargandoConjuntos = true;
     this.errorConjuntos = '';
-
     this.conjuntoService.obtenerOpciones().subscribe((resultado) => {
       this.cargandoConjuntos = false;
-
       if (!resultado.exito) {
         this.errorConjuntos = resultado.mensaje;
         return;
       }
-
       this.opciones = resultado.datos;
     });
   }
@@ -68,34 +61,22 @@ export class Registrocomponent implements OnInit {
       validarEmail(this.email) ||
       (this.conjuntoId ? '' : 'Escoge el conjunto al que quieres entrar.') ||
       validarContrasena(this.password, this.confirmacion);
-
     if (this.error) {
       return;
     }
 
     this.cargando = true;
     const email = this.email.trim().toLowerCase();
-
     this.auth
-      .registro(
-        this.nombre.trim(),
-        this.apellido.trim(),
-        email,
-        this.password,
-        Number(this.conjuntoId),
-      )
+      .registro(this.nombre.trim(), this.apellido.trim(), email, this.password, Number(this.conjuntoId))
       .subscribe((resultado) => {
         this.cargando = false;
-
         if (!resultado.exito) {
           this.error = resultado.mensaje;
           return;
         }
-
         this.toastService.mostrar('Te enviamos un código para verificar tu cuenta.');
-        this.router.navigate(['/verificar'], {
-          queryParams: { email, modo: 'cuenta' },
-        });
+        this.router.navigate(['/verificar'], { queryParams: { email, modo: 'cuenta' } });
       });
   }
 }

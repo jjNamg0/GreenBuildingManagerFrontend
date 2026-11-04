@@ -1,0 +1,32 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gb-verde-tenue);
+  color: var(--gb-verde);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.icono-buscador {
+  position: absolute;
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gb-texto-bajo);
+  z-index: 1;
+}
+
+.icono-peligro {
+  background: rgba(240, 97, 109, 0.15);
+  color: var(--gb-rojo);
+}
+
+.insignia-boton {
+  border: 0;
+  cursor: pointer;
+}

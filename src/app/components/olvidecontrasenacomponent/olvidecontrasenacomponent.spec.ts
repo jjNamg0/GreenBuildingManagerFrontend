@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Olvidecontrasenacomponent } from './olvidecontrasenacomponent';
 
 describe('Olvidecontrasenacomponent', () => {
@@ -8,12 +7,12 @@ describe('Olvidecontrasenacomponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Olvidecontrasenacomponent],
+      declarations: [Olvidecontrasenacomponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Olvidecontrasenacomponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Googlecallbackcomponent } from './googlecallbackcomponent';
 
 describe('Googlecallbackcomponent', () => {
@@ -8,12 +7,12 @@ describe('Googlecallbackcomponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Googlecallbackcomponent],
+      declarations: [Googlecallbackcomponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Googlecallbackcomponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

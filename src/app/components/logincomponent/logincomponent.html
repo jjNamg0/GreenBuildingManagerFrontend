@@ -1,8 +1,56 @@
 <div class="gb-auth">
-  <div class="gb-auth-tarjeta text-center">
-    <span class="gb-icono gb-icono-grande mb-3"><i class="bi bi-google"></i></span>
-    <h1 class="h5 mb-2">Entrando con Google</h1>
-    <p class="texto-tenue mb-3">Espera un momento, por favor.</p>
-    <span class="spinner-border spinner-border-sm texto-verde"></span>
+  <div class="gb-auth-tarjeta">
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3"><i class="bi bi-buildings"></i></span>
+      <h1 class="h4 mb-1">Iniciar sesión</h1>
+      <p class="texto-tenue mb-0">Entra para ver tu conjunto y sus espacios</p>
+    </div>
+
+    <div class="gb-alerta peligro mb-3" *ngIf="error">
+      <i class="bi bi-exclamation-circle"></i><span>{{ error }}</span>
+    </div>
+
+    <form (ngSubmit)="ingresar()" novalidate>
+      <div class="mb-3">
+        <label for="correo" class="form-label">Correo electrónico</label>
+        <input id="correo" name="correo" type="email" class="form-control" placeholder="nombre@correo.com"
+          autocomplete="email" [(ngModel)]="email" (ngModelChange)="error = ''" />
+      </div>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-baseline">
+          <label for="contrasena" class="form-label">Contraseña</label>
+          <a class="small" routerLink="/olvide-contrasena">Olvidé mi contraseña</a>
+        </div>
+        <div class="input-group">
+          <input id="contrasena" name="contrasena" class="form-control" autocomplete="current-password"
+            [type]="verContrasena ? 'text' : 'password'" [(ngModel)]="password" (ngModelChange)="error = ''" />
+          <button class="btn-gb-borde" type="button"
+            [attr.aria-label]="verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            (click)="verContrasena = !verContrasena">
+            <i class="bi" [class.bi-eye]="!verContrasena" [class.bi-eye-slash]="verContrasena"></i>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando">
+        <span *ngIf="cargando" class="spinner-border spinner-border-sm"></span>
+        {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+        <i class="bi bi-arrow-right" *ngIf="!cargando"></i>
+      </button>
+    </form>
+
+    <div class="gb-separador my-3"><span>o</span></div>
+    <button class="btn-gb-borde w-100 py-2" type="button" (click)="entrarConGoogle()">
+      <i class="bi bi-google"></i>Continuar con Google
+    </button>
+
+    <hr class="my-4" />
+    <p class="text-center small mb-2 texto-tenue">
+      ¿No tienes cuenta? <a routerLink="/registro">Regístrate como residente</a>
+    </p>
+    <p class="text-center small mb-0 texto-tenue">
+      ¿Eres de la administración? <a routerLink="/solicitar-admin">Solicita una cuenta de administrador</a>
+    </p>
   </div>
 </div>

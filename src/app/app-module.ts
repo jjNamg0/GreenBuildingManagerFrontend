@@ -26,6 +26,11 @@ import { Reservarespaciocomponent } from './components/reservarespaciocomponent/
 import { Misreservascomponent } from './components/misreservascomponent/misreservascomponent';
 import { Eventoscomponent } from './components/eventoscomponent/eventoscomponent';
 import { Paraticomponent } from './components/paraticomponent/paraticomponent';
+import { Adminconjuntoscomponent } from './components/adminconjuntoscomponent/adminconjuntoscomponent';
+import { Conjuntodetallecomponent } from './components/conjuntodetallecomponent/conjuntodetallecomponent';
+import { Conjuntoformcomponent } from './components/conjuntoformcomponent/conjuntoformcomponent';
+import { Espacioformcomponent } from './components/espacioformcomponent/espacioformcomponent';
+import { Adminusuarioscomponent } from './components/adminusuarioscomponent/adminusuarioscomponent';
 import { Authinterceptor } from './interceptors/authinterceptor';
 
 registerLocaleData(localeEsCo);
@@ -41,17 +46,6 @@ registerLocaleData(localeEsCo);
     Noencontradocomponent,
     Terminoscomponent,
     Privacidadcomponent,
-    Miconjuntocomponent,
-    Reservarespaciocomponent,
-    Misreservascomponent,
-    Eventoscomponent,
-    Paraticomponent,
-  ],
-  imports: [
-    BrowserModule,
-    CommonModule,
-    FormsModule,
-    AppRoutingModule,
     Logincomponent,
     Registrocomponent,
     Verificarcodigocomponent,
@@ -59,7 +53,18 @@ registerLocaleData(localeEsCo);
     Solicitaradmincomponent,
     Aprobaradmincomponent,
     Googlecallbackcomponent,
+    Miconjuntocomponent,
+    Reservarespaciocomponent,
+    Misreservascomponent,
+    Eventoscomponent,
+    Paraticomponent,
+    Adminconjuntoscomponent,
+    Conjuntodetallecomponent,
+    Conjuntoformcomponent,
+    Espacioformcomponent,
+    Adminusuarioscomponent,
   ],
+  imports: [BrowserModule, CommonModule, FormsModule, AppRoutingModule],
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),

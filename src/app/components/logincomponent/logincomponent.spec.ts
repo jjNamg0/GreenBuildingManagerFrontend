@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Logincomponent } from './logincomponent';
 
 describe('Logincomponent', () => {
@@ -8,12 +7,12 @@ describe('Logincomponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Logincomponent],
+      declarations: [Logincomponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Logincomponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

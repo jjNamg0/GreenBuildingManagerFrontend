@@ -3,14 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
 import { soloDigitos } from '../../services/validaciones';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-verificarcodigocomponent',
+  standalone: false,
   templateUrl: './verificarcodigocomponent.html',
   styleUrl: './verificarcodigocomponent.css',
-  imports: [FormsModule, CommonModule],
 })
 export class Verificarcodigocomponent implements OnInit, OnDestroy {
   email = '';
