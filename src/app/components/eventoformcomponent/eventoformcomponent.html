@@ -1,0 +1,114 @@
+<form class="gb-tarjeta" (ngSubmit)="enviar()" novalidate>
+  <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+    <i class="bi bi-calendar-plus texto-verde"></i>
+    <h2 class="h5 mb-0">{{ evento ? 'Editar evento' : 'Nuevo evento comunitario' }}</h2>
+  </div>
+  <div class="p-3 p-lg-4">
+    <div class="row g-3 mb-3">
+      <div class="col-lg-8">
+        <label for="evento-nombre" class="form-label">Nombre del evento <span class="texto-verde">*</span></label>
+        <input id="evento-nombre" name="nombre" class="form-control" maxlength="150" placeholder="Fiesta de Halloween del conjunto"
+          [(ngModel)]="nombre" (ngModelChange)="error = ''" />
+      </div>
+      <div class="col-lg-4">
+        <label for="evento-categoria" class="form-label">Categoría</label>
+        <select id="evento-categoria" name="categoria" class="form-select" [(ngModel)]="categoria" (ngModelChange)="actualizarSugerencia()">
+          <option *ngFor="let c of categorias" [value]="c.valor">{{ c.etiqueta }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="evento-descripcion" class="form-label">Descripción</label>
+      <textarea id="evento-descripcion" name="descripcion" rows="2" class="form-control" maxlength="1000"
+        placeholder="Concurso de disfraces, dulces y música para todas las familias." [(ngModel)]="descripcion"></textarea>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label for="evento-conjunto" class="form-label">Conjunto <span class="texto-verde">*</span></label>
+        <select id="evento-conjunto" name="conjuntoId" class="form-select" [(ngModel)]="conjuntoId" (ngModelChange)="cargarEspacios(true)">
+          <option [ngValue]="0">Escoge un conjunto</option>
+          <option *ngFor="let c of conjuntos" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="evento-espacio" class="form-label">Espacio <span class="texto-verde">*</span></label>
+        <select id="evento-espacio" name="espacioId" class="form-select" [(ngModel)]="espacioId" [disabled]="!conjuntoId" (ngModelChange)="error = ''">
+          <option [ngValue]="0">Escoge un espacio</option>
+          <option *ngFor="let e of espacios" [ngValue]="e.id">{{ e.nombre }} (cap. {{ e.capacidad }})</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <label for="evento-fecha" class="form-label">Fecha <span class="texto-verde">*</span></label>
+        <input id="evento-fecha" name="fecha" type="date" class="form-control" [min]="fechaMinima" [(ngModel)]="fecha" (ngModelChange)="error = ''" />
+      </div>
+      <div class="col-6 col-md-4">
+        <label for="evento-inicio" class="form-label">Hora de inicio</label>
+        <input id="evento-inicio" name="horaInicio" type="time" class="form-control" [(ngModel)]="horaInicio" (ngModelChange)="error = ''" />
+      </div>
+      <div class="col-6 col-md-4">
+        <label for="evento-fin" class="form-label">Hora de fin</label>
+        <input id="evento-fin" name="horaFin" type="time" class="form-control" [(ngModel)]="horaFin" (ngModelChange)="error = ''" />
+      </div>
+    </div>
+
+    <div class="gb-caja p-3 mb-3">
+      <div class="form-check form-switch mb-0">
+        <input id="evento-ninos" name="fiestaNinos" class="form-check-input" type="checkbox" role="switch" [(ngModel)]="fiestaNinos" (ngModelChange)="actualizarSugerencia()" />
+        <label for="evento-ninos" class="form-check-label fw-medium"><i class="bi bi-balloon texto-verde me-1"></i>Fiesta para niños</label>
+      </div>
+      <div class="row g-2 mt-2" *ngIf="fiestaNinos">
+        <div class="col-6">
+          <label for="evento-edad-min" class="form-label small">Edad mínima</label>
+          <input id="evento-edad-min" name="edadMinima" type="number" min="0" max="17" class="form-control form-control-sm"
+            [(ngModel)]="edadMinima" (ngModelChange)="error = ''" />
+        </div>
+        <div class="col-6">
+          <label for="evento-edad-max" class="form-label small">Edad máxima</label>
+          <input id="evento-edad-max" name="edadMaxima" type="number" min="0" max="17" class="form-control form-control-sm"
+            [(ngModel)]="edadMaxima" (ngModelChange)="error = ''" />
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="evento-imagen" class="form-label">Imagen <span class="texto-tenue">(opcional)</span></label>
+      <input id="evento-imagen" name="imagen" class="form-control" placeholder="halloween.jpg" [(ngModel)]="imagen" (ngModelChange)="error = ''" />
+      <div class="form-text">Nombre del archivo dentro de la carpeta assets/images.</div>
+    </div>
+
+    <div class="gb-caja p-3 mb-3">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+        <div class="fw-medium"><i class="bi bi-envelope-paper-heart texto-verde me-2"></i>Diseño de la invitación</div>
+        <span class="small texto-tenue" *ngIf="!disenoManual">Sugerido según la categoría</span>
+      </div>
+      <p class="small texto-tenue mb-3">Escoge cómo se verá el correo que les llega a los residentes del conjunto.</p>
+      <app-selectorinvitacioncomponent [diseno]="disenoInvitacion" [datos]="datosVistaPrevia" (disenoChange)="escogerDiseno($event)" />
+      <div class="form-check form-switch mt-3 mb-0" *ngIf="!evento">
+        <input id="evento-enviar-invitacion" name="enviarInvitacion" class="form-check-input" type="checkbox" role="switch" [(ngModel)]="enviarInvitacion" />
+        <label for="evento-enviar-invitacion" class="form-check-label">Enviar la invitación por correo a los residentes al crear el evento</label>
+      </div>
+      <div class="small texto-tenue mt-3" *ngIf="evento"><i class="bi bi-info-circle me-1"></i>Para enviar o reenviar la invitación usa el botón Invitar en la lista de eventos.</div>
+    </div>
+
+    <div class="gb-alerta pendiente mb-3">
+      <i class="bi bi-exclamation-triangle texto-amarillo"></i>
+      <span>El espacio quedará bloqueado para reservas en ese horario.</span>
+    </div>
+    <div class="gb-alerta peligro mb-3" *ngIf="error || errorServidor">
+      <i class="bi bi-exclamation-circle"></i><span>{{ error || errorServidor }}</span>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <button class="btn-gb-borde" type="button" (click)="cancelar.emit()">Cancelar</button>
+      <button class="btn-gb" type="submit" [disabled]="guardando">
+        <span class="spinner-border spinner-border-sm" *ngIf="guardando"></span>
+        <i class="bi bi-calendar-check" *ngIf="!guardando"></i>{{ evento ? 'Guardar cambios' : 'Crear evento' }}
+      </button>
+    </div>
+  </div>
+</form>

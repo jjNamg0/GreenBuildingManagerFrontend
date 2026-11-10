@@ -1,0 +1,153 @@
+<div class="p-3 p-lg-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <div class="sobretitulo mb-2">Gestión de espacios comunes</div>
+      <h1 class="titulo-pagina">Reservas</h1>
+      <p class="texto-tenue mb-0">Aprueba, rechaza o cancela las reservas de los espacios</p>
+    </div>
+    <button class="boton-pendientes" type="button" (click)="verPendientes()" *ngIf="pendientes > 0">
+      <i class="bi bi-exclamation-lg"></i>{{ pendientes }} {{ pendientes === 1 ? 'pendiente' : 'pendientes' }} por revisar
+    </button>
+  </div>
+
+  <form class="gb-tarjeta p-3 mb-3" (ngSubmit)="cargar(0)" novalidate>
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label for="filtro-conjunto" class="etiqueta-mayuscula d-block mb-1">Conjunto</label>
+        <select id="filtro-conjunto" name="conjuntoId" class="form-select" [(ngModel)]="filtros.conjuntoId">
+          <option [ngValue]="0">Todos</option>
+          <option *ngFor="let c of conjuntos" [ngValue]="c.id">{{ c.nombre }} · {{ c.municipio }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="filtro-estado" class="etiqueta-mayuscula d-block mb-1">Estado</label>
+        <select id="filtro-estado" name="estado" class="form-select" [(ngModel)]="filtros.estado">
+          <option value="">Todos</option>
+          <option value="PENDIENTE">Pendientes</option>
+          <option value="CONFIRMADA">Confirmadas</option>
+          <option value="RECHAZADA">Rechazadas</option>
+          <option value="CANCELADA">Canceladas</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="filtro-desde" class="etiqueta-mayuscula d-block mb-1">Desde</label>
+        <input id="filtro-desde" name="desde" type="date" class="form-control" [(ngModel)]="filtros.desde" />
+      </div>
+      <div class="col-md-2">
+        <label for="filtro-hasta" class="etiqueta-mayuscula d-block mb-1">Hasta</label>
+        <input id="filtro-hasta" name="hasta" type="date" class="form-control" [(ngModel)]="filtros.hasta" />
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn-gb flex-fill" type="submit"><i class="bi bi-search"></i>Buscar</button>
+        <button class="btn-gb-borde" type="button" (click)="limpiar()">Limpiar</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+  <div class="text-center texto-tenue py-4" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando reservas...
+  </div>
+
+  <div class="gb-tarjeta overflow-hidden" *ngIf="!cargando && !error">
+    <div class="table-responsive">
+      <table class="gb-tabla">
+        <thead>
+          <tr>
+            <th>Comprobante</th>
+            <th>Residente</th>
+            <th>Espacio</th>
+            <th>Fecha y hora</th>
+            <th>Personas</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of reservas">
+            <td class="numeros" [class.texto-verde]="r.estado === 'PENDIENTE'" [class.texto-tenue]="r.estado !== 'PENDIENTE'">{{ r.comprobante }}</td>
+            <td>
+              <div class="fw-semibold">{{ r.residenteNombre }}</div>
+              <div class="small texto-tenue">{{ r.unidadDescripcion }}</div>
+            </td>
+            <td>
+              <div>{{ r.espacioNombre }}</div>
+              <div class="small texto-tenue">{{ r.conjuntoNombre }}</div>
+            </td>
+            <td>
+              <div>{{ r.inicio | date: 'EEEE d MMMM' }}</div>
+              <div class="small texto-tenue">{{ r.inicio | date: 'h:mm a' }} a {{ r.fin | date: 'h:mm a' }}</div>
+            </td>
+            <td>{{ r.personas }}</td>
+            <td class="text-nowrap">
+              <span class="gb-insignia punto" [ngClass]="claseEstado(r.estado)">{{ textoEstado(r.estado) }}</span>
+              <i class="bi bi-chat-left-text texto-tenue ms-2" *ngIf="r.observaciones" [title]="r.observaciones"></i>
+            </td>
+            <td class="text-end text-nowrap">
+              <ng-container *ngIf="r.estado === 'PENDIENTE'">
+                <button class="btn-gb btn-gb-sm me-1" type="button" *ngIf="esFutura(r)" (click)="pedirAccion('aprobar', r)">
+                  <i class="bi bi-check-lg"></i>Aprobar
+                </button>
+                <button class="btn-gb-fantasma btn-gb-sm texto-rojo" type="button" (click)="pedirAccion('rechazar', r)">
+                  <i class="bi bi-x-lg"></i>Rechazar
+                </button>
+              </ng-container>
+              <button class="btn-gb-fantasma btn-gb-sm texto-rojo" type="button" *ngIf="r.estado === 'CONFIRMADA' && esFutura(r)"
+                (click)="pedirAccion('cancelar', r)"><i class="bi bi-x-circle"></i>Cancelar</button>
+              <span class="small texto-bajo fst-italic"
+                *ngIf="!(r.estado === 'PENDIENTE') && !(r.estado === 'CONFIRMADA' && esFutura(r))">Sin acciones</span>
+            </td>
+          </tr>
+          <tr *ngIf="reservas.length === 0">
+            <td colspan="7" class="text-center texto-tenue py-4">No hay reservas con esos filtros.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gb-paginacion" *ngIf="totalElementos > 0">
+      <span>Página {{ pagina + 1 }} de {{ totalPaginas }} · {{ totalElementos }} reservas</span>
+      <div class="d-flex gap-1" *ngIf="totalPaginas > 1">
+        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina === 0" (click)="cargar(pagina - 1)" aria-label="Página anterior"><i class="bi bi-chevron-left"></i></button>
+        <button *ngFor="let p of paginas" type="button" class="btn-gb-sm" [class.btn-gb]="p === pagina" [class.btn-gb-fantasma]="p !== pagina" (click)="cargar(p)">{{ p + 1 }}</button>
+        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina + 1 >= totalPaginas" (click)="cargar(pagina + 1)" aria-label="Página siguiente"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="accionPendiente && reservaPendiente">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ tituloAccion }}</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrarAccion()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="gb-caja p-3 mb-3">
+            <div class="etiqueta-mayuscula mb-1">{{ reservaPendiente.comprobante }}</div>
+            <div class="fw-semibold">{{ reservaPendiente.espacioNombre }}</div>
+            <div class="small texto-tenue">
+              {{ reservaPendiente.residenteNombre }} ({{ reservaPendiente.unidadDescripcion }}) ·
+              {{ reservaPendiente.inicio | date: 'EEEE d MMMM' }}, {{ reservaPendiente.inicio | date: 'h:mm a' }} a {{ reservaPendiente.fin | date: 'h:mm a' }}
+            </div>
+          </div>
+          <div *ngIf="accionPendiente !== 'aprobar'">
+            <label for="motivo" class="form-label">Motivo <span class="texto-tenue">(le llegará al residente por correo)</span></label>
+            <textarea id="motivo" rows="3" maxlength="500" class="form-control" [(ngModel)]="motivo" (ngModelChange)="errorMotivo = ''"></textarea>
+          </div>
+          <p class="small texto-tenue mb-0" *ngIf="accionPendiente === 'aprobar'">El residente recibirá un correo con la confirmación.</p>
+          <div class="gb-alerta peligro mt-3" *ngIf="errorMotivo"><i class="bi bi-exclamation-circle"></i><span>{{ errorMotivo }}</span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-borde" (click)="cerrarAccion()">Volver</button>
+          <button type="button" [disabled]="procesando" (click)="confirmarAccion()"
+            [class.btn-gb]="accionPendiente === 'aprobar'" [class.btn-gb-peligro-lleno]="accionPendiente !== 'aprobar'">
+            {{ accionPendiente === 'aprobar' ? 'Sí, aprobar' : accionPendiente === 'rechazar' ? 'Sí, rechazar' : 'Sí, cancelar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>

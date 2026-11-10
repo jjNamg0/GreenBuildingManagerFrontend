@@ -1,0 +1,138 @@
+<div class="p-3 p-lg-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <div class="sobretitulo mb-2">Agenda comunitaria</div>
+      <h1 class="titulo-pagina">Eventos</h1>
+      <p class="texto-tenue mb-0">Programa las fiestas, asambleas y actividades de los conjuntos</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <select class="form-select filtro-conjunto" aria-label="Filtrar por conjunto" [(ngModel)]="conjuntoId" (ngModelChange)="cargar()">
+        <option [ngValue]="0">Todos los conjuntos</option>
+        <option *ngFor="let c of conjuntos" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+      <div class="gb-segmentos">
+        <button type="button" [class.activo]="!pasados" (click)="cambiarVista(false)">Próximos</button>
+        <button type="button" [class.activo]="pasados" (click)="cambiarVista(true)">Pasados</button>
+      </div>
+      <button class="btn-gb" type="button" (click)="nuevoEvento()" *ngIf="!mostrarFormulario"><i class="bi bi-plus-lg"></i>Nuevo evento</button>
+    </div>
+  </div>
+
+  <div class="mb-4" *ngIf="mostrarFormulario">
+    <app-eventoformcomponent
+      [evento]="eventoEditando"
+      [conjuntos]="conjuntos"
+      [conjuntoInicial]="conjuntoId"
+      [guardando]="guardando"
+      [errorServidor]="errorEvento"
+      (guardar)="guardar($event)"
+      (cancelar)="cerrarFormulario()" />
+  </div>
+
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-calendar3 texto-verde"></i>
+    <h2 class="h5 mb-0">{{ pasados ? 'Eventos pasados' : 'Eventos agendados' }}</h2>
+    <span class="small texto-tenue" *ngIf="!cargando">({{ eventos.length }})</span>
+  </div>
+
+  <div class="text-center texto-tenue py-4" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando eventos...
+  </div>
+  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+
+  <div class="gb-tarjeta gb-vacio" *ngIf="!cargando && !error && eventos.length === 0">
+    <span class="gb-icono gb-icono-grande"><i class="bi bi-calendar-plus"></i></span>
+    <h3 class="h5">{{ pasados ? 'No hay eventos pasados' : 'No hay eventos programados' }}</h3>
+    <p class="texto-tenue mb-3" *ngIf="!pasados">Crea el primer evento y aparecerá en la agenda de los residentes.</p>
+    <button class="btn-gb" type="button" *ngIf="!pasados && !mostrarFormulario" (click)="nuevoEvento()"><i class="bi bi-plus-lg"></i>Nuevo evento</button>
+  </div>
+
+  <div class="row g-3" *ngIf="!cargando && !error">
+    <div class="col-xl-6" *ngFor="let e of eventos">
+      <article class="gb-tarjeta evento" [class.cancelado]="e.estado === 'CANCELADO'">
+        <img class="foto" [src]="imagenDe(e)" [alt]="e.nombre" (error)="usarImagenRespaldo($event)" />
+        <div class="p-3 d-flex flex-column flex-grow-1 min-w-0">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span class="gb-insignia punto" [class.exito]="e.estado !== 'CANCELADO'" [class.neutro]="e.estado === 'CANCELADO'">
+              {{ e.estado === 'CANCELADO' ? 'Cancelado' : 'Programado' }}
+            </span>
+            <span class="gb-insignia neutro">{{ etiquetaCategoria(e.categoria) }}</span>
+            <span class="gb-insignia neutro" title="Diseño de la invitación"><i class="bi bi-envelope-paper"></i>{{ etiquetaDiseno(e.disenoInvitacion) }}</span>
+            <span class="gb-insignia exito" *ngIf="e.fiestaNinos"><i class="bi bi-balloon"></i>Niños<span *ngIf="e.edadMinima !== null"> {{ e.edadMinima }}-{{ e.edadMaxima }}</span></span>
+          </div>
+          <h3 class="h6 mb-1">{{ e.nombre }}</h3>
+          <div class="small texto-tenue mb-1"><i class="bi bi-door-open me-1"></i>{{ e.espacioNombre }} · {{ e.conjuntoNombre }}</div>
+          <div class="small texto-tenue"><i class="bi bi-clock me-1"></i>{{ e.inicio | date: 'EEEE d MMMM' }} · {{ e.inicio | date: 'h:mm a' }} a {{ e.fin | date: 'h:mm a' }}</div>
+          <div class="motivo small mt-2" *ngIf="e.motivoCancelacion">Motivo: {{ e.motivoCancelacion }}</div>
+          <div class="d-flex justify-content-end gap-1 mt-auto pt-2" *ngIf="e.estado !== 'CANCELADO' && esFuturo(e)">
+            <button class="btn-gb-borde btn-gb-sm" type="button" (click)="abrirInvitacion(e)"><i class="bi bi-envelope-paper-heart"></i>Invitar</button>
+            <button class="btn-gb-fantasma btn-gb-sm" type="button" (click)="editar(e)"><i class="bi bi-pencil"></i>Editar</button>
+            <button class="btn-gb-fantasma btn-gb-sm texto-rojo" type="button" (click)="pedirCancelacion(e)"><i class="bi bi-calendar-x"></i>Cancelar evento</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="eventoPendiente">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-calendar-x texto-rojo me-2"></i>Cancelar evento comunitario</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrarCancelacion()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="gb-caja p-3 mb-3">
+            <div class="etiqueta-mayuscula mb-1">Evento seleccionado</div>
+            <div class="fw-semibold mb-1">{{ eventoPendiente.nombre }}</div>
+            <div class="small texto-tenue"><i class="bi bi-clock me-1"></i>{{ eventoPendiente.inicio | date: 'EEEE d MMMM' }} de {{ eventoPendiente.inicio | date: 'h:mm a' }} a {{ eventoPendiente.fin | date: 'h:mm a' }}</div>
+            <div class="small texto-tenue"><i class="bi bi-door-open me-1"></i>{{ eventoPendiente.espacioNombre }}</div>
+          </div>
+          <p class="small texto-tenue">El evento dejará de aparecer en la agenda y el espacio quedará libre para reservas.</p>
+          <label for="motivo-evento" class="form-label">Motivo de la cancelación <span class="texto-tenue">(les llegará a los residentes por correo)</span></label>
+          <textarea id="motivo-evento" rows="3" maxlength="500" class="form-control" [(ngModel)]="motivo" (ngModelChange)="errorMotivo = ''"></textarea>
+          <div class="gb-alerta peligro mt-3" *ngIf="errorMotivo"><i class="bi bi-exclamation-circle"></i><span>{{ errorMotivo }}</span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-borde" (click)="cerrarCancelacion()">Volver</button>
+          <button type="button" class="btn-gb-peligro" [disabled]="procesando" (click)="confirmarCancelacion()"><i class="bi bi-calendar-x"></i>Sí, cancelar evento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>
+
+<ng-container *ngIf="eventoInvitacion">
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-envelope-paper-heart texto-verde me-2"></i>Enviar invitación</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrarInvitacion()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="gb-caja p-3 mb-3">
+            <div class="etiqueta-mayuscula mb-1">Evento</div>
+            <div class="fw-semibold mb-1">{{ eventoInvitacion.nombre }}</div>
+            <div class="small texto-tenue"><i class="bi bi-clock me-1"></i>{{ eventoInvitacion.inicio | date: 'EEEE d MMMM' }} de {{ eventoInvitacion.inicio | date: 'h:mm a' }} a {{ eventoInvitacion.fin | date: 'h:mm a' }}</div>
+            <div class="small texto-tenue"><i class="bi bi-people me-1"></i>Les llega a todos los residentes activos de {{ eventoInvitacion.conjuntoNombre }}</div>
+          </div>
+          <div class="fw-medium mb-2">Escoge el diseño que quieres mandar</div>
+          <app-selectorinvitacioncomponent [(diseno)]="disenoInvitacion" [datos]="datosInvitacion" [mostrarVistaPrevia]="true" />
+          <div class="gb-alerta peligro mt-3" *ngIf="errorInvitacion"><i class="bi bi-exclamation-circle"></i><span>{{ errorInvitacion }}</span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-gb-borde" (click)="cerrarInvitacion()">Volver</button>
+          <button type="button" class="btn-gb" [disabled]="enviandoInvitacion" (click)="confirmarInvitacion()">
+            <span class="spinner-border spinner-border-sm" *ngIf="enviandoInvitacion"></span>
+            <i class="bi bi-send" *ngIf="!enviandoInvitacion"></i>Enviar con el diseño {{ etiquetaDiseno(disenoInvitacion) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</ng-container>

@@ -1,0 +1,36 @@
+<div class="row g-2">
+  <div class="col-6 col-md-4" *ngFor="let d of disenos">
+    <button type="button" class="opcion" [class.activa]="d.valor === diseno" [attr.aria-pressed]="d.valor === diseno" (click)="escoger(d)">
+      <span class="miniatura" [style.background]="d.fondo">
+        <img [src]="d.imagen" [alt]="d.etiqueta" [class.contener]="d.valor === 'ELEGANTE' || d.valor === 'ASAMBLEA'" />
+        <span class="mini-barra" [style.background]="d.acento"></span>
+      </span>
+      <span class="d-flex align-items-center justify-content-between gap-2 mt-2">
+        <span class="fw-semibold small">{{ d.etiqueta }}</span>
+        <i class="bi bi-check-circle-fill texto-verde" *ngIf="d.valor === diseno"></i>
+      </span>
+      <span class="d-block small texto-tenue lh-sm mt-1">{{ d.descripcion }}</span>
+    </button>
+  </div>
+</div>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+  <button class="btn-gb-borde btn-gb-sm" type="button" (click)="alternarVistaPrevia()" [disabled]="!datos">
+    <i class="bi" [class.bi-eye]="!mostrarVistaPrevia" [class.bi-eye-slash]="mostrarVistaPrevia"></i>
+    {{ mostrarVistaPrevia ? 'Ocultar vista previa' : 'Ver cómo queda el correo' }}
+  </button>
+  <button class="btn-gb-fantasma btn-gb-sm" type="button" *ngIf="mostrarVistaPrevia" (click)="cargarVistaPrevia()" [disabled]="cargando">
+    <i class="bi bi-arrow-clockwise"></i>Actualizar vista previa
+  </button>
+</div>
+
+<div class="vista-previa mt-3" *ngIf="mostrarVistaPrevia">
+  <div class="barra-correo small">
+    <span class="texto-tenue">Asunto:</span> <strong>{{ asunto || '...' }}</strong>
+  </div>
+  <div class="text-center texto-tenue py-5" *ngIf="cargando && !vistaPrevia">
+    <span class="spinner-border spinner-border-sm me-2"></span>Armando la invitación...
+  </div>
+  <div class="gb-alerta peligro m-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+  <iframe *ngIf="vistaPrevia" [srcdoc]="vistaPrevia" sandbox="allow-same-origin" title="Vista previa de la invitación" [class.opaca]="cargando"></iframe>
+</div>

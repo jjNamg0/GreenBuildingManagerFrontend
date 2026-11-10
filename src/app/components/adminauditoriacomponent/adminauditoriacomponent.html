@@ -1,0 +1,100 @@
+<div class="p-3 p-lg-4">
+  <div class="mb-4">
+    <div class="sobretitulo mb-2">Bitácora del sistema</div>
+    <h1 class="titulo-pagina">Auditoría</h1>
+    <p class="texto-tenue mb-0">Todo lo importante que pasa en el sistema: quién, cuándo, qué hizo y desde dónde</p>
+  </div>
+
+  <form class="gb-tarjeta p-3 p-lg-4 mb-3" (ngSubmit)="buscar()" novalidate>
+    <div class="row g-3 align-items-end">
+      <div class="col-md-6 col-xl-2">
+        <label for="filtro-accion" class="form-label">Acción</label>
+        <select id="filtro-accion" name="accion" class="form-select" [(ngModel)]="filtros.accion">
+          <option value="">Todas</option>
+          <option *ngFor="let a of acciones" [value]="a">{{ etiquetaAccion(a) }}</option>
+        </select>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <label for="filtro-correo" class="form-label">Correo</label>
+        <input id="filtro-correo" name="correo" class="form-control" placeholder="nombre@correo.com" [(ngModel)]="filtros.email" />
+      </div>
+      <div class="col-md-4 col-xl-2">
+        <label for="filtro-resultado" class="form-label">Resultado</label>
+        <select id="filtro-resultado" name="exitoso" class="form-select" [(ngModel)]="filtros.exitoso">
+          <option value="">Todos</option>
+          <option value="true">Exitosos</option>
+          <option value="false">Fallidos</option>
+        </select>
+      </div>
+      <div class="col-md-4 col-xl-2-5">
+        <label for="filtro-desde" class="form-label">Desde</label>
+        <input id="filtro-desde" name="desde" type="datetime-local" class="form-control" [(ngModel)]="filtros.desde" />
+      </div>
+      <div class="col-md-4 col-xl-2-5">
+        <label for="filtro-hasta" class="form-label">Hasta</label>
+        <input id="filtro-hasta" name="hasta" type="datetime-local" class="form-control" [(ngModel)]="filtros.hasta" />
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top">
+      <button class="btn-gb" type="submit"><i class="bi bi-search"></i>Buscar</button>
+      <button class="btn-gb-borde" type="button" (click)="limpiar()"><i class="bi bi-funnel"></i>Quitar filtros</button>
+      <span class="ms-auto small texto-tenue"><i class="bi bi-database texto-verde me-1"></i><strong class="text-body numeros">{{ totalElementos }}</strong> registros encontrados</span>
+    </div>
+  </form>
+
+  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
+  <div class="text-center texto-tenue py-4" *ngIf="cargando">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando registros...
+  </div>
+
+  <div class="gb-tarjeta overflow-hidden" *ngIf="!cargando && !error">
+    <div class="table-responsive">
+      <table class="gb-tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Persona</th>
+            <th>Acción</th>
+            <th>Motivo</th>
+            <th>Ubicación</th>
+            <th>Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of registros">
+            <td class="text-nowrap numeros">
+              <strong>{{ r.fecha | date: 'dd/MM/yyyy' }}</strong><span class="texto-tenue ms-1">{{ r.fecha | date: 'h:mm:ss a' }}</span>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ r.persona }}</div>
+              <div class="small texto-tenue" *ngIf="r.email">{{ r.email }}</div>
+            </td>
+            <td class="text-nowrap">
+              <i class="bi me-2" [ngClass]="iconoAccion(r.accion)" [class.texto-verde]="r.exitoso" [class.texto-rojo]="!r.exitoso"></i>{{ etiquetaAccion(r.accion) }}
+            </td>
+            <td class="small" [class.texto-rojo]="!r.exitoso" [class.texto-tenue]="r.exitoso">{{ r.motivo }}</td>
+            <td class="small numeros texto-tenue text-nowrap">{{ r.ubicacion }}</td>
+            <td>
+              <span class="gb-insignia punto" [class.exito]="r.exitoso" [class.peligro]="!r.exitoso">{{ r.exitoso ? 'Exitoso' : 'Fallido' }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="registros.length === 0">
+            <td colspan="6" class="text-center texto-tenue py-4">No hay registros con esos filtros.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gb-paginacion" *ngIf="totalPaginas > 1">
+      <span>Página {{ pagina + 1 }} de {{ totalPaginas }}</span>
+      <div class="d-flex gap-1">
+        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina === 0 || cargando" (click)="cargar(pagina - 1)">
+          <i class="bi bi-chevron-left"></i>Anterior
+        </button>
+        <button *ngFor="let p of paginas" type="button" class="btn-gb-sm" [class.btn-gb]="p === pagina" [class.btn-gb-fantasma]="p !== pagina" (click)="cargar(p)">{{ p + 1 }}</button>
+        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina + 1 >= totalPaginas || cargando" (click)="cargar(pagina + 1)">
+          Siguiente<i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
