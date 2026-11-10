@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
-import { validarEmail } from '../../services/validaciones';
+import { validarEmail } from '../../services/validacionesservice';
 
 const ERRORES_GOOGLE: Record<string, string> = {
   google: 'No pudimos entrar con Google. Intenta de nuevo.',

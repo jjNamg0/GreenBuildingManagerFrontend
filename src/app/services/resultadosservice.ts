@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Resultado, ResultadoFallido } from '../models/resultadomodel';
 import { RespuestaError } from '../models/sesionmodel';
-import { mensajeError } from './validaciones';
+import { mensajeError } from './validacionesservice';
 
 export function armarResultado<T>(respuesta: HttpResponse<T>, mensaje = ''): Resultado<T> {
   if (respuesta.body === null) {

@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpParams, HttpResponse } from '@angula
 import { Observable, catchError, map, of } from 'rxjs';
 import { Evento, NuevoEvento, Recomendaciones, RespuestaInvitacion, VistaPreviaInvitacion } from '../models/eventomodel';
 import { Resultado } from '../models/resultadomodel';
-import { armarError, armarLista, armarResultado } from './resultados';
+import { armarError, armarLista, armarResultado } from './resultadosservice';
 
 @Injectable({ providedIn: 'root' })
 export class Eventoservice {

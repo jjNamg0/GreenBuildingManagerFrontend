@@ -13,7 +13,7 @@ import {
 } from '../models/sesionmodel';
 import { Resultado } from '../models/resultadomodel';
 import { Residenteservice } from './residenteservice';
-import { armarError, armarResultado } from './resultados';
+import { armarError, armarResultado } from './resultadosservice';
 
 @Injectable({ providedIn: 'root' })
 export class Authservice {

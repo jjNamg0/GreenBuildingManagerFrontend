@@ -4,7 +4,7 @@ import { Observable, catchError, map, of } from 'rxjs';
 import { MiConjunto } from '../models/miconjuntomodel';
 import { Resultado } from '../models/resultadomodel';
 import { Usuario } from '../models/usuariomodel';
-import { armarError, armarResultado } from './resultados';
+import { armarError, armarResultado } from './resultadosservice';
 
 @Injectable({ providedIn: 'root' })
 export class Residenteservice {

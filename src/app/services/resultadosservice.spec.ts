@@ -1,4 +1,4 @@
-import * as resultados from './resultados';
+import * as resultados from './resultadosservice';
 
 describe('resultados', () => {
   it('should be created', () => {

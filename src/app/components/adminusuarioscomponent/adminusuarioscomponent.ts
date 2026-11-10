@@ -6,7 +6,7 @@ import { Authservice } from '../../services/authservice';
 import { Usuario } from '../../models/usuariomodel';
 import { Conjunto } from '../../models/conjuntomodel';
 import { Unidad } from '../../models/unidadmodel';
-import { normalizarTexto } from '../../services/validaciones';
+import { normalizarTexto } from '../../services/validacionesservice';
 
 @Component({
   selector: 'app-adminusuarioscomponent',

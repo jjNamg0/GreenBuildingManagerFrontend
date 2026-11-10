@@ -10,7 +10,7 @@ import {
   Reserva,
 } from '../models/reservamodel';
 import { Resultado } from '../models/resultadomodel';
-import { armarError, armarLista, armarResultado } from './resultados';
+import { armarError, armarLista, armarResultado } from './resultadosservice';
 
 @Injectable({ providedIn: 'root' })
 export class Reservaservice {

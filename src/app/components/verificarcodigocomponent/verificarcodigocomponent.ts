@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
-import { soloDigitos } from '../../services/validaciones';
+import { soloDigitos } from '../../services/validacionesservice';
 
 @Component({
   selector: 'app-verificarcodigocomponent',

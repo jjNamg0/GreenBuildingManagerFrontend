@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/htt
 import { Observable, catchError, map, of } from 'rxjs';
 import { ConjuntoOpcion } from '../models/conjuntomodel';
 import { Resultado } from '../models/resultadomodel';
-import { armarError, armarLista } from './resultados';
+import { armarError, armarLista } from './resultadosservice';
 
 @Injectable({ providedIn: 'root' })
 export class Conjuntoservice {

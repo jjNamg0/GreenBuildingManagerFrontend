@@ -6,7 +6,7 @@ import { Reservaservice } from '../../services/reservaservice';
 import { Espacio } from '../../models/espaciomodel';
 import { BloqueHorario, Disponibilidad } from '../../models/reservamodel';
 import { TIPOS_ESPACIO, etiquetaDe } from '../../models/opcionesmodel';
-import { duracionLegible, horaLegible, hoy, sumarDias } from '../../services/fechas';
+import { duracionLegible, horaLegible, hoy, sumarDias } from '../../services/fechasservice';
 
 @Component({
   selector: 'app-reservarespaciocomponent',

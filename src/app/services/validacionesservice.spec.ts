@@ -1,4 +1,4 @@
-import * as validaciones from './validaciones';
+import * as validaciones from './validacionesservice';
 
 describe('validaciones', () => {
   it('should be created', () => {

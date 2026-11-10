@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
-import { soloDigitos, validarContrasena, validarEmail } from '../../services/validaciones';
+import { soloDigitos, validarContrasena, validarEmail } from '../../services/validacionesservice';
 
 @Component({
   selector: 'app-olvidecontrasenacomponent',

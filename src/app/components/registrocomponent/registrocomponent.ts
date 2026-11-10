@@ -4,7 +4,7 @@ import { Toastservice } from '../../services/toastservice';
 import { Authservice } from '../../services/authservice';
 import { Conjuntoservice } from '../../services/conjuntoservice';
 import { ConjuntoOpcion } from '../../models/conjuntomodel';
-import { validarContrasena, validarEmail, validarNombre } from '../../services/validaciones';
+import { validarContrasena, validarEmail, validarNombre } from '../../services/validacionesservice';
 
 @Component({
   selector: 'app-registrocomponent',

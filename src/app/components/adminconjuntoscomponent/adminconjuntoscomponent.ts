@@ -3,7 +3,7 @@ import { Toastservice } from '../../services/toastservice';
 import { Adminconjuntoservice } from '../../services/adminconjuntoservice';
 import { Conjunto } from '../../models/conjuntomodel';
 import { TIPOS_CONJUNTO, etiquetaDe } from '../../models/opcionesmodel';
-import { normalizarTexto } from '../../services/validaciones';
+import { normalizarTexto } from '../../services/validacionesservice';
 
 @Component({
   selector: 'app-adminconjuntoscomponent',

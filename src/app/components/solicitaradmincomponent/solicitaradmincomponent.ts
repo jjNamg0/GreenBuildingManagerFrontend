@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Authservice } from '../../services/authservice';
-import { validarContrasena, validarEmail, validarNombre } from '../../services/validaciones';
+import { validarContrasena, validarEmail, validarNombre } from '../../services/validacionesservice';
 
 @Component({
   selector: 'app-solicitaradmincomponent',
