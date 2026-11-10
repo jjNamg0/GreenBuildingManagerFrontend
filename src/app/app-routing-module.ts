@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Logincomponent } from './components/logincomponent/logincomponent';
+import { Mapacomponent } from './components/mapacomponent/mapacomponent';
 import { Registrocomponent } from './components/registrocomponent/registrocomponent';
 import { Verificarcodigocomponent } from './components/verificarcodigocomponent/verificarcodigocomponent';
 import { Olvidecontrasenacomponent } from './components/olvidecontrasenacomponent/olvidecontrasenacomponent';
@@ -14,10 +15,13 @@ import { Reservarespaciocomponent } from './components/reservarespaciocomponent/
 import { Misreservascomponent } from './components/misreservascomponent/misreservascomponent';
 import { Eventoscomponent } from './components/eventoscomponent/eventoscomponent';
 import { Paraticomponent } from './components/paraticomponent/paraticomponent';
+import { Admineventoscomponent } from './components/admineventoscomponent/admineventoscomponent';
+import { Adminreservascomponent } from './components/adminreservascomponent/adminreservascomponent';
 import { Adminconjuntoscomponent } from './components/adminconjuntoscomponent/adminconjuntoscomponent';
 import { Conjuntoformcomponent } from './components/conjuntoformcomponent/conjuntoformcomponent';
 import { Conjuntodetallecomponent } from './components/conjuntodetallecomponent/conjuntodetallecomponent';
 import { Adminusuarioscomponent } from './components/adminusuarioscomponent/adminusuarioscomponent';
+import { Adminauditoriacomponent } from './components/adminauditoriacomponent/adminauditoriacomponent';
 import { Noencontradocomponent } from './components/noencontradocomponent/noencontradocomponent';
 import { authguard } from './guards/authguard';
 import { adminguard } from './guards/adminguard';
@@ -33,6 +37,11 @@ const routes: Routes = [
     path: 'login',
     component: Logincomponent,
     title: 'Green Building Manager — Iniciar sesión',
+  },
+  {
+    path: 'ubicacion/:token',
+    component: Mapacomponent,
+    title: 'Green Building Manager — Ubicación del evento',
   },
   {
     path: 'registro',
@@ -105,6 +114,24 @@ const routes: Routes = [
     title: 'Green Building Manager — Para ti',
   },
   {
+    path: 'admin/mapa',
+    component: Mapacomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Mapa de conjuntos',
+  },
+  {
+    path: 'admin/eventos',
+    component: Admineventoscomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Administrar eventos',
+  },
+  {
+    path: 'admin/reservas',
+    component: Adminreservascomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Administrar reservas',
+  },
+  {
     path: 'admin/conjuntos',
     component: Adminconjuntoscomponent,
     canActivate: [adminguard],
@@ -133,6 +160,12 @@ const routes: Routes = [
     component: Adminusuarioscomponent,
     canActivate: [adminguard],
     title: 'Green Building Manager — Usuarios',
+  },
+  {
+    path: 'admin/auditoria',
+    component: Adminauditoriacomponent,
+    canActivate: [adminguard],
+    title: 'Green Building Manager — Auditoría',
   },
   {
     path: '**',
