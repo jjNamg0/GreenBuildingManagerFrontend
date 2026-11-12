@@ -1,0 +1,15 @@
+.boton-pendientes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  border-radius: 9999px;
+  background: var(--gb-amarillo);
+  color: var(--gb-sobre-acento);
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+}
+
+.boton-pendientes:hover {
+  background: var(--gb-amarillo-texto);
+}

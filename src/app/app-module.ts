@@ -31,6 +31,12 @@ import { Conjuntodetallecomponent } from './components/conjuntodetallecomponent/
 import { Conjuntoformcomponent } from './components/conjuntoformcomponent/conjuntoformcomponent';
 import { Espacioformcomponent } from './components/espacioformcomponent/espacioformcomponent';
 import { Adminusuarioscomponent } from './components/adminusuarioscomponent/adminusuarioscomponent';
+import { Adminreservascomponent } from './components/adminreservascomponent/adminreservascomponent';
+import { Adminauditoriacomponent } from './components/adminauditoriacomponent/adminauditoriacomponent';
+import { Admineventoscomponent } from './components/admineventoscomponent/admineventoscomponent';
+import { Eventoformcomponent } from './components/eventoformcomponent/eventoformcomponent';
+import { Selectorinvitacioncomponent } from './components/selectorinvitacioncomponent/selectorinvitacioncomponent';
+import { Mapacomponent } from './components/mapacomponent/mapacomponent';
 import { Authinterceptor } from './interceptors/authinterceptor';
 
 registerLocaleData(localeEsCo);
@@ -63,6 +69,12 @@ registerLocaleData(localeEsCo);
     Conjuntoformcomponent,
     Espacioformcomponent,
     Adminusuarioscomponent,
+    Adminreservascomponent,
+    Adminauditoriacomponent,
+    Admineventoscomponent,
+    Eventoformcomponent,
+    Selectorinvitacioncomponent,
+    Mapacomponent,
   ],
   imports: [BrowserModule, CommonModule, FormsModule, AppRoutingModule],
   providers: [
