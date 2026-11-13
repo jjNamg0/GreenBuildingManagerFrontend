@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 
+/** Mensaje que se muestra cuando una lista no tiene elementos. */
 @Component({
   selector: 'app-vaciocomponent',
   standalone: false,

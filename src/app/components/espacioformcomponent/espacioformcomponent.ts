@@ -15,6 +15,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Espacioservice } from '../../services/espacioservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Formulario para crear o editar un espacio común. */
 @Component({
   selector: 'app-espacioformcomponent',
   standalone: false,
@@ -40,6 +41,7 @@ export class Espacioformcomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga los datos del espacio cuando se está editando. */
   ngOnInit(): void {
     const base = this.espacio ? datosDeEspacio(this.espacio) : { ...DATOS_ESPACIO_VACIO };
     this.datos = { ...base, conjuntoId: this.conjuntoId };
@@ -49,6 +51,7 @@ export class Espacioformcomponent implements OnInit {
     return this.espacio ? 'Editar espacio' : 'Nuevo espacio';
   }
 
+  /** Valida el formulario y envía el espacio al back. */
   guardar(): void {
     const problema = primerError(REGLAS_ESPACIO, this.datos);
     this.error.set(problema);
@@ -69,6 +72,7 @@ export class Espacioformcomponent implements OnInit {
     });
   }
 
+  /** Elige entre crear o actualizar según si se está editando. */
   private peticionGuardar(datos: DatosEspacio): Observable<string> {
     return this.espacio
       ? this.espacioService.actualizar(this.espacio.id, datos)

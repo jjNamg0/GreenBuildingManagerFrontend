@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
+/** Aviso reutilizable con mensaje, tipo, ícono y botón de acción opcional. */
 @Component({
   selector: 'app-alertacomponent',
   standalone: false,

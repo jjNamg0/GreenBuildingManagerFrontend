@@ -5,6 +5,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Reservaservice } from '../../services/reservaservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla del residente con sus reservas y el estado de cada una. */
 @Component({
   selector: 'app-misreservascomponent',
   standalone: false,
@@ -24,6 +25,7 @@ export class Misreservascomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga las reservas. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -32,6 +34,7 @@ export class Misreservascomponent implements OnInit {
     return !this.cargando() && this.error() === '' && this.reservas().length === 0;
   }
 
+  /** Pide al back las reservas del residente. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -47,6 +50,7 @@ export class Misreservascomponent implements OnInit {
     });
   }
 
+  /** Pide confirmación y cancela la reserva. */
   async cancelar(reserva: Reserva): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: '¿Cancelar la reserva?',
@@ -59,6 +63,7 @@ export class Misreservascomponent implements OnInit {
     }
   }
 
+  /** Envía la cancelación al back, avisa el resultado y recarga la lista. */
   private enviarCancelacion(id: number): void {
     this.cancelando.set(id);
     this.reservaService.cancelar(id).subscribe({

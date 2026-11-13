@@ -14,6 +14,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 import { Usuarioservice } from '../../services/usuarioservice';
 
+/** Pantalla del perfil: datos personales y cambio de contraseña. */
 @Component({
   selector: 'app-perfilcomponent',
   standalone: false,
@@ -40,10 +41,12 @@ export class Perfilcomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga el perfil. */
   ngOnInit(): void {
     this.cargar();
   }
 
+  /** Pide al back el usuario y llena el formulario. */
   cargar(): void {
     this.cargando.set(true);
     this.errorCarga.set('');
@@ -66,6 +69,7 @@ export class Perfilcomponent implements OnInit {
     });
   }
 
+  /** Valida y guarda los datos del perfil. */
   guardarPerfil(): void {
     const problema = primerError(REGLAS_PERFIL, this.datos);
     this.errorPerfil.set(problema);

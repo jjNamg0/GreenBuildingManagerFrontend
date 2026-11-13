@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Conjunto } from '../../models/conjuntomodel';
 import { RecomendacionConjunto } from '../../models/recomendacionmodel';
 
+/** Lista de conjuntos cercanos a la ubicación del visitante. */
 @Component({
   selector: 'app-conjuntoscercanoscomponent',
   standalone: false,

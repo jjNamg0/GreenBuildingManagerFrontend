@@ -27,6 +27,7 @@ export const MUNDO: LatLngTuple[] = [
 const TAMANO_MARCADOR = 34;
 const TAMANO_MARCADOR_ELEGIDO = 42;
 
+/** Crea el ícono de un marcador de conjunto, más grande si está elegido. */
 export const crearIconoMarcador = (elegido: boolean): DivIcon => {
   const tamano = elegido ? TAMANO_MARCADOR_ELEGIDO : TAMANO_MARCADOR;
   const clase = elegido ? 'gb-marcador seleccionado' : 'gb-marcador';

@@ -14,6 +14,7 @@ import { Espacioservice } from '../../services/espacioservice';
 import { Reservaservice } from '../../services/reservaservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla para reservar un espacio: elegir día, franja horaria, motivo y asistentes. */
 @Component({
   selector: 'app-reservarespaciocomponent',
   standalone: false,
@@ -52,6 +53,7 @@ export class Reservarespaciocomponent implements OnInit {
     private router: Router,
   ) {}
 
+  /** Carga el espacio y las franjas del día de hoy. */
   ngOnInit(): void {
     this.dias.set(proximosDias(this.DIAS_VISIBLES));
     this.hoy = this.dias()[0];
@@ -75,6 +77,7 @@ export class Reservarespaciocomponent implements OnInit {
     return this.inicio() === null ? 'Sin elegir' : `${this.horaInicio()} – ${this.horaFin()}`;
   }
 
+  /** Elige un día, borra la selección y carga sus franjas. */
   seleccionarFecha(fecha: string): void {
     const espacio = this.espacio();
     if (!fecha || !espacio) {
@@ -95,6 +98,7 @@ export class Reservarespaciocomponent implements OnInit {
     });
   }
 
+  /** Elige la franja de inicio o amplía la selección hasta la franja de fin. */
   elegirFranja(indice: number): void {
     if (!this.franjas()[indice].disponible) {
       return;
@@ -108,16 +112,19 @@ export class Reservarespaciocomponent implements OnInit {
     this.error.set('');
   }
 
+  /** Devuelve la hora de inicio elegida o vacío. */
   horaInicio(): string {
     const inicio = this.inicio();
     return inicio === null ? '' : this.franjas()[inicio].horaInicio;
   }
 
+  /** Devuelve la hora de fin elegida o vacío. */
   horaFin(): string {
     const inicio = this.inicio();
     return inicio === null ? '' : this.franjas()[this.fin() ?? inicio].horaFin;
   }
 
+  /** Valida el formulario y envía la reserva. */
   reservar(): void {
     const espacio = this.espacio();
     if (!espacio) {
@@ -139,6 +146,7 @@ export class Reservarespaciocomponent implements OnInit {
     this.enviarReserva(datos);
   }
 
+  /** Envía la reserva al back y avisa el resultado. */
   private enviarReserva(datos: DatosReserva): void {
     this.guardando.set(true);
     this.reservaService.crear(datos).subscribe({
@@ -156,12 +164,14 @@ export class Reservarespaciocomponent implements OnInit {
     });
   }
 
+  /** Guarda las franjas y el error de la consulta. */
   private mostrarFranjas(franjas: FranjaHoraria[], error: string): void {
     this.franjas.set(franjas);
     this.errorFranjas.set(error);
     this.cargandoFranjas.set(false);
   }
 
+  /** Indica si se puede ampliar la selección hasta la franja dada. */
   private extiendeSeleccion(indice: number): boolean {
     const inicio = this.inicio();
     if (inicio === null || this.fin() !== null || indice <= inicio) {

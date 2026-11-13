@@ -3,6 +3,7 @@ import { Conjunto, imagenConjunto, textoTipoConjunto } from '../../models/conjun
 import { claseSpinner } from '../../models/opcionmodel';
 import { MODOS_RUTA, ModoRuta, Ruta } from '../../models/rutamodel';
 
+/** Panel con el resumen de la ruta y sus pasos. */
 @Component({
   selector: 'app-rutacomponent',
   standalone: false,

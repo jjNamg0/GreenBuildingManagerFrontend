@@ -129,33 +129,44 @@ export const REGLAS_EVENTO: ReglaValidacion<DatosEvento>[] = [
   { falla: (datos) => estaVacio(datos.horaFin), mensaje: 'Indica la hora en que termina.' },
 ];
 
+/** Devuelve el texto del tipo de evento. */
 export const textoTipoEvento = (tipo: TipoEvento): string => textoOpcion(TIPOS_EVENTO, tipo);
 
+/** Devuelve el ícono del tipo de evento. */
 export const iconoTipoEvento = (tipo: TipoEvento): string =>
   iconoOpcion(TIPOS_EVENTO, tipo, 'fa-calendar-day');
 
+/** Busca la plantilla de invitación que corresponde a un tipo de evento. */
 export const buscarPlantilla = (tipo: TipoEvento): PlantillaInvitacion | undefined =>
   PLANTILLAS_INVITACION.find((opcion) => opcion.valor === tipo)?.valor;
 
+/** Devuelve la imagen de una plantilla de invitación. */
 export const imagenPlantilla = (plantilla: PlantillaInvitacion): string =>
   PLANTILLAS_INVITACION.find((opcion) => opcion.valor === plantilla)?.imagen ?? IMAGEN_RESPALDO;
 
+/** Devuelve el texto del estado del evento. */
 export const textoEstadoEvento = (estado: EstadoEvento): string => TEXTOS_ESTADO_EVENTO[estado];
 
+/** Devuelve la clase de estilo del estado del evento. */
 export const claseEstadoEvento = (estado: EstadoEvento): string => CLASES_ESTADO_EVENTO[estado];
 
+/** Indica si el evento está programado. */
 export const estaProgramado = (evento: Evento): boolean => evento.estado === 'PROGRAMADO';
 
+/** Devuelve la insignia del evento según su estado. */
 export const insigniaEvento = (evento: Evento): Insignia | null =>
   estaProgramado(evento) && evento.asistire ? INSIGNIA_ASISTIRE : INSIGNIAS_EVENTO[evento.estado];
 
+/** Devuelve el texto de asistentes y cupo del evento. */
 export const textoAsistentes = (evento: Evento): string =>
   evento.cupoMaximo
     ? `${evento.totalAsistentes} de ${evento.cupoMaximo}`
     : `${evento.totalAsistentes}`;
 
+/** Devuelve el lugar del evento: el espacio o las zonas comunes. */
 export const textoLugarEvento = (evento: Evento): string => evento.espacioNombre ?? 'Zonas comunes';
 
+/** Convierte un evento en los datos del formulario. */
 export const datosDeEvento = (evento: Evento): DatosEvento => ({
   conjuntoId: evento.conjuntoId,
   espacioId: evento.espacioId,
@@ -170,11 +181,13 @@ export const datosDeEvento = (evento: Evento): DatosEvento => ({
   plantilla: evento.plantilla,
 });
 
+/** Quita los espacios sobrantes de los datos del evento. */
 export const limpiarDatosEvento = (datos: DatosEvento): DatosEvento => ({
   ...datos,
   titulo: datos.titulo.trim(),
   descripcion: datos.descripcion.trim(),
 });
 
+/** Devuelve el mensaje de confirmación o cancelación de la asistencia. */
 export const mensajeAsistencia = (evento: Evento): string =>
   evento.asistire ? 'Quitamos tu asistencia.' : '¡Listo! Te esperamos en el evento.';

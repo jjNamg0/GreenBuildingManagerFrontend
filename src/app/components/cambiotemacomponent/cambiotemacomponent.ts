@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { Temaservice } from '../../services/temaservice';
 
+/** Botón para alternar entre el tema oscuro y el claro. */
 @Component({
   selector: 'app-cambiotemacomponent',
   standalone: false,
@@ -12,10 +13,12 @@ export class Cambiotemacomponent {
 
   constructor(private temaService: Temaservice) {}
 
+  /** Indica si el tema actual es oscuro. */
   esOscuro(): boolean {
     return this.temaService.esOscuro();
   }
 
+  /** Cambia al otro tema. */
   alternar(): void {
     this.temaService.alternar();
     this.girando.set(false);

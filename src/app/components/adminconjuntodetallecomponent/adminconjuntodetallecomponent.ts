@@ -4,6 +4,7 @@ import { Conjunto, textoTipoConjunto } from '../../models/conjuntomodel';
 import { Errorservice } from '../../services/errorservice';
 import { Conjuntoservice } from '../../services/conjuntoservice';
 
+/** Pantalla de detalle de un conjunto para el administrador, con sus unidades y espacios. */
 @Component({
   selector: 'app-adminconjuntodetallecomponent',
   standalone: false,
@@ -24,6 +25,7 @@ export class Adminconjuntodetallecomponent implements OnInit {
     private route: ActivatedRoute,
   ) {}
 
+  /** Lee el id de la ruta y carga el conjunto. */
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.conjuntoService.obtenerPorId(id).subscribe({

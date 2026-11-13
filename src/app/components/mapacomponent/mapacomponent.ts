@@ -38,6 +38,7 @@ import { Rutaservice } from '../../services/rutaservice';
 import { Sesionservice } from '../../services/sesionservice';
 import { Ubicacionservice } from '../../services/ubicacionservice';
 
+/** Mapa público de Cundinamarca con los conjuntos, la ubicación del visitante y las rutas. */
 @Component({
   selector: 'app-mapacomponent',
   standalone: false,
@@ -84,24 +85,29 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     private errorService: Errorservice,
   ) {}
 
+  /** Carga los conjuntos. */
   ngOnInit(): void {
     this.cargarConjuntos();
   }
 
+  /** Crea el mapa. */
   ngAfterViewInit(): void {
     this.crearMapa();
   }
 
+  /** Cancela las suscripciones, detiene el seguimiento y destruye el mapa. */
   ngOnDestroy(): void {
     this.suscripciones.unsubscribe();
     this.detenerSeguimiento();
     this.mapa?.remove();
   }
 
+  /** Indica si hay una sesión iniciada. */
   haySesion(): boolean {
     return this.sesionService.haySesion();
   }
 
+  /** Pide al back los conjuntos con la búsqueda y el tipo actuales. */
   cargarConjuntos(): void {
     this.cargandoConjuntos.set(true);
     this.errorConjuntos.set('');
@@ -118,12 +124,14 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /** Borra la búsqueda y el tipo, y recarga los conjuntos. */
   limpiarFiltros(): void {
     this.busqueda = '';
     this.tipo = '';
     this.cargarConjuntos();
   }
 
+  /** Selecciona un conjunto, borra la ruta y centra el mapa en él. */
   seleccionar(conjunto: Conjunto): void {
     this.seleccionado.set(conjunto);
     this.borrarRuta();
@@ -132,6 +140,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     this.ajustarTamanoMapa();
   }
 
+  /** Cierra el detalle y vuelve a mostrar todo Cundinamarca. */
   cerrarDetalle(): void {
     this.seleccionado.set(null);
     this.borrarRuta();
@@ -140,6 +149,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     this.ajustarTamanoMapa();
   }
 
+  /** Obtiene la ubicación del visitante, la dibuja y carga los conjuntos cercanos. */
   dondeEstoy(): void {
     this.buscandoUbicacion.set(true);
     this.avisoUbicacion.set('');
@@ -157,6 +167,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Cambia el modo de transporte y recalcula la ruta si ya había una. */
   cambiarModo(modo: ModoRuta): void {
     this.modo.set(modo);
     if (this.ruta()) {
@@ -164,6 +175,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /** Calcula la ruta desde la ubicación del visitante hasta el conjunto elegido. */
   comoLlegar(): void {
     const ubicacion = this.ubicacionService.ultimaUbicacion();
     if (ubicacion) {
@@ -184,6 +196,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Inicia o detiene el seguimiento de la ubicación en tiempo real. */
   alternarSeguimiento(): void {
     if (this.seguimiento) {
       this.detenerSeguimiento();
@@ -202,26 +215,31 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Acerca el mapa. */
   acercar(): void {
     this.mapa?.zoomIn();
   }
 
+  /** Aleja el mapa. */
   alejar(): void {
     this.mapa?.zoomOut();
   }
 
+  /** Guarda los conjuntos y los dibuja en el mapa. */
   private mostrarConjuntos(conjuntos: Conjunto[]): void {
     this.conjuntos.set(conjuntos);
     this.cargandoConjuntos.set(false);
     this.pintarMarcadores();
   }
 
+  /** Cancela el seguimiento de la ubicación. */
   private detenerSeguimiento(): void {
     this.seguimiento?.unsubscribe();
     this.seguimiento = null;
     this.siguiendo.set(false);
   }
 
+  /** Pide al back los conjuntos más cercanos a las coordenadas. */
   private cargarCercanos(coordenadas: Coordenadas): void {
     this.recomendacionService.obtenerConjuntosCercanos(coordenadas).subscribe({
       next: (cercanos) => this.cercanos.set(cercanos),
@@ -229,6 +247,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Pide al back la ruta desde el origen hasta el conjunto elegido y la dibuja. */
   private calcularRuta(origen: Coordenadas): void {
     const destino = this.seleccionado();
     if (!destino) {
@@ -259,6 +278,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  /** Crea el mapa de Leaflet con las teselas, los límites y el contorno de Cundinamarca. */
   private crearMapa(): void {
     const mapa = leaflet().map(this.contenedorMapa.nativeElement, { zoomControl: false });
     leaflet().tileLayer(URL_TESELAS, OPCIONES_TESELAS).addTo(mapa);
@@ -275,6 +295,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => this.ajustarLimites());
   }
 
+  /** Ajusta el tamaño, el encuadre y el zoom mínimo del mapa. */
   private ajustarLimites(): void {
     if (!this.mapa) {
       return;
@@ -284,6 +305,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapa.setMinZoom(this.mapa.getZoom());
   }
 
+  /** Dibuja el contorno de Cundinamarca y oscurece lo que queda afuera. */
   private pintarContorno(contornos: Anillo[]): void {
     if (!this.mapa || contornos.length === 0) {
       return;
@@ -306,6 +328,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     }).addTo(this.mapa);
   }
 
+  /** Redibuja un marcador por cada conjunto. */
   private pintarMarcadores(): void {
     const capa = this.capaMarcadores;
     if (!capa) {
@@ -318,6 +341,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /** Agrega a la capa el marcador de un conjunto. */
   private agregarMarcador(capa: LayerGroup, conjunto: Conjunto, elegido: boolean): void {
     leaflet().marker([conjunto.latitud, conjunto.longitud], {
       icon: crearIconoMarcador(elegido),
@@ -332,6 +356,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
       .addTo(capa);
   }
 
+  /** Dibuja o mueve el punto de la ubicación del visitante. */
   private pintarUbicacion(coordenadas: Coordenadas): void {
     if (!this.mapa) {
       return;
@@ -359,6 +384,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
       .addTo(this.mapa);
   }
 
+  /** Dibuja la ruta en el mapa y la encuadra. */
   private pintarRuta(ruta: Ruta): void {
     if (!this.mapa) {
       return;
@@ -374,12 +400,14 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     this.mapa.fitBounds(linea.getBounds(), { padding: [50, 50] });
   }
 
+  /** Borra la ruta y sus errores. */
   private borrarRuta(): void {
     this.ruta.set(null);
     this.errorRuta.set('');
     this.quitarLineasRuta();
   }
 
+  /** Quita las líneas de la ruta del mapa. */
   private quitarLineasRuta(): void {
     this.lineaRuta?.remove();
     this.brilloRuta?.remove();
@@ -387,6 +415,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     this.brilloRuta = null;
   }
 
+  /** Recalcula el tamaño del mapa después de un cambio de diseño. */
   private ajustarTamanoMapa(): void {
     setTimeout(() => this.mapa?.invalidateSize());
   }

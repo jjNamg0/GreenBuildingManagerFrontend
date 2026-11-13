@@ -6,6 +6,9 @@ import { environment } from '../../environments/environment';
 import { Sesionservice } from '../services/sesionservice';
 import { Ubicacionservice } from '../services/ubicacionservice';
 
+/**
+ * Interceptor que agrega el token y la ubicación a cada petición al back y cierra la sesión cuando el token vence (401).
+ */
 export const authinterceptor: HttpInterceptorFn = (peticion, siguiente) => {
   if (!peticion.url.startsWith(environment.urlApi)) {
     return siguiente(peticion);

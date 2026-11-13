@@ -31,5 +31,6 @@ export interface SweetAlert {
   fire: (opciones: SweetAlertOptions) => Promise<SweetAlertResult>;
 }
 
+/** Devuelve SweetAlert2 cargado por CDN, ya tipado. */
 export const sweetAlert = (): SweetAlert =>
   (globalThis as unknown as Record<string, SweetAlert>)['Swal'];

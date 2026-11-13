@@ -11,6 +11,7 @@ import {
 } from '../../models/eventomodel';
 import { claseSpinner } from '../../models/opcionmodel';
 
+/** Tarjeta con la información de un evento y el botón de asistencia. */
 @Component({
   selector: 'app-tarjetaeventocomponent',
   standalone: false,

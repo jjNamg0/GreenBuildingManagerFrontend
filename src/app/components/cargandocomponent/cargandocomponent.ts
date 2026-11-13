@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 
+/** Indicador de carga reutilizable. */
 @Component({
   selector: 'app-cargandocomponent',
   standalone: false,

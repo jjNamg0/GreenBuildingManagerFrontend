@@ -12,6 +12,7 @@ import { Recomendacionservice } from '../../services/recomendacionservice';
 import { Toastservice } from '../../services/toastservice';
 import { Usuarioservice } from '../../services/usuarioservice';
 
+/** Pantalla de recomendaciones: intereses del residente y eventos y espacios sugeridos. */
 @Component({
   selector: 'app-paraticomponent',
   standalone: false,
@@ -38,6 +39,7 @@ export class Paraticomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga los intereses y las recomendaciones. */
   ngOnInit(): void {
     this.authService.cargarUsuario().subscribe({
       next: (usuario) => this.intereses.set(usuario.intereses),
@@ -50,6 +52,7 @@ export class Paraticomponent implements OnInit {
     return !this.cargando() && this.error() === '';
   }
 
+  /** Pide al back los eventos y los espacios recomendados. */
   cargarRecomendaciones(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -71,10 +74,12 @@ export class Paraticomponent implements OnInit {
     });
   }
 
+  /** Indica si el interés está seleccionado. */
   estaElegido(valor: string): boolean {
     return this.intereses().includes(valor);
   }
 
+  /** Selecciona o quita un interés. */
   alternarInteres(valor: string): void {
     const actuales = this.intereses();
     this.intereses.set(
@@ -85,6 +90,7 @@ export class Paraticomponent implements OnInit {
     this.cambiosSinGuardar.set(true);
   }
 
+  /** Guarda los intereses y recarga las recomendaciones. */
   guardarIntereses(): void {
     this.guardando.set(true);
     this.usuarioService.actualizarIntereses({ intereses: this.intereses() }).subscribe({

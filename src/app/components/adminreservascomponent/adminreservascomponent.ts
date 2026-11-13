@@ -6,6 +6,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Reservaservice } from '../../services/reservaservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla para que el administrador revise las reservas y las apruebe o rechace. */
 @Component({
   selector: 'app-adminreservascomponent',
   standalone: false,
@@ -28,6 +29,7 @@ export class Adminreservascomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga las reservas. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -40,6 +42,7 @@ export class Adminreservascomponent implements OnInit {
     return !this.cargando() && this.reservas().length > 0;
   }
 
+  /** Pide al back las reservas del estado elegido. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -55,11 +58,13 @@ export class Adminreservascomponent implements OnInit {
     });
   }
 
+  /** Filtra las reservas por estado y recarga la lista. */
   elegirEstado(estado: EstadoReserva | ''): void {
     this.estado = estado;
     this.cargar();
   }
 
+  /** Pide confirmación y aprueba la reserva. */
   async aprobar(reserva: Reserva): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: '¿Aprobar la reserva?',
@@ -71,6 +76,7 @@ export class Adminreservascomponent implements OnInit {
     }
   }
 
+  /** Pide el motivo y rechaza la reserva. */
   async rechazar(reserva: Reserva): Promise<void> {
     const observacion = await this.confirmacionService.pedirTexto({
       titulo: '¿Rechazar la reserva?',
@@ -88,6 +94,7 @@ export class Adminreservascomponent implements OnInit {
     }
   }
 
+  /** Ejecuta la petición recibida, avisa el resultado y recarga la lista. */
   private enviar(id: number, peticion: Observable<string>, porDefecto: string): void {
     this.procesando.set(id);
     peticion.subscribe({

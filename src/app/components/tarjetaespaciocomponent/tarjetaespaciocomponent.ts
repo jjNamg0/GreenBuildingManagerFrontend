@@ -9,6 +9,7 @@ import {
   textoTipoEspacio,
 } from '../../models/espaciomodel';
 
+/** Tarjeta con la información de un espacio y el botón para reservarlo. */
 @Component({
   selector: 'app-tarjetaespaciocomponent',
   standalone: false,

@@ -43,16 +43,21 @@ export const REGLAS_CONJUNTO: ReglaValidacion<DatosConjunto>[] = [
   },
 ];
 
+/** Devuelve el texto del tipo de conjunto. */
 export const textoTipoConjunto = (tipo: TipoConjunto): string => textoOpcion(TIPOS_CONJUNTO, tipo);
 
+/** Devuelve el ícono del tipo de conjunto. */
 export const iconoTipoConjunto = (tipo: TipoConjunto): string =>
   iconoOpcion(TIPOS_CONJUNTO, tipo, 'fa-building');
 
+/** Devuelve la imagen del conjunto o una de respaldo. */
 export const imagenConjunto = (conjunto: Conjunto): string => conjunto.imagenUrl || IMAGEN_RESPALDO;
 
+/** Devuelve cómo se llama la agrupación de unidades según el tipo de conjunto. */
 export const textoAgrupacionConjunto = (tipo: TipoConjunto): string =>
   tipo === 'CASAS' ? 'Casas por manzana' : 'Apartamentos por torre';
 
+/** Convierte un conjunto en los datos del formulario. */
 export const datosDeConjunto = (conjunto: Conjunto): DatosConjunto => ({
   nombre: conjunto.nombre,
   tipo: conjunto.tipo,
@@ -64,6 +69,7 @@ export const datosDeConjunto = (conjunto: Conjunto): DatosConjunto => ({
   imagenUrl: conjunto.imagenUrl,
 });
 
+/** Quita los espacios sobrantes de los datos del conjunto. */
 export const limpiarDatosConjunto = (datos: DatosConjunto): DatosConjunto => ({
   ...datos,
   nombre: datos.nombre.trim(),

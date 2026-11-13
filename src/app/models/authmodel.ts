@@ -123,6 +123,7 @@ export const REGLAS_RESTABLECER: ReglaValidacion<FormularioRestablecer>[] = [
   },
 ];
 
+/** Quita los espacios sobrantes de los datos del registro. */
 export const limpiarDatosRegistro = (datos: DatosRegistro): DatosRegistro => ({
   ...datos,
   nombre: datos.nombre.trim(),

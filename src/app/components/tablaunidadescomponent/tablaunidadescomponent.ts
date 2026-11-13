@@ -6,6 +6,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 import { Unidadservice } from '../../services/unidadservice';
 
+/** Tabla de unidades de un conjunto con crear, editar y eliminar. */
 @Component({
   selector: 'app-tablaunidadescomponent',
   standalone: false,
@@ -32,6 +33,7 @@ export class Tablaunidadescomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga las unidades. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -44,6 +46,7 @@ export class Tablaunidadescomponent implements OnInit {
     return !this.cargando() && this.unidades().length > 0;
   }
 
+  /** Pide al back las unidades del conjunto. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -59,16 +62,19 @@ export class Tablaunidadescomponent implements OnInit {
     });
   }
 
+  /** Abre el formulario para crear una unidad o editar la indicada. */
   abrirFormulario(unidad: Unidad | null): void {
     this.unidadEditada.set(unidad);
     this.formularioAbierto.set(true);
   }
 
+  /** Cierra el formulario y recarga la tabla. */
   alGuardar(): void {
     this.formularioAbierto.set(false);
     this.cargar();
   }
 
+  /** Pide confirmación y elimina la unidad. */
   async eliminar(unidad: Unidad): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: `¿Eliminar ${unidad.descripcion}?`,
@@ -81,6 +87,7 @@ export class Tablaunidadescomponent implements OnInit {
     }
   }
 
+  /** Envía la eliminación al back, avisa el resultado y recarga la tabla. */
   private enviarEliminacion(id: number): void {
     this.unidadService.eliminar(id).subscribe({
       next: (mensaje) => {

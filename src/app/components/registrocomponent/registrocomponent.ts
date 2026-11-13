@@ -9,6 +9,7 @@ import { Conjuntoservice } from '../../services/conjuntoservice';
 import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla de registro de residentes. */
 @Component({
   selector: 'app-registrocomponent',
   standalone: false,
@@ -45,6 +46,7 @@ export class Registrocomponent implements OnInit {
     private router: Router,
   ) {}
 
+  /** Carga los conjuntos para elegir. */
   ngOnInit(): void {
     this.conjuntoService.obtenerTodos().subscribe({
       next: (conjuntos) => {
@@ -72,10 +74,12 @@ export class Registrocomponent implements OnInit {
     return this.verPassword ? 'fa-eye-slash' : 'fa-eye';
   }
 
+  /** Borra el mensaje de error del formulario. */
   limpiarError(): void {
     this.error.set('');
   }
 
+  /** Valida el formulario y envía el registro al back. */
   registrar(): void {
     const problema = primerError(REGLAS_REGISTRO, {
       datos: this.datos,
@@ -97,6 +101,7 @@ export class Registrocomponent implements OnInit {
     });
   }
 
+  /** Avisa el resultado y lleva a la pantalla de verificación. */
   private terminarRegistro(mensaje: string, correo: string): void {
     this.cargando.set(false);
     this.toastService.mostrar(mensaje || 'Cuenta creada. Te enviamos un código a tu correo.');

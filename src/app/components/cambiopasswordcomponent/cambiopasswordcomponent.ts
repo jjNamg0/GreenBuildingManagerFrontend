@@ -6,6 +6,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 import { Usuarioservice } from '../../services/usuarioservice';
 
+/** Formulario del perfil para cambiar la contraseña. */
 @Component({
   selector: 'app-cambiopasswordcomponent',
   standalone: false,
@@ -26,6 +27,7 @@ export class Cambiopasswordcomponent {
     private toastService: Toastservice,
   ) {}
 
+  /** Valida los datos y envía el cambio de contraseña. */
   cambiarPassword(): void {
     const problema = primerError(REGLAS_CAMBIO_PASSWORD, {
       datos: this.datos,
@@ -47,6 +49,7 @@ export class Cambiopasswordcomponent {
     });
   }
 
+  /** Limpia el formulario y muestra el aviso de éxito. */
   private terminar(mensaje: string): void {
     this.guardando.set(false);
     this.datos = { passwordActual: '', passwordNueva: '' };

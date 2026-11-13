@@ -13,6 +13,9 @@ import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 import { Usuarioservice } from '../../services/usuarioservice';
 
+/**
+ * Pantalla para administrar los usuarios: búsqueda, filtros, asignar unidad, activar, desactivar y eliminar.
+ */
 @Component({
   selector: 'app-adminusuarioscomponent',
   standalone: false,
@@ -38,6 +41,7 @@ export class Adminusuarioscomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga la lista de usuarios. */
   ngOnInit(): void {
     this.cargar();
     this.conjuntoService.obtenerTodos().subscribe({
@@ -54,6 +58,7 @@ export class Adminusuarioscomponent implements OnInit {
     return !this.cargando() && this.usuarios().length > 0;
   }
 
+  /** Pide al back los usuarios con el filtro y la búsqueda actuales. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -69,16 +74,19 @@ export class Adminusuarioscomponent implements OnInit {
     });
   }
 
+  /** Cambia el filtro de usuarios y recarga la lista. */
   elegirFiltro(filtro: FiltroUsuarios): void {
     this.filtro = filtro;
     this.cargar();
   }
 
+  /** Cierra el modal de asignar unidad y recarga la lista. */
   alAsignar(): void {
     this.usuarioAsignando.set(null);
     this.cargar();
   }
 
+  /** Pide confirmación y activa o desactiva al usuario. */
   async cambiarEstado(usuario: Usuario): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar(opcionesCambioEstado(usuario));
     if (confirmado) {
@@ -89,6 +97,7 @@ export class Adminusuarioscomponent implements OnInit {
     }
   }
 
+  /** Pide confirmación y elimina al usuario. */
   async eliminar(usuario: Usuario): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: `¿Eliminar a ${usuario.nombre} ${usuario.apellido}?`,
@@ -101,6 +110,7 @@ export class Adminusuarioscomponent implements OnInit {
     }
   }
 
+  /** Ejecuta la petición recibida, avisa el resultado y recarga la lista. */
   private enviar(peticion: Observable<string>, porDefecto: string): void {
     peticion.subscribe({
       next: (mensaje) => {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { Anillo, ContornoGeografico } from '../models/geografiamodel';
 
+/** Service que carga el contorno de Cundinamarca. */
 @Injectable({
   providedIn: 'root',
 })
@@ -24,6 +25,7 @@ export class Geografiaservice {
       shareReplay(1),
     );
 
+  /** Lee el archivo de contornos y devuelve los anillos del polígono. */
   obtenerContornos(): Observable<Anillo[]> {
     return this.contornos$;
   }

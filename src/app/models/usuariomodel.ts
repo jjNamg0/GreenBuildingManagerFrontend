@@ -74,36 +74,48 @@ export const REGLAS_CAMBIO_PASSWORD: ReglaValidacion<FormularioCambioPassword>[]
   },
 ];
 
+/** Indica si el usuario es administrador. */
 export const esAdministrador = (usuario: Usuario): boolean => usuario.role === 'ADMIN';
 
+/** Indica si el usuario ya tiene una unidad asignada. */
 export const tieneUnidad = (usuario: Usuario | null): boolean =>
   usuario !== null && usuario.unidadId !== null;
 
+/** Devuelve el nombre y el apellido del usuario. */
 export const nombreCompleto = (usuario: Usuario): string => `${usuario.nombre} ${usuario.apellido}`;
 
+/** Devuelve las iniciales del usuario. */
 export const inicialesUsuario = (usuario: Usuario): string =>
   `${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}`.toUpperCase();
 
+/** Devuelve la insignia del rol. */
 export const insigniaRol = (rol: Rol): Insignia => INSIGNIAS_ROL[rol];
 
+/** Devuelve el texto del estado del usuario. */
 export const textoEstadoUsuario = (usuario: Usuario): string =>
   usuario.activo ? 'Activo' : 'Inactivo';
 
+/** Devuelve la clase de estilo del estado del usuario. */
 export const claseEstadoUsuario = (usuario: Usuario): string =>
   usuario.activo ? 'exito' : 'neutro';
 
+/** Devuelve el ícono de la acción de activar o desactivar. */
 export const iconoCambioEstado = (usuario: Usuario): string =>
   usuario.activo ? 'fa-user-slash' : 'fa-user-check';
 
+/** Devuelve el texto de la acción de activar o desactivar. */
 export const textoAccionEstado = (usuario: Usuario): string =>
   usuario.activo ? 'Desactivar' : 'Activar';
 
+/** Devuelve la unidad del usuario o un texto si aún no tiene. */
 export const textoUnidadUsuario = (usuario: Usuario): string =>
   usuario.unidadDescripcion ?? 'Sin unidad asignada';
 
+/** Devuelve la unidad que el usuario pidió al registrarse. */
 export const textoSolicitudUsuario = (usuario: Usuario): string =>
   usuario.unidadSolicitada ? `Solicita: ${usuario.unidadSolicitada}` : 'Sin solicitud';
 
+/** Arma los textos de la confirmación para activar o desactivar al usuario. */
 export const opcionesCambioEstado = (usuario: Usuario): OpcionesConfirmacion =>
   usuario.activo
     ? {

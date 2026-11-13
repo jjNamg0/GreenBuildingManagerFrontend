@@ -44,6 +44,7 @@ const ZOOM_GENERAL = 9;
 const ZOOM_CERCANO = 15;
 const DECIMALES_COORDENADA = 6;
 
+/** Formulario para crear o editar un conjunto, con un mapa para elegir su ubicación. */
 @Component({
   selector: 'app-conjuntoformcomponent',
   standalone: false,
@@ -83,12 +84,14 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
     private cambios: ChangeDetectorRef,
   ) {}
 
+  /** Carga los datos del conjunto cuando se está editando. */
   ngOnInit(): void {
     if (this.conjunto) {
       this.datos = datosDeConjunto(this.conjunto);
     }
   }
 
+  /** Crea el mapa de Leaflet y coloca el marcador si ya hay ubicación. */
   ngAfterViewInit(): void {
     const posicion = this.posicionGuardada();
     const mapa = leaflet().map(this.contenedorMapa.nativeElement).setView(
@@ -106,6 +109,7 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => mapa.invalidateSize());
   }
 
+  /** Destruye el mapa al cerrar el formulario. */
   ngOnDestroy(): void {
     this.mapa?.remove();
   }
@@ -118,6 +122,7 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
     return this.conjunto ? 'Guardar cambios' : 'Crear conjunto';
   }
 
+  /** Coloca el marcador en la ubicación actual del navegador. */
   usarMiUbicacion(): void {
     this.ubicacionService.obtenerUbicacion().subscribe({
       next: (coordenadas) => {
@@ -129,6 +134,7 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Mueve el marcador a las coordenadas escritas en los campos. */
   actualizarMarcadorDesdeCampos(): void {
     const posicion = this.posicionGuardada();
     if (posicion) {
@@ -137,6 +143,7 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /** Valida el formulario y envía el conjunto al back. */
   guardar(): void {
     const problema = primerError(REGLAS_CONJUNTO, this.datos);
     this.error.set(problema);
@@ -157,17 +164,20 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Elige entre crear o actualizar según si se está editando. */
   private peticionGuardar(datos: DatosConjunto): Observable<string> {
     return this.conjunto
       ? this.conjuntoService.actualizar(this.conjunto.id, datos)
       : this.conjuntoService.crear(datos);
   }
 
+  /** Devuelve las coordenadas del formulario o null si faltan. */
   private posicionGuardada(): LatLngTuple | null {
     const { latitud, longitud } = this.datos;
     return latitud !== null && longitud !== null ? [latitud, longitud] : null;
   }
 
+  /** Guarda las coordenadas con 6 decimales y mueve o crea el marcador. */
   private ubicar(posicion: LatLngTuple): void {
     const [latitud, longitud] = posicion;
     this.datos.latitud = Number(latitud.toFixed(DECIMALES_COORDENADA));

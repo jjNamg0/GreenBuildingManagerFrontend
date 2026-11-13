@@ -14,9 +14,11 @@ const MENSAJES_ERROR_UBICACION: Record<number, string> = {
 
 export const MENSAJE_SIN_GEOLOCALIZACION = 'Tu navegador no permite obtener la ubicación.';
 
+/** Devuelve el mensaje para un código de error de geolocalización. */
 export const mensajeErrorUbicacion = (codigo: number): string =>
   MENSAJES_ERROR_UBICACION[codigo] ?? 'No pudimos obtener tu ubicación en este momento.';
 
+/** Convierte una posición del navegador en coordenadas. */
 export const coordenadasDePosicion = (posicion: GeolocationPosition): Coordenadas => ({
   latitud: posicion.coords.latitude,
   longitud: posicion.coords.longitude,

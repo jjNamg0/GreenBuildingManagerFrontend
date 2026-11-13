@@ -7,6 +7,9 @@ import { Authservice } from '../../services/authservice';
 import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 
+/**
+ * Pantalla para recuperar la contraseña en dos pasos: pedir el código y escribir la nueva contraseña.
+ */
 @Component({
   selector: 'app-olvidecontrasenacomponent',
   standalone: false,
@@ -33,6 +36,7 @@ export class Olvidecontrasenacomponent implements OnInit {
     private router: Router,
   ) {}
 
+  /** Lee el correo de la URL. */
   ngOnInit(): void {
     this.correo = this.route.snapshot.queryParamMap.get('correo') ?? '';
   }
@@ -45,10 +49,12 @@ export class Olvidecontrasenacomponent implements OnInit {
     return this.verPassword ? 'fa-eye-slash' : 'fa-eye';
   }
 
+  /** Borra el mensaje de error del formulario. */
   limpiarError(): void {
     this.error.set('');
   }
 
+  /** Valida el correo y pide al back que envíe el código. */
   solicitarCodigo(): void {
     const datos = { username: this.correo.trim() };
     const problema = primerError(REGLAS_CORREO, datos);
@@ -67,6 +73,7 @@ export class Olvidecontrasenacomponent implements OnInit {
     });
   }
 
+  /** Valida los datos y restablece la contraseña con el código. */
   restablecer(): void {
     const datos: DatosRestablecer = {
       username: this.correo.trim(),
@@ -88,18 +95,21 @@ export class Olvidecontrasenacomponent implements OnInit {
     });
   }
 
+  /** Vuelve al primer paso y borra el código y el error. */
   volverAlPaso1(): void {
     this.paso.set(1);
     this.codigo = '';
     this.error.set('');
   }
 
+  /** Avisa el resultado y avanza al paso siguiente. */
   private terminar(mensaje: string, correo: string): void {
     this.cargando.set(false);
     this.toastService.mostrar(mensaje || 'Tu contraseña se actualizó. Ya puedes iniciar sesión.');
     this.router.navigate(['/login'], { queryParams: { correo } });
   }
 
+  /** Muestra el mensaje del error. */
   private fallar(error: unknown, porDefecto: string): void {
     this.cargando.set(false);
     this.error.set(this.errorService.obtenerMensaje(error, porDefecto));

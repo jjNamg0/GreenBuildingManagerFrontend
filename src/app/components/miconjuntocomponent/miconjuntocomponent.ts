@@ -8,6 +8,7 @@ import { Conjuntoservice } from '../../services/conjuntoservice';
 import { Errorservice } from '../../services/errorservice';
 import { Espacioservice } from '../../services/espacioservice';
 
+/** Pantalla del residente con la información de su conjunto, su unidad y sus espacios. */
 @Component({
   selector: 'app-miconjuntocomponent',
   standalone: false,
@@ -31,6 +32,7 @@ export class Miconjuntocomponent implements OnInit {
     private errorService: Errorservice,
   ) {}
 
+  /** Carga el usuario y su conjunto. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -44,6 +46,7 @@ export class Miconjuntocomponent implements OnInit {
     return this.espacios().length === 0;
   }
 
+  /** Carga la información del conjunto del residente. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -53,6 +56,7 @@ export class Miconjuntocomponent implements OnInit {
     });
   }
 
+  /** Guarda el usuario y carga su conjunto si ya tiene unidad. */
   private alCargarUsuario(usuario: Usuario): void {
     this.usuario.set(usuario);
     if (usuario.conjuntoId === null || !tieneUnidad(usuario)) {
@@ -62,6 +66,7 @@ export class Miconjuntocomponent implements OnInit {
     this.cargarConjunto(usuario.conjuntoId);
   }
 
+  /** Pide al back los datos del conjunto indicado. */
   private cargarConjunto(conjuntoId: number): void {
     forkJoin({
       conjunto: this.conjuntoService.obtenerPorId(conjuntoId),
@@ -76,6 +81,7 @@ export class Miconjuntocomponent implements OnInit {
     });
   }
 
+  /** Muestra el error de carga. */
   private mostrarError(error: unknown): void {
     this.cargando.set(false);
     this.error.set(

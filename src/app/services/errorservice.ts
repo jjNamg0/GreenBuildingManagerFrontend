@@ -11,6 +11,7 @@ const MENSAJES_POR_ESTADO: Record<number, string> = {
   404: 'No se encontró la información solicitada.',
 };
 
+/** Extrae el texto de error del cuerpo de la respuesta. */
 const textoDelCuerpo = (cuerpo: unknown): string => {
   if (typeof cuerpo === 'string') {
     return cuerpo.trim();
@@ -19,6 +20,7 @@ const textoDelCuerpo = (cuerpo: unknown): string => {
   return objeto.mensaje ?? objeto.message ?? '';
 };
 
+/** Devuelve el mensaje para un error HTTP según su estado. */
 const mensajeHttp = (error: HttpErrorResponse, porDefecto: string): string => {
   if (error.status === SIN_CONEXION) {
     return MENSAJES_POR_ESTADO[SIN_CONEXION];
@@ -26,12 +28,14 @@ const mensajeHttp = (error: HttpErrorResponse, porDefecto: string): string => {
   return textoDelCuerpo(error.error) || MENSAJES_POR_ESTADO[error.status] || porDefecto;
 };
 
+/** Service que convierte los errores en mensajes para el usuario. */
 @Injectable({
   providedIn: 'root',
 })
 export class Errorservice {
   private readonly MENSAJE_GENERAL = 'Ocurrió un error inesperado. Intenta de nuevo.';
 
+  /** Devuelve el mensaje del error o el mensaje por defecto. */
   obtenerMensaje(error: unknown, porDefecto: string = this.MENSAJE_GENERAL): string {
     if (error instanceof HttpErrorResponse) {
       return mensajeHttp(error, porDefecto);

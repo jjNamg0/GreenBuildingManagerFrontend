@@ -5,6 +5,9 @@ import { Conjuntoservice } from '../../services/conjuntoservice';
 import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 
+/**
+ * Pantalla para administrar los conjuntos: búsqueda, filtro por tipo, creación, edición y eliminación.
+ */
 @Component({
   selector: 'app-adminconjuntoscomponent',
   standalone: false,
@@ -30,6 +33,7 @@ export class Adminconjuntoscomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga la lista de conjuntos. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -42,6 +46,7 @@ export class Adminconjuntoscomponent implements OnInit {
     return !this.cargando() && this.conjuntos().length > 0;
   }
 
+  /** Pide al back los conjuntos con la búsqueda y el tipo actuales. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -57,21 +62,25 @@ export class Adminconjuntoscomponent implements OnInit {
     });
   }
 
+  /** Filtra la lista por tipo de conjunto. */
   elegirTipo(tipo: string): void {
     this.tipo = tipo;
     this.cargar();
   }
 
+  /** Abre el formulario para crear un conjunto o editar el indicado. */
   abrirFormulario(conjunto: Conjunto | null): void {
     this.conjuntoEditado.set(conjunto);
     this.formularioAbierto.set(true);
   }
 
+  /** Cierra el formulario y recarga la lista. */
   alGuardar(): void {
     this.formularioAbierto.set(false);
     this.cargar();
   }
 
+  /** Pide confirmación y elimina el conjunto indicado. */
   async eliminar(conjunto: Conjunto): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: `¿Eliminar ${conjunto.nombre}?`,
@@ -85,6 +94,7 @@ export class Adminconjuntoscomponent implements OnInit {
     }
   }
 
+  /** Envía la eliminación al back, avisa el resultado y recarga la lista. */
   private enviarEliminacion(id: number): void {
     this.conjuntoService.eliminar(id).subscribe({
       next: (mensaje) => {

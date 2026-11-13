@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { EnlaceMenu } from '../../models/menumodel';
 
+/** Menú lateral del panel de administración. */
 @Component({
   selector: 'app-barralateralcomponent',
   standalone: false,

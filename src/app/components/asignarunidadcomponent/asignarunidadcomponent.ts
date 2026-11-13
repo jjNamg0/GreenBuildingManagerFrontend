@@ -8,6 +8,7 @@ import { Toastservice } from '../../services/toastservice';
 import { Unidadservice } from '../../services/unidadservice';
 import { Usuarioservice } from '../../services/usuarioservice';
 
+/** Modal para asignar una unidad a un usuario eligiendo el conjunto y la unidad. */
 @Component({
   selector: 'app-asignarunidadcomponent',
   standalone: false,
@@ -38,6 +39,7 @@ export class Asignarunidadcomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Prepara el modal cargando los conjuntos y las unidades. */
   ngOnInit(): void {
     this.conjuntoElegido = this.usuario.conjuntoId;
     this.unidadElegida = this.usuario.unidadId;
@@ -48,12 +50,14 @@ export class Asignarunidadcomponent implements OnInit {
     return this.cargandoUnidades() ? 'Cargando unidades...' : 'Elige una unidad';
   }
 
+  /** Cambia el conjunto elegido, borra la unidad y recarga las unidades. */
   cambiarConjunto(conjuntoId: number | null): void {
     this.conjuntoElegido = conjuntoId;
     this.unidadElegida = null;
     this.cargarUnidades();
   }
 
+  /** Valida la elección y asigna la unidad al usuario. */
   guardar(): void {
     if (this.unidadElegida === null) {
       this.error.set('Elige el conjunto y la unidad.');
@@ -73,6 +77,7 @@ export class Asignarunidadcomponent implements OnInit {
     });
   }
 
+  /** Pide al back las unidades del conjunto elegido. */
   private cargarUnidades(): void {
     if (this.conjuntoElegido === null) {
       this.unidades.set([]);

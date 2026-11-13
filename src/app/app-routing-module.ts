@@ -155,6 +155,9 @@ const routes: Routes = [
   },
 ];
 
+/**
+ * Módulo de rutas: define las páginas públicas, las del residente y las del administrador con sus guards.
+ */
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {

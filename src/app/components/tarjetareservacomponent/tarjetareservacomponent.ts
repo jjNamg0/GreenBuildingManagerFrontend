@@ -7,6 +7,7 @@ import {
   textoEstadoReserva,
 } from '../../models/reservamodel';
 
+/** Tarjeta con la información de una reserva y sus acciones. */
 @Component({
   selector: 'app-tarjetareservacomponent',
   standalone: false,

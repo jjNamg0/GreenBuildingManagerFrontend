@@ -23,6 +23,7 @@ import { Espacioservice } from '../../services/espacioservice';
 import { Eventoservice } from '../../services/eventoservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Formulario para crear o editar un evento, con plantilla de invitación y vista previa. */
 @Component({
   selector: 'app-eventoformcomponent',
   standalone: false,
@@ -55,6 +56,7 @@ export class Eventoformcomponent implements OnInit {
     private sanitizer: DomSanitizer,
   ) {}
 
+  /** Carga los datos del evento y los espacios del conjunto. */
   ngOnInit(): void {
     this.datos = this.evento ? datosDeEvento(this.evento) : { ...DATOS_EVENTO_VACIO };
     this.cargarEspacios();
@@ -64,18 +66,21 @@ export class Eventoformcomponent implements OnInit {
     return this.evento ? 'Editar evento' : 'Programar evento';
   }
 
+  /** Cambia el conjunto elegido y recarga sus espacios. */
   cambiarConjunto(conjuntoId: number | null): void {
     this.datos.conjuntoId = conjuntoId;
     this.datos.espacioId = null;
     this.cargarEspacios();
   }
 
+  /** Elige el tipo de evento. */
   elegirTipo(tipo: TipoEvento): void {
     this.datos.tipo = tipo;
     this.datos.paraNinos = this.datos.paraNinos || tipo === 'INFANTIL';
     this.datos.plantilla = buscarPlantilla(tipo) ?? this.datos.plantilla;
   }
 
+  /** Elige la plantilla de la invitación. */
   elegirPlantilla(plantilla: PlantillaInvitacion): void {
     this.datos.plantilla = plantilla;
     if (this.vistaPrevia()) {
@@ -83,6 +88,7 @@ export class Eventoformcomponent implements OnInit {
     }
   }
 
+  /** Pide al back el HTML de la invitación y lo muestra. */
   verVistaPrevia(): void {
     this.cargandoVista.set(true);
     this.errorVista.set('');
@@ -100,6 +106,7 @@ export class Eventoformcomponent implements OnInit {
     });
   }
 
+  /** Valida el formulario y envía el evento al back. */
   guardar(): void {
     const problema = primerError(REGLAS_EVENTO, this.datos);
     this.error.set(problema);
@@ -120,12 +127,14 @@ export class Eventoformcomponent implements OnInit {
     });
   }
 
+  /** Elige entre crear o actualizar según si se está editando. */
   private peticionGuardar(datos: DatosEvento): Observable<string> {
     return this.evento
       ? this.eventoService.actualizar(this.evento.id, datos)
       : this.eventoService.crear(datos);
   }
 
+  /** Pide al back los espacios del conjunto elegido. */
   private cargarEspacios(): void {
     if (this.datos.conjuntoId === null) {
       this.espacios.set([]);

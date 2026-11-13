@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+/** Página con la política de privacidad. */
 @Component({
   selector: 'app-privacidadcomponent',
   standalone: false,

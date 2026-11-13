@@ -12,6 +12,7 @@ import {
   textoSolicitudUsuario,
 } from '../../models/usuariomodel';
 
+/** Fila de la tabla de usuarios con sus acciones. */
 @Component({
   selector: '[app-filausuariocomponent]',
   standalone: false,

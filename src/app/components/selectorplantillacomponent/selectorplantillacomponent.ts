@@ -3,6 +3,7 @@ import { SafeHtml } from '@angular/platform-browser';
 import { PLANTILLAS_INVITACION, PlantillaInvitacion } from '../../models/eventomodel';
 import { claseSpinner } from '../../models/opcionmodel';
 
+/** Selector de la plantilla de invitación de un evento. */
 @Component({
   selector: 'app-selectorplantillacomponent',
   standalone: false,

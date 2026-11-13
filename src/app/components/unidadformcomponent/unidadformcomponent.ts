@@ -17,6 +17,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
 import { Unidadservice } from '../../services/unidadservice';
 
+/** Formulario para crear o editar una unidad de un conjunto. */
 @Component({
   selector: 'app-unidadformcomponent',
   standalone: false,
@@ -45,6 +46,7 @@ export class Unidadformcomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga los datos de la unidad cuando se está editando o prepara una nueva. */
   ngOnInit(): void {
     this.datos = this.unidad ? this.datosDeUnidad(this.unidad) : this.datosNuevos();
   }
@@ -53,6 +55,7 @@ export class Unidadformcomponent implements OnInit {
     return this.unidad ? 'Editar unidad' : 'Nueva unidad';
   }
 
+  /** Valida el formulario y envía la unidad al back. */
   guardar(): void {
     const problema = primerError(REGLAS_UNIDAD, this.datos);
     this.error.set(problema);
@@ -73,12 +76,14 @@ export class Unidadformcomponent implements OnInit {
     });
   }
 
+  /** Elige entre crear o actualizar según si se está editando. */
   private peticionGuardar(datos: DatosUnidad): Observable<string> {
     return this.unidad
       ? this.unidadService.actualizar(this.unidad.id, datos)
       : this.unidadService.crear(datos);
   }
 
+  /** Convierte una unidad en los datos del formulario. */
   private datosDeUnidad(unidad: Unidad): DatosUnidad {
     return {
       conjuntoId: this.conjunto.id,
@@ -88,6 +93,7 @@ export class Unidadformcomponent implements OnInit {
     };
   }
 
+  /** Devuelve los datos de una unidad nueva según el tipo de conjunto. */
   private datosNuevos(): DatosUnidad {
     return {
       conjuntoId: this.conjunto.id,

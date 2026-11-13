@@ -107,4 +107,5 @@ export interface Leaflet {
   latLngBounds: (puntos: LatLngTuple[]) => LatLngBounds;
 }
 
+/** Devuelve la librería Leaflet cargada por CDN, ya tipada. */
 export const leaflet = (): Leaflet => (globalThis as unknown as Record<string, Leaflet>)['L'];

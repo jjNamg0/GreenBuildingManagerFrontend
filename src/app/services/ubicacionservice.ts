@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, Subscriber } from 'rxjs';
+import { Observable, Subscriber, throwError } from 'rxjs';
 import {
   Coordenadas,
   MENSAJE_SIN_GEOLOCALIZACION,
@@ -7,11 +7,13 @@ import {
   mensajeErrorUbicacion,
 } from '../models/ubicacionmodel';
 
+/** Convierte un error de geolocalización en un error del observable. */
 const fallarUbicacion = (
   observador: Subscriber<Coordenadas>,
   error: GeolocationPositionError,
 ): void => observador.error(new Error(mensajeErrorUbicacion(error.code)));
 
+/** Service que obtiene y sigue la ubicación del navegador. */
 @Injectable({
   providedIn: 'root',
 })
@@ -24,12 +26,12 @@ export class Ubicacionservice {
 
   ultimaUbicacion = signal<Coordenadas | null>(null);
 
+  /** Obtiene la ubicación una sola vez. */
   obtenerUbicacion(): Observable<Coordenadas> {
+    if (!('geolocation' in navigator)) {
+      return throwError(() => new Error(MENSAJE_SIN_GEOLOCALIZACION));
+    }
     return new Observable<Coordenadas>((observador) => {
-      if (!('geolocation' in navigator)) {
-        observador.error(new Error(MENSAJE_SIN_GEOLOCALIZACION));
-        return;
-      }
       navigator.geolocation.getCurrentPosition(
         (posicion) => {
           observador.next(this.guardar(posicion));
@@ -41,12 +43,12 @@ export class Ubicacionservice {
     });
   }
 
+  /** Emite la ubicación cada vez que cambia. */
   seguirUbicacion(): Observable<Coordenadas> {
+    if (!('geolocation' in navigator)) {
+      return throwError(() => new Error(MENSAJE_SIN_GEOLOCALIZACION));
+    }
     return new Observable<Coordenadas>((observador) => {
-      if (!('geolocation' in navigator)) {
-        observador.error(new Error(MENSAJE_SIN_GEOLOCALIZACION));
-        return;
-      }
       const id = navigator.geolocation.watchPosition(
         (posicion) => observador.next(this.guardar(posicion)),
         (error) => fallarUbicacion(observador, error),
@@ -56,6 +58,7 @@ export class Ubicacionservice {
     });
   }
 
+  /** Guarda y devuelve las coordenadas de la posición. */
   private guardar(posicion: GeolocationPosition): Coordenadas {
     const coordenadas = coordenadasDePosicion(posicion);
     this.ultimaUbicacion.set(coordenadas);

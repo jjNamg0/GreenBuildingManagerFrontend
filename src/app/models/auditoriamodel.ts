@@ -56,12 +56,16 @@ const CLASES_ACCION: Record<string, string> = {
   VERIFICACION: 'info',
 };
 
+/** Devuelve el texto en español de una acción de auditoría. */
 export const textoAccion = (accion: string): string => textoOpcion(ACCIONES_AUDITORIA, accion);
 
+/** Devuelve la clase de estilo de una acción de auditoría. */
 export const claseAccion = (accion: string): string => CLASES_ACCION[accion] ?? 'neutro';
 
+/** Indica si el registro trae latitud y longitud. */
 export const tieneCoordenadas = (registro: RegistroAuditoria): boolean =>
   registro.latitud !== null && registro.longitud !== null;
 
+/** Arma el enlace al mapa con las coordenadas del registro. */
 export const enlaceMapaAuditoria = (registro: RegistroAuditoria): string =>
   `https://www.openstreetmap.org/?mlat=${registro.latitud}&mlon=${registro.longitud}#map=17/${registro.latitud}/${registro.longitud}`;

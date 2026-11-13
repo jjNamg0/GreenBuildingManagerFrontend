@@ -4,6 +4,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Resumenservice } from '../../services/resumenservice';
 import { Sesionservice } from '../../services/sesionservice';
 
+/** Panel de inicio del administrador con los totales del sistema y accesos rápidos. */
 @Component({
   selector: 'app-admininiciocomponent',
   standalone: false,
@@ -48,14 +49,17 @@ export class Admininiciocomponent implements OnInit {
     private errorService: Errorservice,
   ) {}
 
+  /** Carga los totales del panel. */
   ngOnInit(): void {
     this.cargar();
   }
 
+  /** Devuelve el nombre del administrador con la sesión iniciada. */
   nombre(): string {
     return this.sesionService.usuario()?.nombre ?? '';
   }
 
+  /** Pide al back el resumen del panel. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');

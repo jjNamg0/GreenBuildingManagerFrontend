@@ -70,21 +70,27 @@ export const REGLAS_RESERVA: ReglaValidacion<DatosReserva>[] = [
   { falla: (datos) => estaVacio(datos.motivo), mensaje: 'Cuéntanos el motivo de la reserva.' },
 ];
 
+/** Devuelve el texto del estado de la reserva. */
 export const textoEstadoReserva = (estado: EstadoReserva): string => TEXTOS_ESTADO_RESERVA[estado];
 
+/** Devuelve la clase de estilo del estado de la reserva. */
 export const claseEstadoReserva = (estado: EstadoReserva): string => CLASES_ESTADO_RESERVA[estado];
 
+/** Indica si la reserva se puede cancelar. */
 export const puedeCancelarReserva = (reserva: Reserva): boolean =>
   reserva.estado === 'PENDIENTE' || reserva.estado === 'APROBADA';
 
+/** Indica si la reserva está pendiente. */
 export const estaPendiente = (reserva: Reserva): boolean => reserva.estado === 'PENDIENTE';
 
+/** Convierte una fecha a texto AAAA-MM-DD. */
 export const fechaIso = (fecha: Date): string => {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0');
   const dia = String(fecha.getDate()).padStart(2, '0');
   return `${fecha.getFullYear()}-${mes}-${dia}`;
 };
 
+/** Devuelve las fechas de los próximos días. */
 export const proximosDias = (cantidad: number): string[] => {
   const hoy = new Date();
   return Array.from({ length: cantidad }, (_valor, indice) =>

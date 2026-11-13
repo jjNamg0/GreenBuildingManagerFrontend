@@ -7,6 +7,7 @@ import {
   tieneCoordenadas,
 } from '../../models/auditoriamodel';
 
+/** Fila de la tabla de auditoría. */
 @Component({
   selector: '[app-filaauditoriacomponent]',
   standalone: false,

@@ -7,6 +7,7 @@ import {
 } from '../../models/conjuntomodel';
 import { RecomendacionConjunto } from '../../models/recomendacionmodel';
 
+/** Lista de conjuntos con búsqueda y filtro por tipo. */
 @Component({
   selector: 'app-listaconjuntoscomponent',
   standalone: false,
@@ -49,11 +50,13 @@ export class Listaconjuntoscomponent {
     return !this.cargando && this.conjuntos.length > 0;
   }
 
+  /** Actualiza el texto de búsqueda y se lo notifica al padre. */
   cambiarBusqueda(valor: string): void {
     this.busqueda = valor;
     this.busquedaChange.emit(valor);
   }
 
+  /** Actualiza el tipo elegido y se lo notifica al padre. */
   cambiarTipo(valor: string): void {
     this.tipo = valor;
     this.tipoChange.emit(valor);

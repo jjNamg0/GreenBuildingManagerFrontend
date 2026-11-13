@@ -12,6 +12,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Espacioservice } from '../../services/espacioservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Tabla de espacios de un conjunto con crear, editar y eliminar. */
 @Component({
   selector: 'app-tablaespacioscomponent',
   standalone: false,
@@ -40,6 +41,7 @@ export class Tablaespacioscomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga los espacios. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -52,6 +54,7 @@ export class Tablaespacioscomponent implements OnInit {
     return !this.cargando() && this.espacios().length > 0;
   }
 
+  /** Pide al back los espacios del conjunto. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -67,16 +70,19 @@ export class Tablaespacioscomponent implements OnInit {
     });
   }
 
+  /** Abre el formulario para crear un espacio o editar el indicado. */
   abrirFormulario(espacio: Espacio | null): void {
     this.espacioEditado.set(espacio);
     this.formularioAbierto.set(true);
   }
 
+  /** Cierra el formulario y recarga la tabla. */
   alGuardar(): void {
     this.formularioAbierto.set(false);
     this.cargar();
   }
 
+  /** Pide confirmación y elimina el espacio. */
   async eliminar(espacio: Espacio): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: `¿Eliminar ${espacio.nombre}?`,
@@ -89,6 +95,7 @@ export class Tablaespacioscomponent implements OnInit {
     }
   }
 
+  /** Envía la eliminación al back, avisa el resultado y recarga la tabla. */
   private enviarEliminacion(id: number): void {
     this.espacioService.eliminar(id).subscribe({
       next: (mensaje) => {

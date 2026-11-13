@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Sesionservice } from '../../services/sesionservice';
 
+/** Página de inicio pública. */
 @Component({
   selector: 'app-homecomponent',
   standalone: false,
@@ -49,10 +50,12 @@ export class Homecomponent {
 
   constructor(private sesionService: Sesionservice) {}
 
+  /** Indica si hay una sesión iniciada. */
   haySesion(): boolean {
     return this.sesionService.haySesion();
   }
 
+  /** Devuelve la ruta inicial según el rol del usuario. */
   destinoInicial(): string {
     return this.sesionService.destinoInicial();
   }

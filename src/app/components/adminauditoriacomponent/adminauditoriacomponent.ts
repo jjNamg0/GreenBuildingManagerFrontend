@@ -9,6 +9,7 @@ import { Pagina } from '../../models/paginamodel';
 import { Auditoriaservice } from '../../services/auditoriaservice';
 import { Errorservice } from '../../services/errorservice';
 
+/** Pantalla de auditoría: lista paginada y filtrable de las acciones registradas en el sistema. */
 @Component({
   selector: 'app-adminauditoriacomponent',
   standalone: false,
@@ -28,6 +29,7 @@ export class Adminauditoriacomponent implements OnInit {
     private errorService: Errorservice,
   ) {}
 
+  /** Carga la primera página de registros. */
   ngOnInit(): void {
     this.cargar();
   }
@@ -56,21 +58,25 @@ export class Adminauditoriacomponent implements OnInit {
     return this.pagina()?.totalElements ?? 0;
   }
 
+  /** Aplica los filtros y vuelve a la primera página. */
   buscar(): void {
     this.filtros.pagina = 0;
     this.cargar();
   }
 
+  /** Borra los filtros y recarga la lista. */
   limpiar(): void {
     this.filtros = { ...FILTROS_AUDITORIA_VACIOS };
     this.cargar();
   }
 
+  /** Cambia a la página indicada y recarga los registros. */
   irAPagina(numero: number): void {
     this.filtros.pagina = numero;
     this.cargar();
   }
 
+  /** Pide al back la página de registros con los filtros actuales. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');

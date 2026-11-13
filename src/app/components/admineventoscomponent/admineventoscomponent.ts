@@ -8,6 +8,9 @@ import { Errorservice } from '../../services/errorservice';
 import { Eventoservice } from '../../services/eventoservice';
 import { Toastservice } from '../../services/toastservice';
 
+/**
+ * Pantalla para administrar los eventos: filtro por conjunto, creación, edición, invitaciones, cancelación y eliminación.
+ */
 @Component({
   selector: 'app-admineventoscomponent',
   standalone: false,
@@ -32,6 +35,7 @@ export class Admineventoscomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga los conjuntos del filtro y la lista de eventos. */
   ngOnInit(): void {
     this.conjuntoService.obtenerTodos().subscribe({
       next: (conjuntos) => this.conjuntos.set(conjuntos),
@@ -48,6 +52,7 @@ export class Admineventoscomponent implements OnInit {
     return !this.cargando() && this.eventos().length > 0;
   }
 
+  /** Pide al back los eventos del conjunto elegido. */
   cargar(): void {
     this.cargando.set(true);
     this.error.set('');
@@ -63,21 +68,25 @@ export class Admineventoscomponent implements OnInit {
     });
   }
 
+  /** Filtra los eventos por conjunto y recarga la lista. */
   filtrarPorConjunto(conjuntoId: number | null): void {
     this.conjuntoFiltro = conjuntoId;
     this.cargar();
   }
 
+  /** Abre el formulario para crear un evento o editar el indicado. */
   abrirFormulario(evento: Evento | null): void {
     this.eventoEditado.set(evento);
     this.formularioAbierto.set(true);
   }
 
+  /** Cierra el formulario y recarga la lista. */
   alGuardar(): void {
     this.formularioAbierto.set(false);
     this.cargar();
   }
 
+  /** Pide confirmación y envía la invitación del evento a los residentes. */
   async enviarInvitacion(evento: Evento): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: 'Enviar invitación por correo',
@@ -103,6 +112,7 @@ export class Admineventoscomponent implements OnInit {
     });
   }
 
+  /** Pide el motivo y cancela el evento. */
   async cancelar(evento: Evento): Promise<void> {
     const motivo = await this.confirmacionService.pedirTexto({
       titulo: `¿Cancelar "${evento.titulo}"?`,
@@ -116,6 +126,7 @@ export class Admineventoscomponent implements OnInit {
     }
   }
 
+  /** Pide confirmación y elimina el evento. */
   async eliminar(evento: Evento): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: `¿Eliminar "${evento.titulo}"?`,
@@ -128,6 +139,7 @@ export class Admineventoscomponent implements OnInit {
     }
   }
 
+  /** Ejecuta la petición recibida, avisa el resultado y recarga la lista. */
   private enviar(peticion: Observable<string>, porDefecto: string): void {
     peticion.subscribe({
       next: (mensaje) => {

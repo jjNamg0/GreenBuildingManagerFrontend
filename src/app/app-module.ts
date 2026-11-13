@@ -61,6 +61,9 @@ import { Filaauditoriacomponent } from './components/filaauditoriacomponent/fila
 
 registerLocaleData(localeEsCo);
 
+/**
+ * Módulo raíz de la aplicación: declara los components, importa los módulos de Angular y registra el interceptor HTTP.
+ */
 @NgModule({
   declarations: [
     App,

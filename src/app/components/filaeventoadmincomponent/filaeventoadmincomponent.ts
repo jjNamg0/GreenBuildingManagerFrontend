@@ -11,6 +11,7 @@ import {
 } from '../../models/eventomodel';
 import { claseSpinner } from '../../models/opcionmodel';
 
+/** Fila de la tabla de eventos del administrador con sus acciones. */
 @Component({
   selector: '[app-filaeventoadmincomponent]',
   standalone: false,

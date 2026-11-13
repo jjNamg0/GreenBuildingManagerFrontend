@@ -13,6 +13,7 @@ import { Errorservice } from '../../services/errorservice';
 import { Eventoservice } from '../../services/eventoservice';
 import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla del residente con los eventos de su conjunto, filtros y confirmación de asistencia. */
 @Component({
   selector: 'app-eventoscomponent',
   standalone: false,
@@ -37,6 +38,7 @@ export class Eventoscomponent implements OnInit {
     private toastService: Toastservice,
   ) {}
 
+  /** Carga el usuario y, si tiene unidad, sus eventos. */
   ngOnInit(): void {
     this.authService.cargarUsuario().subscribe({
       next: (usuario) => this.alCargarUsuario(usuario),
@@ -51,6 +53,7 @@ export class Eventoscomponent implements OnInit {
     return !this.cargando() && this.error() === '' && this.eventos().length === 0;
   }
 
+  /** Pide al back los eventos del conjunto con los filtros actuales. */
   cargar(): void {
     if (this.conjuntoId === null) {
       return;
@@ -69,16 +72,19 @@ export class Eventoscomponent implements OnInit {
     });
   }
 
+  /** Filtra los eventos por tipo. */
   elegirTipo(tipo: TipoEvento | ''): void {
     this.filtros.tipo = tipo;
     this.cargar();
   }
 
+  /** Activa o desactiva el filtro de planes para niños. */
   alternarNinos(): void {
     this.filtros.paraNinos = !this.filtros.paraNinos;
     this.cargar();
   }
 
+  /** Inscribe o retira al residente del evento. */
   alternarAsistencia(evento: Evento): void {
     this.procesando.set(evento.id);
     this.peticionAsistencia(evento).subscribe({
@@ -94,6 +100,7 @@ export class Eventoscomponent implements OnInit {
     });
   }
 
+  /** Guarda el conjunto del usuario y carga los eventos si tiene unidad. */
   private alCargarUsuario(usuario: Usuario): void {
     this.conjuntoId = usuario.conjuntoId;
     if (!tieneUnidad(usuario)) {
@@ -104,6 +111,7 @@ export class Eventoscomponent implements OnInit {
     this.cargar();
   }
 
+  /** Elige entre inscribirse o cancelar la asistencia. */
   private peticionAsistencia(evento: Evento): Observable<string> {
     return evento.asistire
       ? this.eventoService.noAsistir(evento.id)

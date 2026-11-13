@@ -14,6 +14,7 @@ import { Ubicacionservice } from '../../services/ubicacionservice';
 
 const CUENTA_SIN_VERIFICAR = 403;
 
+/** Pantalla de inicio de sesión. */
 @Component({
   selector: 'app-logincomponent',
   standalone: false,
@@ -39,6 +40,7 @@ export class Logincomponent implements OnInit {
     private router: Router,
   ) {}
 
+  /** Lee el correo de la URL y pide la ubicación sin mostrar errores. */
   ngOnInit(): void {
     this.correo = this.route.snapshot.queryParamMap.get('correo') ?? '';
     this.ubicacionService
@@ -76,10 +78,12 @@ export class Logincomponent implements OnInit {
     return this.verPassword ? 'text' : 'password';
   }
 
+  /** Borra el mensaje de error del formulario. */
   limpiarError(): void {
     this.error.set('');
   }
 
+  /** Valida el formulario y envía las credenciales al back. */
   iniciarSesion(): void {
     const datos: DatosLogin = { username: this.correo.trim(), password: this.password };
     const problema = primerError(REGLAS_LOGIN, datos);
@@ -95,6 +99,7 @@ export class Logincomponent implements OnInit {
     });
   }
 
+  /** Muestra el saludo y navega al destino seguro. */
   private terminarLogin(usuario: Usuario): void {
     this.cargando.set(false);
     this.toastService.mostrar(`¡Hola, ${usuario.nombre}! Ingresaste correctamente.`);
@@ -102,6 +107,7 @@ export class Logincomponent implements OnInit {
     this.router.navigateByUrl(this.sesionService.destinoSeguro(volverA));
   }
 
+  /** Muestra el error o lleva a verificar la cuenta si aún no está verificada. */
   private fallarLogin(error: unknown): void {
     this.cargando.set(false);
     if (error instanceof HttpErrorResponse && error.status === CUENTA_SIN_VERIFICAR) {
@@ -111,6 +117,7 @@ export class Logincomponent implements OnInit {
     this.error.set(this.errorService.obtenerMensaje(error, 'Correo o contraseña incorrectos.'));
   }
 
+  /** Avisa que falta verificar la cuenta y lleva a la pantalla del código. */
   private irAVerificar(): void {
     this.toastService.mostrar(
       'Tu cuenta aún no está verificada. Ingresa el código de tu correo.',

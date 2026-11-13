@@ -6,6 +6,7 @@ import {
   textoEstadoReserva,
 } from '../../models/reservamodel';
 
+/** Fila de la tabla de reservas del administrador con sus acciones. */
 @Component({
   selector: '[app-filareservaadmincomponent]',
   standalone: false,
