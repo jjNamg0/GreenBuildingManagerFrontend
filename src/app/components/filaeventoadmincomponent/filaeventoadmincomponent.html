@@ -1,0 +1,61 @@
+<td>
+  <div class="fw-medium">
+    <i class="fa-solid texto-verde me-2 {{ iconoTipoEvento(evento.tipo) }}"></i>{{ evento.titulo }}
+  </div>
+  <div class="d-flex flex-wrap gap-1 mt-1">
+    <span class="gb-insignia neutro">{{ textoTipoEvento(evento.tipo) }}</span>
+    <span class="gb-insignia info" *ngIf="evento.paraNinos"
+      ><i class="fa-solid fa-children"></i>Niños</span
+    >
+  </div>
+</td>
+<td>
+  <div>{{ evento.conjuntoNombre }}</div>
+  <div class="small texto-tenue">{{ textoLugarEvento(evento) }}</div>
+</td>
+<td class="text-nowrap">
+  <div>{{ evento.fecha | date: 'EEE d MMM y' }}</div>
+  <div class="small texto-tenue numeros">{{ evento.horaInicio }} – {{ evento.horaFin }}</div>
+</td>
+<td class="numeros">{{ textoAsistentes(evento) }}</td>
+<td>
+  <span class="gb-insignia punto {{ claseEstadoEvento(evento.estado) }}">
+    {{ textoEstadoEvento(evento.estado) }}
+  </span>
+</td>
+<td class="text-end text-nowrap">
+  <ng-container *ngIf="estaProgramado(evento)">
+    <button
+      class="btn-gb-borde btn-gb-sm me-1"
+      type="button"
+      [disabled]="enviando"
+      (click)="invitar.emit(evento)"
+    >
+      <span [class]="claseSpinner(enviando, 'fa-paper-plane')"></span>Invitar
+    </button>
+    <button
+      class="btn-gb-fantasma btn-gb-sm"
+      type="button"
+      title="Editar"
+      (click)="editar.emit(evento)"
+    >
+      <i class="fa-solid fa-pen"></i>
+    </button>
+    <button
+      class="btn-gb-fantasma btn-gb-sm texto-amarillo"
+      type="button"
+      title="Cancelar evento"
+      (click)="cancelar.emit(evento)"
+    >
+      <i class="fa-solid fa-ban"></i>
+    </button>
+  </ng-container>
+  <button
+    class="btn-gb-fantasma btn-gb-sm texto-rojo"
+    type="button"
+    title="Eliminar"
+    (click)="eliminar.emit(evento)"
+  >
+    <i class="fa-solid fa-trash-can"></i>
+  </button>
+</td>

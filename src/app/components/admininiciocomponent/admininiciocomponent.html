@@ -1,0 +1,72 @@
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Panel de administración</span>
+      <h1 class="titulo-pagina">Hola{{ nombre() ? ', ' + nombre() : '' }}</h1>
+      <p class="texto-tenue mb-0">Así van los conjuntos residenciales que administras.</p>
+    </div>
+  </div>
+
+  <app-cargandocomponent [activo]="cargando()" texto="Cargando resumen..." />
+
+  <div class="gb-alerta peligro mb-4" *ngIf="!cargando() && error()">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <span class="flex-grow-1">{{ error() }}</span>
+    <button class="btn-gb-borde btn-gb-sm" type="button" (click)="cargar()">Reintentar</button>
+  </div>
+
+  <div class="row g-3 mb-4" *ngIf="resumen() as resumen">
+    <div class="col-6 col-xl-3">
+      <div class="gb-metrica h-100">
+        <div class="etiqueta-mayuscula mb-2"><i class="fa-solid fa-city me-1"></i>Conjuntos</div>
+        <div class="valor">{{ resumen.totalConjuntos }}</div>
+        <div class="small texto-tenue">{{ resumen.totalUnidades }} unidades</div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="gb-metrica h-100">
+        <div class="etiqueta-mayuscula mb-2"><i class="fa-solid fa-users me-1"></i>Residentes</div>
+        <div class="valor">{{ resumen.totalResidentes }}</div>
+        <a class="small" routerLink="/admin/usuarios" *ngIf="resumen.usuariosSinUnidad > 0">
+          {{ resumen.usuariosSinUnidad }} esperan unidad
+        </a>
+        <div class="small texto-tenue" *ngIf="resumen.usuariosSinUnidad === 0">
+          Todos con unidad
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="gb-metrica h-100">
+        <div class="etiqueta-mayuscula mb-2">
+          <i class="fa-solid fa-calendar-check me-1"></i>Reservas pendientes
+        </div>
+        <div class="valor" [class.texto-amarillo]="resumen.reservasPendientes > 0">
+          {{ resumen.reservasPendientes }}
+        </div>
+        <a class="small" routerLink="/admin/reservas">Revisar solicitudes</a>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="gb-metrica h-100">
+        <div class="etiqueta-mayuscula mb-2">
+          <i class="fa-solid fa-champagne-glasses me-1"></i>Próximos eventos
+        </div>
+        <div class="valor">{{ resumen.eventosProximos }}</div>
+        <div class="small texto-tenue">{{ resumen.totalEspacios }} espacios registrados</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="h6 etiqueta-mayuscula mb-3">Accesos rápidos</h2>
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3" *ngFor="let acceso of ACCESOS">
+      <a class="gb-tarjeta interactiva acceso p-3 h-100" [routerLink]="acceso.ruta">
+        <span class="gb-icono"><i class="fa-solid" [ngClass]="acceso.icono"></i></span>
+        <span>
+          <span class="d-block fw-medium">{{ acceso.texto }}</span>
+          <span class="small texto-tenue">{{ acceso.detalle }}</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>

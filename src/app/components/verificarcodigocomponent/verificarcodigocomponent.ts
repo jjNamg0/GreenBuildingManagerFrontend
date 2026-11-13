@@ -1,122 +1,112 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Toastservice } from '../../services/toastservice';
+import { DatosVerificacion, REGLAS_CORREO, REGLAS_VERIFICACION } from '../../models/authmodel';
+import { claseSpinner } from '../../models/opcionmodel';
+import { LONGITUD_CODIGO, primerError } from '../../models/validacionmodel';
 import { Authservice } from '../../services/authservice';
-import { soloDigitos } from '../../services/validaciones';
+import { Errorservice } from '../../services/errorservice';
+import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla para verificar la cuenta con el código de 6 dígitos del correo. */
 @Component({
   selector: 'app-verificarcodigocomponent',
   standalone: false,
-  templateUrl: './verificarcodigocomponent.html',
   styleUrl: './verificarcodigocomponent.css',
+  templateUrl: './verificarcodigocomponent.html',
 })
-export class Verificarcodigocomponent implements OnInit, OnDestroy {
-  email = '';
-  modo: 'cuenta' | 'login' = 'cuenta';
+export class Verificarcodigocomponent implements OnInit {
+  readonly LONGITUD_CODIGO = LONGITUD_CODIGO;
+  readonly claseSpinner = claseSpinner;
+
+  correo = '';
   codigo = '';
-  error = '';
-  cargando = false;
-  segundosParaReenviar = 60;
-  enfocado = false;
-  private volverA: string | null = null;
-  private temporizador: ReturnType<typeof setInterval> | null = null;
+  correoDesdeEnlace = false;
+  enfocado = signal(false);
+  error = signal('');
+  cargando = signal(false);
+  reenviando = signal(false);
 
   constructor(
-    private auth: Authservice,
-    private router: Router,
-    private route: ActivatedRoute,
+    private authService: Authservice,
+    private errorService: Errorservice,
     private toastService: Toastservice,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
+  /** Lee el correo de la URL. */
   ngOnInit(): void {
-    const parametros = this.route.snapshot.queryParamMap;
-    this.email = parametros.get('email') ?? '';
-    this.modo = parametros.get('modo') === 'login' ? 'login' : 'cuenta';
-    this.volverA = parametros.get('volverA');
-    if (!this.email) {
-      this.router.navigate(['/login']);
-      return;
+    this.correo = this.route.snapshot.queryParamMap.get('correo') ?? '';
+    this.correoDesdeEnlace = this.correo !== '';
+  }
+
+  /** Devuelve el contenido de cada casilla del código. */
+  casillas(): string[] {
+    return Array.from({ length: this.LONGITUD_CODIGO }, (_valor, indice) =>
+      this.codigo.charAt(indice),
+    );
+  }
+
+  /** Indica si la casilla es la que se está escribiendo. */
+  esCasillaActual(indice: number): boolean {
+    return this.enfocado() && indice === Math.min(this.codigo.length, this.LONGITUD_CODIGO - 1);
+  }
+
+  /** Deja solo los dígitos del código y verifica cuando está completo. */
+  actualizarCodigo(entrada: HTMLInputElement): void {
+    this.codigo = entrada.value.replace(/\D/g, '').slice(0, this.LONGITUD_CODIGO);
+    entrada.value = this.codigo;
+    this.error.set('');
+    if (this.codigo.length === this.LONGITUD_CODIGO && this.correo.trim() !== '') {
+      this.verificar();
     }
-    this.iniciarEspera();
   }
 
-  ngOnDestroy(): void {
-    this.detenerEspera();
-  }
-
-  get titulo(): string {
-    return this.modo === 'login' ? 'Código de ingreso' : 'Verifica tu cuenta';
-  }
-
-  get explicacion(): string {
-    return this.modo === 'login'
-      ? 'Por seguridad, los administradores confirman cada ingreso con un código. Lo enviamos a'
-      : 'Enviamos un código de 6 números a';
-  }
-
-  get casillas(): string[] {
-    return Array.from({ length: 6 }, (_, i) => this.codigo.charAt(i));
-  }
-
-  alCambiarCodigo(valor: string): void {
-    this.codigo = soloDigitos(valor, 6);
-    this.error = '';
-  }
-
+  /** Envía el código al back para verificar la cuenta. */
   verificar(): void {
-    if (this.codigo.length !== 6) {
-      this.error = 'El código debe tener 6 números.';
+    const datos: DatosVerificacion = { username: this.correo.trim(), codigo: this.codigo };
+    const problema = primerError(REGLAS_VERIFICACION, datos);
+    if (problema) {
+      this.error.set(problema);
       return;
     }
-    this.cargando = true;
-    const peticion =
-      this.modo === 'login'
-        ? this.auth.verificarLogin(this.email, this.codigo)
-        : this.auth.verificarCuenta(this.email, this.codigo);
-
-    peticion.subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.codigo = '';
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.toastService.mostrar(this.modo === 'login' ? 'Ingreso confirmado' : 'Cuenta verificada');
-      this.router.navigateByUrl(this.auth.destinoSeguro(this.volverA));
+    this.cargando.set(true);
+    this.authService.verificarCodigo(datos).subscribe({
+      next: (mensaje) => this.terminarVerificacion(mensaje, datos.username),
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(
+          this.errorService.obtenerMensaje(error, 'El código no es válido o ya venció.'),
+        );
+      },
     });
   }
 
+  /** Pide al back que reenvíe el código. */
   reenviar(): void {
-    if (this.segundosParaReenviar > 0) {
+    const datos = { username: this.correo.trim() };
+    const problema = primerError(REGLAS_CORREO, datos);
+    if (problema) {
+      this.error.set(problema);
       return;
     }
-    const tipo = this.modo === 'login' ? 'INICIO_SESION' : 'VERIFICACION';
-    this.auth.reenviarCodigo(this.email, tipo).subscribe((resultado) => {
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.toastService.mostrar('Te enviamos un código nuevo.');
-      this.error = '';
-      this.iniciarEspera();
+    this.reenviando.set(true);
+    this.authService.reenviarCodigo(datos).subscribe({
+      next: (mensaje) => {
+        this.reenviando.set(false);
+        this.toastService.mostrar(mensaje || 'Te enviamos un código nuevo.', 'info');
+      },
+      error: (error: unknown) => {
+        this.reenviando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos reenviar el código.'));
+      },
     });
   }
 
-  private iniciarEspera(): void {
-    this.detenerEspera();
-    this.segundosParaReenviar = 60;
-    this.temporizador = setInterval(() => {
-      this.segundosParaReenviar--;
-      if (this.segundosParaReenviar <= 0) {
-        this.detenerEspera();
-      }
-    }, 1000);
-  }
-
-  private detenerEspera(): void {
-    if (this.temporizador) {
-      clearInterval(this.temporizador);
-      this.temporizador = null;
-    }
+  /** Avisa el resultado y lleva al inicio de sesión. */
+  private terminarVerificacion(mensaje: string, correo: string): void {
+    this.cargando.set(false);
+    this.toastService.mostrar(mensaje || 'Tu correo quedó verificado. Ya puedes iniciar sesión.');
+    this.router.navigate(['/login'], { queryParams: { correo } });
   }
 }

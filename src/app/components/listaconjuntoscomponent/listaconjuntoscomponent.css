@@ -1,0 +1,28 @@
+.fila-conjunto {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--gb-borde);
+  border-radius: 12px;
+  background: var(--gb-superficie);
+  color: var(--gb-texto);
+  transition: border-color 0.15s ease;
+}
+
+.fila-conjunto:hover {
+  border-color: var(--gb-verde);
+}
+
+.fila-conjunto .gb-icono {
+  width: 40px;
+  height: 40px;
+  font-size: 1rem;
+}
+
+.fila-conjunto.cercano {
+  border-color: rgba(var(--gb-acento-rgb), 0.35);
+  background: var(--gb-verde-tenue);
+}

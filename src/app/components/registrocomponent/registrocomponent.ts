@@ -1,82 +1,110 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Toastservice } from '../../services/toastservice';
+import { DatosRegistro, REGLAS_REGISTRO, limpiarDatosRegistro } from '../../models/authmodel';
+import { Conjunto } from '../../models/conjuntomodel';
+import { claseSpinner } from '../../models/opcionmodel';
+import { primerError } from '../../models/validacionmodel';
 import { Authservice } from '../../services/authservice';
 import { Conjuntoservice } from '../../services/conjuntoservice';
-import { ConjuntoOpcion } from '../../models/conjuntomodel';
-import { validarContrasena, validarEmail, validarNombre } from '../../services/validaciones';
+import { Errorservice } from '../../services/errorservice';
+import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla de registro de residentes. */
 @Component({
   selector: 'app-registrocomponent',
   standalone: false,
-  templateUrl: './registrocomponent.html',
   styleUrl: './registrocomponent.css',
+  templateUrl: './registrocomponent.html',
 })
 export class Registrocomponent implements OnInit {
-  nombre = '';
-  apellido = '';
-  email = '';
-  password = '';
-  confirmacion = '';
-  conjuntoId = 0;
-  opciones: ConjuntoOpcion[] = [];
-  cargandoConjuntos = true;
-  errorConjuntos = '';
-  verContrasena = false;
-  error = '';
-  cargando = false;
+  readonly claseSpinner = claseSpinner;
+
+  datos: DatosRegistro = {
+    nombre: '',
+    apellido: '',
+    username: '',
+    telefono: '',
+    password: '',
+    conjuntoId: null,
+    unidadSolicitada: '',
+  };
+  confirmarPassword = '';
+  aceptaTerminos = false;
+  verPassword = false;
+
+  conjuntos = signal<Conjunto[]>([]);
+  cargandoConjuntos = signal(true);
+  errorConjuntos = signal('');
+  error = signal('');
+  cargando = signal(false);
 
   constructor(
-    private auth: Authservice,
+    private authService: Authservice,
     private conjuntoService: Conjuntoservice,
-    private router: Router,
+    private errorService: Errorservice,
     private toastService: Toastservice,
+    private router: Router,
   ) {}
 
+  /** Carga los conjuntos para elegir. */
   ngOnInit(): void {
-    this.cargarConjuntos();
-  }
-
-  cargarConjuntos(): void {
-    this.cargandoConjuntos = true;
-    this.errorConjuntos = '';
-    this.conjuntoService.obtenerOpciones().subscribe((resultado) => {
-      this.cargandoConjuntos = false;
-      if (!resultado.exito) {
-        this.errorConjuntos = resultado.mensaje;
-        return;
-      }
-      this.opciones = resultado.datos;
+    this.conjuntoService.obtenerTodos().subscribe({
+      next: (conjuntos) => {
+        this.conjuntos.set(conjuntos);
+        this.cargandoConjuntos.set(false);
+      },
+      error: (error: unknown) => {
+        this.errorConjuntos.set(
+          this.errorService.obtenerMensaje(error, 'No pudimos cargar los conjuntos.'),
+        );
+        this.cargandoConjuntos.set(false);
+      },
     });
   }
 
-  entrarConGoogle(): void {
-    this.auth.loginConGoogle();
+  get textoPrimeraOpcion(): string {
+    return this.cargandoConjuntos() ? 'Cargando conjuntos...' : 'Elige tu conjunto';
   }
 
+  get tipoCampoPassword(): string {
+    return this.verPassword ? 'text' : 'password';
+  }
+
+  get iconoPassword(): string {
+    return this.verPassword ? 'fa-eye-slash' : 'fa-eye';
+  }
+
+  /** Borra el mensaje de error del formulario. */
+  limpiarError(): void {
+    this.error.set('');
+  }
+
+  /** Valida el formulario y envía el registro al back. */
   registrar(): void {
-    this.error =
-      validarNombre(this.nombre, 'nombre') ||
-      validarNombre(this.apellido, 'apellido') ||
-      validarEmail(this.email) ||
-      (this.conjuntoId ? '' : 'Escoge el conjunto al que quieres entrar.') ||
-      validarContrasena(this.password, this.confirmacion);
-    if (this.error) {
+    const problema = primerError(REGLAS_REGISTRO, {
+      datos: this.datos,
+      confirmarPassword: this.confirmarPassword,
+      aceptaTerminos: this.aceptaTerminos,
+    });
+    if (problema) {
+      this.error.set(problema);
       return;
     }
+    const datos = limpiarDatosRegistro(this.datos);
+    this.cargando.set(true);
+    this.authService.registrar(datos).subscribe({
+      next: (mensaje) => this.terminarRegistro(mensaje, datos.username),
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos crear la cuenta.'));
+      },
+    });
+  }
 
-    this.cargando = true;
-    const email = this.email.trim().toLowerCase();
-    this.auth
-      .registro(this.nombre.trim(), this.apellido.trim(), email, this.password, Number(this.conjuntoId))
-      .subscribe((resultado) => {
-        this.cargando = false;
-        if (!resultado.exito) {
-          this.error = resultado.mensaje;
-          return;
-        }
-        this.toastService.mostrar('Te enviamos un código para verificar tu cuenta.');
-        this.router.navigate(['/verificar'], { queryParams: { email, modo: 'cuenta' } });
-      });
+  /** Avisa el resultado y lleva a la pantalla de verificación. */
+  private terminarRegistro(mensaje: string, correo: string): void {
+    this.cargando.set(false);
+    this.toastService.mostrar(mensaje || 'Cuenta creada. Te enviamos un código a tu correo.');
+    this.router.navigate(['/verificar'], { queryParams: { correo } });
   }
 }

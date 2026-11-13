@@ -1,80 +1,120 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { Observable } from 'rxjs';
+import {
+  Evento,
+  FiltrosEvento,
+  TIPOS_EVENTO,
+  TipoEvento,
+  mensajeAsistencia,
+} from '../../models/eventomodel';
+import { Usuario, tieneUnidad } from '../../models/usuariomodel';
+import { Authservice } from '../../services/authservice';
+import { Errorservice } from '../../services/errorservice';
 import { Eventoservice } from '../../services/eventoservice';
-import { Evento } from '../../models/eventomodel';
-import { CATEGORIAS_EVENTO, etiquetaDe } from '../../models/opcionesmodel';
+import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla del residente con los eventos de su conjunto, filtros y confirmación de asistencia. */
 @Component({
   selector: 'app-eventoscomponent',
   standalone: false,
-  templateUrl: './eventoscomponent.html',
   styleUrl: './eventoscomponent.css',
+  templateUrl: './eventoscomponent.html',
 })
 export class Eventoscomponent implements OnInit {
-  readonly IMAGEN_RESPALDO = 'assets/images/respaldo.svg';
+  readonly TIPOS = TIPOS_EVENTO;
 
-  eventos: Evento[] = [];
-  pasados = false;
-  soloNinos = false;
-  cargando = true;
-  error = '';
+  private conjuntoId: number | null = null;
+  filtros: FiltrosEvento = { tipo: '', paraNinos: false };
+  eventos = signal<Evento[]>([]);
+  cargando = signal(true);
+  error = signal('');
+  sinConjunto = signal(false);
+  procesando = signal<number | null>(null);
 
-  constructor(private eventoService: Eventoservice) {}
+  constructor(
+    private authService: Authservice,
+    private eventoService: Eventoservice,
+    private errorService: Errorservice,
+    private toastService: Toastservice,
+  ) {}
 
+  /** Carga el usuario y, si tiene unidad, sus eventos. */
   ngOnInit(): void {
-    this.cargar();
-  }
-
-  get filtrados(): Evento[] {
-    return this.eventos.filter((e) => !this.soloNinos || e.fiestaNinos);
-  }
-
-  cambiarVista(pasados: boolean): void {
-    if (this.pasados !== pasados) {
-      this.pasados = pasados;
-      this.cargar();
-    }
-  }
-
-  cargar(): void {
-    this.cargando = true;
-    this.error = '';
-    this.eventoService.obtenerEventos(this.pasados).subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.eventos = resultado.datos;
+    this.authService.cargarUsuario().subscribe({
+      next: (usuario) => this.alCargarUsuario(usuario),
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error));
+      },
     });
   }
 
-  etiquetaCategoria(categoria: string): string {
-    return etiquetaDe(CATEGORIAS_EVENTO, categoria);
+  get sinEventos(): boolean {
+    return !this.cargando() && this.error() === '' && this.eventos().length === 0;
   }
 
-  iconoCategoria(categoria: string): string {
-    switch (categoria) {
-      case 'DEPORTIVO':
-        return 'bi-dribbble';
-      case 'ASAMBLEA':
-        return 'bi-megaphone';
-      case 'CULTURAL':
-        return 'bi-film';
-      case 'RECREATIVO':
-        return 'bi-balloon';
-      default:
-        return 'bi-calendar-event';
+  /** Pide al back los eventos del conjunto con los filtros actuales. */
+  cargar(): void {
+    if (this.conjuntoId === null) {
+      return;
     }
+    this.cargando.set(true);
+    this.error.set('');
+    this.eventoService.obtenerPorConjunto(this.conjuntoId, this.filtros).subscribe({
+      next: (eventos) => {
+        this.eventos.set(eventos);
+        this.cargando.set(false);
+      },
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos cargar los eventos.'));
+      },
+    });
   }
 
-  imagenDe(evento: Evento): string {
-    return evento.imagen ? `assets/images/${evento.imagen}` : this.IMAGEN_RESPALDO;
+  /** Filtra los eventos por tipo. */
+  elegirTipo(tipo: TipoEvento | ''): void {
+    this.filtros.tipo = tipo;
+    this.cargar();
   }
 
-  usarImagenRespaldo(evento: Event): void {
-    const imagen = evento.target as HTMLImageElement;
-    if (!imagen.src.endsWith(this.IMAGEN_RESPALDO)) {
-      imagen.src = this.IMAGEN_RESPALDO;
+  /** Activa o desactiva el filtro de planes para niños. */
+  alternarNinos(): void {
+    this.filtros.paraNinos = !this.filtros.paraNinos;
+    this.cargar();
+  }
+
+  /** Inscribe o retira al residente del evento. */
+  alternarAsistencia(evento: Evento): void {
+    this.procesando.set(evento.id);
+    this.peticionAsistencia(evento).subscribe({
+      next: (mensaje) => {
+        this.procesando.set(null);
+        this.toastService.mostrar(mensaje || mensajeAsistencia(evento));
+        this.cargar();
+      },
+      error: (error: unknown) => {
+        this.procesando.set(null);
+        this.toastService.mostrar(this.errorService.obtenerMensaje(error), 'error');
+      },
+    });
+  }
+
+  /** Guarda el conjunto del usuario y carga los eventos si tiene unidad. */
+  private alCargarUsuario(usuario: Usuario): void {
+    this.conjuntoId = usuario.conjuntoId;
+    if (!tieneUnidad(usuario)) {
+      this.sinConjunto.set(true);
+      this.cargando.set(false);
+      return;
     }
+    this.cargar();
+  }
+
+  /** Elige entre inscribirse o cancelar la asistencia. */
+  private peticionAsistencia(evento: Evento): Observable<string> {
+    return evento.asistire
+      ? this.eventoService.noAsistir(evento.id)
+      : this.eventoService.asistir(evento.id);
   }
 }

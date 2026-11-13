@@ -1,0 +1,54 @@
+.portada {
+  border-bottom: 1px solid var(--gb-borde);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(var(--gb-acento-rgb), 0.12), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(var(--gb-acento-rgb), 0.06), transparent 40%);
+}
+
+.portada-interior {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3rem;
+  padding-top: 4.5rem;
+  padding-bottom: 4.5rem;
+}
+
+.portada-titulo {
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+
+.portada-descripcion {
+  max-width: 560px;
+  font-size: 1.05rem;
+  margin-bottom: 1.75rem;
+}
+
+.portada-tarjeta {
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45);
+}
+
+.numero-paso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gb-verde-tenue);
+  color: var(--gb-verde);
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .portada-interior {
+    grid-template-columns: 1fr;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}

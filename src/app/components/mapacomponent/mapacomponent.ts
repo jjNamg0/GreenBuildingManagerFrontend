@@ -1,390 +1,379 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import * as L from 'leaflet';
-import { Adminconjuntoservice } from '../../services/adminconjuntoservice';
-import { Invitacionservice } from '../../services/invitacionservice';
-import { Rutaservice } from '../../services/rutaservice';
-import { Ubicacionservice } from '../../services/ubicacionservice';
-import { Anillo, Geografiaservice } from '../../services/geografiaservice';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  signal,
+} from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Conjunto } from '../../models/conjuntomodel';
-import { Evento } from '../../models/eventomodel';
-import { Coordenadas, Ruta } from '../../models/rutamodel';
-import { TIPOS_CONJUNTO, etiquetaDe } from '../../models/opcionesmodel';
-import { normalizarTexto } from '../../services/validaciones';
+import { Anillo } from '../../models/geografiamodel';
+import {
+  AZUL_RUTA,
+  LIMITES_CUNDINAMARCA,
+  MUNDO,
+  OPCIONES_TESELAS,
+  URL_TESELAS,
+  crearIconoMarcador,
+} from '../../models/mapamodel';
+import {
+  CircleMarker,
+  LatLngTuple,
+  LayerGroup,
+  MapaLeaflet,
+  Polyline,
+  leaflet,
+} from '../../models/leafletmodel';
+import { claseSpinner } from '../../models/opcionmodel';
+import { RecomendacionConjunto } from '../../models/recomendacionmodel';
+import { ModoRuta, Ruta } from '../../models/rutamodel';
+import { Coordenadas } from '../../models/ubicacionmodel';
+import { Conjuntoservice } from '../../services/conjuntoservice';
+import { Errorservice } from '../../services/errorservice';
+import { Geografiaservice } from '../../services/geografiaservice';
+import { Recomendacionservice } from '../../services/recomendacionservice';
+import { Rutaservice } from '../../services/rutaservice';
+import { Sesionservice } from '../../services/sesionservice';
+import { Ubicacionservice } from '../../services/ubicacionservice';
 
-const LIMITES_CUNDINAMARCA: L.LatLngTuple[] = [
-  [3.7, -74.9],
-  [5.85, -73.0],
-];
-
-const AZUL_RUTA = '#4c9aff';
-
+/** Mapa público de Cundinamarca con los conjuntos, la ubicación del visitante y las rutas. */
 @Component({
   selector: 'app-mapacomponent',
   standalone: false,
-  templateUrl: './mapacomponent.html',
   styleUrl: './mapacomponent.css',
+  templateUrl: './mapacomponent.html',
 })
 export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('contenedorMapa') contenedorMapa!: ElementRef<HTMLDivElement>;
 
-  readonly tiposConjunto = TIPOS_CONJUNTO;
-  readonly IMAGEN_RESPALDO = 'assets/images/respaldo.svg';
+  readonly claseSpinner = claseSpinner;
 
-  esInvitacion = false;
-  evento: Evento | null = null;
-  conjuntos: Conjunto[] = [];
-  cargandoConjuntos = true;
-  errorConjuntos = '';
+  private mapa: MapaLeaflet | null = null;
+  private capaMarcadores: LayerGroup | null = null;
+  private lineaRuta: Polyline | null = null;
+  private brilloRuta: Polyline | null = null;
+  private puntoUbicacion: CircleMarker | null = null;
+  private haloUbicacion: CircleMarker | null = null;
+  private seguimiento: Subscription | null = null;
+  private suscripciones = new Subscription();
+
+  conjuntos = signal<Conjunto[]>([]);
+  cercanos = signal<RecomendacionConjunto[]>([]);
+  seleccionado = signal<Conjunto | null>(null);
+  ruta = signal<Ruta | null>(null);
+  modo = signal<ModoRuta>('CARRO');
   busqueda = '';
-  municipio = '';
   tipo = '';
 
-  seleccionado: Conjunto | null = null;
-  ubicacion: Coordenadas | null = null;
-  buscandoUbicacion = false;
-  errorUbicacion = '';
-
-  modo = 'carro';
-  ruta: Ruta | null = null;
-  calculandoRuta = false;
-  errorRuta = '';
-  siguiendo = false;
-
-  private mapa: L.Map | null = null;
-  private capaMarcadores = L.layerGroup();
-  private marcadores = new Map<number, L.Marker>();
-  private puntoUbicacion: L.CircleMarker | null = null;
-  private haloUbicacion: L.CircleMarker | null = null;
-  private lineaRuta: L.Polyline | null = null;
-  private brilloRuta: L.Polyline | null = null;
-  private idSeguimiento: number | null = null;
-
-  private token = '';
+  cargandoConjuntos = signal(true);
+  errorConjuntos = signal('');
+  buscandoUbicacion = signal(false);
+  avisoUbicacion = signal('');
+  calculandoRuta = signal(false);
+  errorRuta = signal('');
+  siguiendo = signal(false);
 
   constructor(
-    private adminConjuntoService: Adminconjuntoservice,
-    private invitacionService: Invitacionservice,
-    private route: ActivatedRoute,
+    private conjuntoService: Conjuntoservice,
+    private recomendacionService: Recomendacionservice,
     private rutaService: Rutaservice,
     private ubicacionService: Ubicacionservice,
     private geografiaService: Geografiaservice,
+    private sesionService: Sesionservice,
+    private errorService: Errorservice,
   ) {}
 
+  /** Carga los conjuntos. */
   ngOnInit(): void {
-    this.token = this.route.snapshot.paramMap.get('token') ?? '';
-    this.esInvitacion = this.token !== '';
-  }
-
-  ngAfterViewInit(): void {
-    this.crearMapa();
     this.cargarConjuntos();
   }
 
-  ngOnDestroy(): void {
-    this.ubicacionService.dejarDeSeguir(this.idSeguimiento);
-    this.mapa?.remove();
-    this.mapa = null;
+  /** Crea el mapa. */
+  ngAfterViewInit(): void {
+    this.crearMapa();
   }
 
-  get conjuntosFiltrados(): Conjunto[] {
-    const texto = normalizarTexto(this.busqueda);
-    return this.conjuntos.filter(
-      (c) =>
-        (!texto || normalizarTexto(c.nombre).includes(texto) || normalizarTexto(c.direccion).includes(texto)) &&
-        (!this.municipio || c.municipio === this.municipio) &&
-        (!this.tipo || c.tipo === this.tipo),
+  /** Cancela las suscripciones, detiene el seguimiento y destruye el mapa. */
+  ngOnDestroy(): void {
+    this.suscripciones.unsubscribe();
+    this.detenerSeguimiento();
+    this.mapa?.remove();
+  }
+
+  /** Indica si hay una sesión iniciada. */
+  haySesion(): boolean {
+    return this.sesionService.haySesion();
+  }
+
+  /** Pide al back los conjuntos con la búsqueda y el tipo actuales. */
+  cargarConjuntos(): void {
+    this.cargandoConjuntos.set(true);
+    this.errorConjuntos.set('');
+    this.suscripciones.add(
+      this.conjuntoService.obtenerTodos(this.busqueda.trim(), this.tipo).subscribe({
+        next: (conjuntos) => this.mostrarConjuntos(conjuntos),
+        error: (error: unknown) => {
+          this.mostrarConjuntos([]);
+          this.errorConjuntos.set(
+            this.errorService.obtenerMensaje(error, 'No pudimos cargar los conjuntos.'),
+          );
+        },
+      }),
     );
   }
 
-  get municipiosConConjuntos(): string[] {
-    return [...new Set(this.conjuntos.map((c) => c.municipio))].sort((a, b) => a.localeCompare(b, 'es'));
-  }
-
-  etiquetaTipo(tipo: string): string {
-    return etiquetaDe(TIPOS_CONJUNTO, tipo);
-  }
-
-  imagenDe(conjunto: Conjunto): string {
-    return conjunto.imagen ? `assets/images/${conjunto.imagen}` : this.IMAGEN_RESPALDO;
-  }
-
-  usarImagenRespaldo(evento: Event): void {
-    const imagen = evento.target as HTMLImageElement;
-    if (!imagen.src.endsWith(this.IMAGEN_RESPALDO)) {
-      imagen.src = this.IMAGEN_RESPALDO;
-    }
-  }
-
-  aplicarFiltros(): void {
-    this.pintarMarcadores();
-  }
-
+  /** Borra la búsqueda y el tipo, y recarga los conjuntos. */
   limpiarFiltros(): void {
     this.busqueda = '';
-    this.municipio = '';
     this.tipo = '';
-    this.pintarMarcadores();
+    this.cargarConjuntos();
   }
 
-  cargarConjuntos(): void {
-    this.cargandoConjuntos = true;
-    this.errorConjuntos = '';
-    if (this.esInvitacion) {
-      this.cargarInvitacion();
-      return;
-    }
-    this.adminConjuntoService.obtenerConjuntos().subscribe((resultado) => {
-      this.cargandoConjuntos = false;
-      if (!resultado.exito) {
-        this.errorConjuntos = resultado.mensaje;
-        return;
-      }
-      this.conjuntos = resultado.datos;
-      this.pintarMarcadores();
-    });
-  }
-
-  private cargarInvitacion(): void {
-    this.invitacionService.obtenerUbicacion(this.token).subscribe((resultado) => {
-      this.cargandoConjuntos = false;
-      if (!resultado.exito) {
-        this.errorConjuntos = resultado.mensaje;
-        return;
-      }
-      this.evento = resultado.datos.evento;
-      this.conjuntos = [resultado.datos.conjunto];
-      this.pintarMarcadores();
-      this.seleccionar(resultado.datos.conjunto);
-    });
-  }
-
+  /** Selecciona un conjunto, borra la ruta y centra el mapa en él. */
   seleccionar(conjunto: Conjunto): void {
-    this.seleccionado = conjunto;
-    this.ruta = null;
-    this.errorRuta = '';
-    this.quitarRuta();
-    this.resaltarMarcador();
-    if (this.mapa && conjunto.latitud !== null && conjunto.longitud !== null) {
-      this.mapa.setView([conjunto.latitud, conjunto.longitud], 15);
-    }
+    this.seleccionado.set(conjunto);
+    this.borrarRuta();
+    this.pintarMarcadores();
+    this.mapa?.setView([conjunto.latitud, conjunto.longitud], 15);
     this.ajustarTamanoMapa();
   }
 
+  /** Cierra el detalle y vuelve a mostrar todo Cundinamarca. */
   cerrarDetalle(): void {
-    this.seleccionado = null;
-    this.ruta = null;
-    this.errorRuta = '';
-    this.quitarRuta();
-    this.resaltarMarcador();
+    this.seleccionado.set(null);
+    this.borrarRuta();
+    this.pintarMarcadores();
+    this.mapa?.fitBounds(LIMITES_CUNDINAMARCA);
     this.ajustarTamanoMapa();
   }
 
+  /** Obtiene la ubicación del visitante, la dibuja y carga los conjuntos cercanos. */
   dondeEstoy(): void {
-    this.buscarUbicacion(() => {
-      if (this.mapa && this.ubicacion) {
-        this.mapa.setView([this.ubicacion.latitud, this.ubicacion.longitud], 15);
-      }
+    this.buscandoUbicacion.set(true);
+    this.avisoUbicacion.set('');
+    this.ubicacionService.obtenerUbicacion().subscribe({
+      next: (coordenadas) => {
+        this.buscandoUbicacion.set(false);
+        this.pintarUbicacion(coordenadas);
+        this.mapa?.setView([coordenadas.latitud, coordenadas.longitud], 14);
+        this.cargarCercanos(coordenadas);
+      },
+      error: (error: unknown) => {
+        this.buscandoUbicacion.set(false);
+        this.avisoUbicacion.set(this.errorService.obtenerMensaje(error));
+      },
     });
   }
 
+  /** Cambia el modo de transporte y recalcula la ruta si ya había una. */
+  cambiarModo(modo: ModoRuta): void {
+    this.modo.set(modo);
+    if (this.ruta()) {
+      this.comoLlegar();
+    }
+  }
+
+  /** Calcula la ruta desde la ubicación del visitante hasta el conjunto elegido. */
   comoLlegar(): void {
-    if (!this.seleccionado) {
+    const ubicacion = this.ubicacionService.ultimaUbicacion();
+    if (ubicacion) {
+      this.calcularRuta(ubicacion);
       return;
     }
-    this.errorRuta = '';
-    if (this.ubicacion) {
-      this.calcularRuta();
-      return;
-    }
-    this.buscarUbicacion(() => this.calcularRuta());
+    this.calculandoRuta.set(true);
+    this.errorRuta.set('');
+    this.ubicacionService.obtenerUbicacion().subscribe({
+      next: (coordenadas) => {
+        this.pintarUbicacion(coordenadas);
+        this.calcularRuta(coordenadas);
+      },
+      error: (error: unknown) => {
+        this.calculandoRuta.set(false);
+        this.errorRuta.set(this.errorService.obtenerMensaje(error));
+      },
+    });
   }
 
-  cambiarModo(modo: string): void {
-    this.modo = modo;
-    if (this.ruta) {
-      this.calcularRuta();
-    }
-  }
-
+  /** Inicia o detiene el seguimiento de la ubicación en tiempo real. */
   alternarSeguimiento(): void {
-    if (this.siguiendo) {
-      this.ubicacionService.dejarDeSeguir(this.idSeguimiento);
-      this.idSeguimiento = null;
-      this.siguiendo = false;
+    if (this.seguimiento) {
+      this.detenerSeguimiento();
       return;
     }
-    this.idSeguimiento = this.ubicacionService.seguirUbicacion(
-      (coordenadas) => {
-        this.ubicacion = coordenadas;
-        this.pintarUbicacion();
+    this.siguiendo.set(true);
+    this.seguimiento = this.ubicacionService.seguirUbicacion().subscribe({
+      next: (coordenadas) => {
+        this.pintarUbicacion(coordenadas);
         this.mapa?.panTo([coordenadas.latitud, coordenadas.longitud]);
       },
-      (mensaje) => {
-        this.errorUbicacion = mensaje;
-        this.siguiendo = false;
+      error: (error: unknown) => {
+        this.detenerSeguimiento();
+        this.avisoUbicacion.set(this.errorService.obtenerMensaje(error));
       },
-    );
-    this.siguiendo = this.idSeguimiento !== null;
+    });
   }
 
+  /** Acerca el mapa. */
   acercar(): void {
     this.mapa?.zoomIn();
   }
 
+  /** Aleja el mapa. */
   alejar(): void {
     this.mapa?.zoomOut();
   }
 
-  formatearDistancia(metros: number): string {
-    return metros < 1000 ? `${Math.round(metros)}` : `${(metros / 1000).toFixed(1).replace('.', ',')}`;
+  /** Guarda los conjuntos y los dibuja en el mapa. */
+  private mostrarConjuntos(conjuntos: Conjunto[]): void {
+    this.conjuntos.set(conjuntos);
+    this.cargandoConjuntos.set(false);
+    this.pintarMarcadores();
   }
 
-  unidadDistancia(metros: number): string {
-    return metros < 1000 ? 'm' : 'km';
+  /** Cancela el seguimiento de la ubicación. */
+  private detenerSeguimiento(): void {
+    this.seguimiento?.unsubscribe();
+    this.seguimiento = null;
+    this.siguiendo.set(false);
   }
 
-  formatearDuracion(segundos: number): string {
-    const minutos = Math.max(1, Math.round(segundos / 60));
-    return minutos < 60 ? `${minutos}` : `${Math.floor(minutos / 60)} h ${minutos % 60}`;
+  /** Pide al back los conjuntos más cercanos a las coordenadas. */
+  private cargarCercanos(coordenadas: Coordenadas): void {
+    this.recomendacionService.obtenerConjuntosCercanos(coordenadas).subscribe({
+      next: (cercanos) => this.cercanos.set(cercanos),
+      error: () => this.cercanos.set([]),
+    });
   }
 
-  textoPaso(metros: number): string {
-    return metros < 1000 ? `${Math.round(metros)} m` : `${(metros / 1000).toFixed(1).replace('.', ',')} km`;
+  /** Pide al back la ruta desde el origen hasta el conjunto elegido y la dibuja. */
+  private calcularRuta(origen: Coordenadas): void {
+    const destino = this.seleccionado();
+    if (!destino) {
+      return;
+    }
+    this.calculandoRuta.set(true);
+    this.errorRuta.set('');
+    this.rutaService
+      .calcular({
+        origenLatitud: origen.latitud,
+        origenLongitud: origen.longitud,
+        destinoLatitud: destino.latitud,
+        destinoLongitud: destino.longitud,
+        modo: this.modo(),
+      })
+      .subscribe({
+        next: (ruta) => {
+          this.calculandoRuta.set(false);
+          this.ruta.set(ruta);
+          this.pintarRuta(ruta);
+        },
+        error: (error: unknown) => {
+          this.calculandoRuta.set(false);
+          this.errorRuta.set(
+            this.errorService.obtenerMensaje(error, 'No pudimos calcular la ruta.'),
+          );
+        },
+      });
   }
 
+  /** Crea el mapa de Leaflet con las teselas, los límites y el contorno de Cundinamarca. */
   private crearMapa(): void {
-    this.mapa = L.map(this.contenedorMapa.nativeElement, { zoomControl: false });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      className: 'capa-oscura',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(this.mapa);
-    this.mapa.fitBounds(LIMITES_CUNDINAMARCA);
-    this.mapa.setMaxBounds(L.latLngBounds(LIMITES_CUNDINAMARCA).pad(0.15));
-    this.mapa.setMinZoom(this.mapa.getZoom());
-    this.capaMarcadores.addTo(this.mapa);
-    this.geografiaService.obtenerContornos().subscribe((contornos) => this.pintarContorno(contornos));
-    setTimeout(() => {
-      this.mapa?.invalidateSize();
-      this.mapa?.fitBounds(LIMITES_CUNDINAMARCA);
-      if (this.mapa) {
-        this.mapa.setMinZoom(this.mapa.getZoom());
-      }
-    }, 0);
+    const mapa = leaflet().map(this.contenedorMapa.nativeElement, { zoomControl: false });
+    leaflet().tileLayer(URL_TESELAS, OPCIONES_TESELAS).addTo(mapa);
+    mapa.fitBounds(LIMITES_CUNDINAMARCA);
+    mapa.setMaxBounds(leaflet().latLngBounds(LIMITES_CUNDINAMARCA).pad(0.15));
+    this.capaMarcadores = leaflet().layerGroup().addTo(mapa);
+    this.mapa = mapa;
+    this.suscripciones.add(
+      this.geografiaService
+        .obtenerContornos()
+        .subscribe((contornos) => this.pintarContorno(contornos)),
+    );
+    this.pintarMarcadores();
+    setTimeout(() => this.ajustarLimites());
   }
 
+  /** Ajusta el tamaño, el encuadre y el zoom mínimo del mapa. */
+  private ajustarLimites(): void {
+    if (!this.mapa) {
+      return;
+    }
+    this.mapa.invalidateSize();
+    this.mapa.fitBounds(LIMITES_CUNDINAMARCA);
+    this.mapa.setMinZoom(this.mapa.getZoom());
+  }
+
+  /** Dibuja el contorno de Cundinamarca y oscurece lo que queda afuera. */
   private pintarContorno(contornos: Anillo[]): void {
     if (!this.mapa || contornos.length === 0) {
       return;
     }
-    const anillos = contornos.map((anillo) => anillo.map(([lon, lat]) => L.latLng(lat, lon)));
-    const mundo = [L.latLng(85, -180), L.latLng(85, 180), L.latLng(-85, 180), L.latLng(-85, -180)];
-    L.polygon([mundo, ...anillos], { fillColor: '#0f1412', fillOpacity: 0.85, stroke: false, interactive: false, className: 'gb-mascara' }).addTo(this.mapa);
-    L.polygon(anillos, { color: '#3dbe7a', weight: 2, opacity: 0.8, fill: false, interactive: false, className: 'gb-contorno' }).addTo(this.mapa);
+    const anillos = contornos.map((anillo) =>
+      anillo.map(([longitud, latitud]): LatLngTuple => [latitud, longitud]),
+    );
+    leaflet().polygon([MUNDO, ...anillos], {
+      fillOpacity: 0.85,
+      stroke: false,
+      interactive: false,
+      className: 'gb-mascara',
+    }).addTo(this.mapa);
+    leaflet().polygon(anillos, {
+      weight: 2,
+      opacity: 0.8,
+      fill: false,
+      interactive: false,
+      className: 'gb-contorno',
+    }).addTo(this.mapa);
   }
 
-  private icono(seleccionado: boolean): L.DivIcon {
-    const tamano = seleccionado ? 42 : 34;
-    return L.divIcon({
-      className: '',
-      html: `<i class="bi bi-geo-alt-fill gb-marcador${seleccionado ? ' seleccionado' : ''}"></i>`,
-      iconSize: [tamano, tamano],
-      iconAnchor: [tamano / 2, tamano],
-      tooltipAnchor: [tamano / 2, -tamano / 2],
-    });
-  }
-
+  /** Redibuja un marcador por cada conjunto. */
   private pintarMarcadores(): void {
-    this.capaMarcadores.clearLayers();
-    this.marcadores.clear();
-    for (const conjunto of this.conjuntosFiltrados) {
-      if (conjunto.latitud === null || conjunto.longitud === null) {
-        continue;
-      }
-      const marcador = L.marker([conjunto.latitud, conjunto.longitud], {
-        icon: this.icono(this.seleccionado?.id === conjunto.id),
-        title: conjunto.nombre,
+    const capa = this.capaMarcadores;
+    if (!capa) {
+      return;
+    }
+    capa.clearLayers();
+    const idSeleccionado = this.seleccionado()?.id;
+    this.conjuntos().forEach((conjunto) =>
+      this.agregarMarcador(capa, conjunto, conjunto.id === idSeleccionado),
+    );
+  }
+
+  /** Agrega a la capa el marcador de un conjunto. */
+  private agregarMarcador(capa: LayerGroup, conjunto: Conjunto, elegido: boolean): void {
+    leaflet().marker([conjunto.latitud, conjunto.longitud], {
+      icon: crearIconoMarcador(elegido),
+      title: conjunto.nombre,
+    })
+      .bindTooltip(conjunto.nombre, {
+        permanent: true,
+        direction: 'right',
+        className: 'gb-etiqueta-mapa',
       })
-        .bindTooltip(conjunto.nombre, { permanent: true, direction: 'right', className: 'gb-etiqueta-mapa' })
-        .on('click', () => this.seleccionar(conjunto))
-        .addTo(this.capaMarcadores);
-      this.marcadores.set(conjunto.id, marcador);
-    }
+      .on('click', () => this.seleccionar(conjunto))
+      .addTo(capa);
   }
 
-  private resaltarMarcador(): void {
-    this.marcadores.forEach((marcador, id) => marcador.setIcon(this.icono(this.seleccionado?.id === id)));
-  }
-
-  private buscarUbicacion(despues: () => void): void {
-    this.buscandoUbicacion = true;
-    this.errorUbicacion = '';
-    this.ubicacionService.obtenerUbicacion().subscribe({
-      next: (coordenadas) => {
-        this.buscandoUbicacion = false;
-        this.ubicacion = coordenadas;
-        this.pintarUbicacion();
-        despues();
-      },
-      error: (mensaje: string) => {
-        this.buscandoUbicacion = false;
-        this.errorUbicacion = mensaje;
-      },
-    });
-  }
-
-  private calcularRuta(): void {
-    if (!this.seleccionado || !this.ubicacion || this.seleccionado.latitud === null || this.seleccionado.longitud === null) {
+  /** Dibuja o mueve el punto de la ubicación del visitante. */
+  private pintarUbicacion(coordenadas: Coordenadas): void {
+    if (!this.mapa) {
       return;
     }
-    this.calculandoRuta = true;
-    this.errorRuta = '';
-    const destino = { latitud: this.seleccionado.latitud, longitud: this.seleccionado.longitud };
-    this.rutaService.calcularRuta(this.ubicacion, destino, this.modo).subscribe((resultado) => {
-      this.calculandoRuta = false;
-      if (!resultado.exito) {
-        this.ruta = null;
-        this.quitarRuta();
-        this.errorRuta = resultado.mensaje;
-        return;
-      }
-      this.ruta = resultado.datos;
-      this.dibujarRuta(resultado.datos);
-    });
-  }
-
-  private dibujarRuta(ruta: Ruta): void {
-    this.quitarRuta();
-    if (!this.mapa || ruta.puntos.length === 0) {
-      return;
-    }
-    this.brilloRuta = L.polyline(ruta.puntos, { color: AZUL_RUTA, weight: 14, opacity: 0.18 }).addTo(this.mapa);
-    this.lineaRuta = L.polyline(ruta.puntos, { color: AZUL_RUTA, weight: 5, opacity: 0.95 }).addTo(this.mapa);
-    this.mapa.fitBounds(this.lineaRuta.getBounds(), { padding: [50, 50] });
-  }
-
-  private quitarRuta(): void {
-    this.lineaRuta?.remove();
-    this.brilloRuta?.remove();
-    this.lineaRuta = null;
-    this.brilloRuta = null;
-  }
-
-  private pintarUbicacion(): void {
-    if (!this.mapa || !this.ubicacion) {
-      return;
-    }
-    const punto: L.LatLngExpression = [this.ubicacion.latitud, this.ubicacion.longitud];
+    const punto: LatLngTuple = [coordenadas.latitud, coordenadas.longitud];
     if (this.puntoUbicacion && this.haloUbicacion) {
       this.puntoUbicacion.setLatLng(punto);
       this.haloUbicacion.setLatLng(punto);
       return;
     }
-    this.haloUbicacion = L.circleMarker(punto, { radius: 20, stroke: false, fillColor: AZUL_RUTA, fillOpacity: 0.2 }).addTo(
-      this.mapa,
-    );
-    this.puntoUbicacion = L.circleMarker(punto, {
+    this.haloUbicacion = leaflet().circleMarker(punto, {
+      radius: 20,
+      stroke: false,
+      fillColor: AZUL_RUTA,
+      fillOpacity: 0.2,
+    }).addTo(this.mapa);
+    this.puntoUbicacion = leaflet().circleMarker(punto, {
       radius: 8,
       color: '#ffffff',
       weight: 3,
@@ -395,7 +384,39 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
       .addTo(this.mapa);
   }
 
+  /** Dibuja la ruta en el mapa y la encuadra. */
+  private pintarRuta(ruta: Ruta): void {
+    if (!this.mapa) {
+      return;
+    }
+    this.quitarLineasRuta();
+    this.brilloRuta = leaflet().polyline(ruta.puntos, { color: AZUL_RUTA, weight: 14, opacity: 0.18 }).addTo(
+      this.mapa,
+    );
+    const linea = leaflet().polyline(ruta.puntos, { color: AZUL_RUTA, weight: 5, opacity: 0.95 }).addTo(
+      this.mapa,
+    );
+    this.lineaRuta = linea;
+    this.mapa.fitBounds(linea.getBounds(), { padding: [50, 50] });
+  }
+
+  /** Borra la ruta y sus errores. */
+  private borrarRuta(): void {
+    this.ruta.set(null);
+    this.errorRuta.set('');
+    this.quitarLineasRuta();
+  }
+
+  /** Quita las líneas de la ruta del mapa. */
+  private quitarLineasRuta(): void {
+    this.lineaRuta?.remove();
+    this.brilloRuta?.remove();
+    this.lineaRuta = null;
+    this.brilloRuta = null;
+  }
+
+  /** Recalcula el tamaño del mapa después de un cambio de diseño. */
   private ajustarTamanoMapa(): void {
-    setTimeout(() => this.mapa?.invalidateSize(), 0);
+    setTimeout(() => this.mapa?.invalidateSize());
   }
 }

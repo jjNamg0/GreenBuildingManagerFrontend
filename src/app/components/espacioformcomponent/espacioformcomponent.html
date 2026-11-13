@@ -1,113 +1,129 @@
-<form class="gb-tarjeta-elevada p-3" (ngSubmit)="enviar()" novalidate>
-  <h3 class="h6 mb-3"><i class="bi bi-door-open texto-verde me-2"></i>{{ espacio ? 'Editar espacio' : 'Nuevo espacio' }}</h3>
-
-  <div class="row g-2 mb-2">
-    <div class="col-md-6">
-      <label for="espacio-nombre" class="form-label small">Nombre</label>
-      <input id="espacio-nombre" name="nombre" class="form-control form-control-sm" maxlength="120"
-        placeholder="Salón social torre 1" [(ngModel)]="formulario.nombre" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-md-6">
-      <label for="espacio-tipo" class="form-label small">Tipo</label>
-      <select id="espacio-tipo" name="tipo" class="form-select form-select-sm" [(ngModel)]="formulario.tipo">
-        <option *ngFor="let t of tiposEspacio" [value]="t.valor">{{ t.etiqueta }}</option>
-      </select>
+<div
+  class="modal gb-modal"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tituloEspacio"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content animate__animated animate__fadeInDown animate__faster">
+      <form (ngSubmit)="guardar()" novalidate>
+        <div class="modal-header">
+          <h2 id="tituloEspacio" class="modal-title h5">{{ titulo }}</h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cerrar.emit()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+          <div class="row g-3">
+            <div class="col-12 col-md-7">
+              <label for="nombreEspacio" class="form-label">Nombre</label>
+              <input
+                id="nombreEspacio"
+                name="nombre"
+                class="form-control"
+                placeholder="Salón comunal"
+                [(ngModel)]="datos.nombre"
+              />
+            </div>
+            <div class="col-12 col-md-5">
+              <label for="tipoEspacio" class="form-label">Tipo</label>
+              <select id="tipoEspacio" name="tipo" class="form-select" [(ngModel)]="datos.tipo">
+                <option *ngFor="let tipo of TIPOS" [ngValue]="tipo.valor">{{ tipo.texto }}</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label for="descripcionEspacio" class="form-label">Descripción</label>
+              <textarea
+                id="descripcionEspacio"
+                name="descripcion"
+                class="form-control"
+                rows="2"
+                [(ngModel)]="datos.descripcion"
+              ></textarea>
+            </div>
+            <div class="col-12 col-sm-4">
+              <label for="capacidad" class="form-label">Capacidad (personas)</label>
+              <input
+                id="capacidad"
+                name="capacidad"
+                type="number"
+                min="1"
+                class="form-control"
+                [(ngModel)]="datos.capacidad"
+              />
+            </div>
+            <div class="col-6 col-sm-4">
+              <label for="apertura" class="form-label">Abre</label>
+              <input
+                id="apertura"
+                name="apertura"
+                type="time"
+                class="form-control"
+                [(ngModel)]="datos.horaApertura"
+              />
+            </div>
+            <div class="col-6 col-sm-4">
+              <label for="cierre" class="form-label">Cierra</label>
+              <input
+                id="cierre"
+                name="cierre"
+                type="time"
+                class="form-control"
+                [(ngModel)]="datos.horaCierre"
+              />
+            </div>
+            <div class="col-12">
+              <label for="imagenEspacio" class="form-label">Imagen (URL, opcional)</label>
+              <input
+                id="imagenEspacio"
+                name="imagen"
+                class="form-control"
+                placeholder="https://..."
+                [(ngModel)]="datos.imagenUrl"
+              />
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="form-check form-switch">
+                <input
+                  id="requiereReserva"
+                  name="requiereReserva"
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  [(ngModel)]="datos.requiereReserva"
+                />
+                <label class="form-check-label" for="requiereReserva">Se usa con reserva</label>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="form-check form-switch">
+                <input
+                  id="disponible"
+                  name="disponible"
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  [(ngModel)]="datos.disponible"
+                />
+                <label class="form-check-label" for="disponible"
+                  >Disponible (sin mantenimiento)</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-gb-borde" type="button" (click)="cerrar.emit()">Cancelar</button>
+          <button class="btn-gb" type="submit" [disabled]="guardando()">
+            <span [class]="claseSpinner(guardando(), 'fa-floppy-disk')"></span>Guardar espacio
+          </button>
+        </div>
+      </form>
     </div>
   </div>
-
-  <div class="mb-2">
-    <span class="form-label small d-block">Cómo se reserva</span>
-    <div class="modos">
-      <label class="modo" *ngFor="let m of modosReserva" [class.activo]="formulario.modoReserva === m.valor">
-        <input type="radio" class="form-check-input" name="modoReserva" [value]="m.valor"
-          [(ngModel)]="formulario.modoReserva" (ngModelChange)="error = ''" />
-        <span class="small">{{ m.etiqueta }}</span>
-      </label>
-    </div>
-  </div>
-
-  <div class="row g-2 mb-2">
-    <div class="col-4">
-      <label for="espacio-capacidad" class="form-label small">Capacidad</label>
-      <input id="espacio-capacidad" name="capacidad" type="number" min="1" class="form-control form-control-sm"
-        [(ngModel)]="formulario.capacidad" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-4">
-      <label for="espacio-apertura" class="form-label small">Abre</label>
-      <input id="espacio-apertura" name="horaApertura" type="time" class="form-control form-control-sm"
-        [(ngModel)]="formulario.horaApertura" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-4">
-      <label for="espacio-cierre" class="form-label small">Cierra</label>
-      <input id="espacio-cierre" name="horaCierre" type="time" class="form-control form-control-sm"
-        [(ngModel)]="formulario.horaCierre" (ngModelChange)="error = ''" />
-    </div>
-  </div>
-
-  <div class="row g-2 mb-2" *ngIf="esReservable">
-    <div class="col-4">
-      <label for="espacio-minima" class="form-label small">Mínimo (min)</label>
-      <input id="espacio-minima" name="duracionMinimaMinutos" type="number" min="15" step="15"
-        class="form-control form-control-sm" [(ngModel)]="formulario.duracionMinimaMinutos" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-4">
-      <label for="espacio-maxima" class="form-label small">Máximo (min)</label>
-      <input id="espacio-maxima" name="duracionMaximaMinutos" type="number" min="15" step="15"
-        class="form-control form-control-sm" [(ngModel)]="formulario.duracionMaximaMinutos" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-4">
-      <label for="espacio-anticipacion" class="form-label small">Anticipación (días)</label>
-      <input id="espacio-anticipacion" name="anticipacionMaximaDias" type="number" min="1" max="365"
-        class="form-control form-control-sm" [(ngModel)]="formulario.anticipacionMaximaDias" (ngModelChange)="error = ''" />
-    </div>
-  </div>
-
-  <div class="row g-2 mb-2">
-    <div class="col-4">
-      <label for="espacio-costo" class="form-label small">Costo (pesos)</label>
-      <input id="espacio-costo" name="costo" type="number" min="0" step="1000" class="form-control form-control-sm"
-        [(ngModel)]="formulario.costo" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-4">
-      <label for="espacio-edad" class="form-label small">Edad mínima</label>
-      <input id="espacio-edad" name="edadMinima" type="number" min="0" max="100" class="form-control form-control-sm"
-        [(ngModel)]="formulario.edadMinima" (ngModelChange)="error = ''" />
-    </div>
-    <div class="col-4">
-      <label for="espacio-imagen" class="form-label small">Imagen</label>
-      <input id="espacio-imagen" name="imagen" class="form-control form-control-sm" placeholder="piscina.jpg"
-        [(ngModel)]="formulario.imagen" (ngModelChange)="error = ''" />
-    </div>
-  </div>
-
-  <div class="mb-2">
-    <label for="espacio-reglas" class="form-label small">Reglas de uso</label>
-    <textarea id="espacio-reglas" name="reglas" rows="2" class="form-control form-control-sm"
-      placeholder="Música moderada hasta las 10:00 p. m." [(ngModel)]="formulario.reglas"></textarea>
-  </div>
-
-  <div class="d-flex flex-wrap gap-3 mb-3 small">
-    <div class="form-check" *ngIf="esReservable">
-      <input id="espacio-aprobacion" name="requiereAprobacion" type="checkbox" class="form-check-input"
-        [(ngModel)]="formulario.requiereAprobacion" />
-      <label for="espacio-aprobacion" class="form-check-label">La administración aprueba cada reserva</label>
-    </div>
-    <div class="form-check">
-      <input id="espacio-mantenimiento" name="enMantenimiento" type="checkbox" class="form-check-input"
-        [(ngModel)]="formulario.enMantenimiento" />
-      <label for="espacio-mantenimiento" class="form-check-label">En mantenimiento</label>
-    </div>
-  </div>
-
-  <div class="gb-alerta peligro mb-3" *ngIf="error || errorServidor">
-    <i class="bi bi-exclamation-circle"></i><span>{{ error || errorServidor }}</span>
-  </div>
-
-  <div class="d-flex justify-content-end gap-2">
-    <button class="btn-gb-borde btn-gb-sm" type="button" (click)="cancelar.emit()">Cancelar</button>
-    <button class="btn-gb btn-gb-sm" type="submit" [disabled]="guardando">
-      <span class="spinner-border spinner-border-sm" *ngIf="guardando"></span>
-      {{ espacio ? 'Guardar cambios' : 'Crear espacio' }}
-    </button>
-  </div>
-</form>
+</div>

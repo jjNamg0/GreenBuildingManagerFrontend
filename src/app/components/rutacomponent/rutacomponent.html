@@ -1,0 +1,77 @@
+<button class="btn-gb-fantasma btn-gb-sm mb-3 px-2" type="button" (click)="cerrar.emit()">
+  <i class="fa-solid fa-arrow-left"></i>Volver a la lista
+</button>
+
+<div class="gb-tarjeta overflow-hidden mb-3">
+  <img class="imagen-tarjeta" [src]="imagenConjunto(conjunto)" [alt]="conjunto.nombre" />
+  <div class="p-3">
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+      <h2 class="h5 mb-0">{{ conjunto.nombre }}</h2>
+      <span class="gb-insignia neutro">{{ textoTipoConjunto(conjunto.tipo) }}</span>
+    </div>
+    <div class="small texto-tenue mb-2">
+      <i class="fa-solid fa-location-dot texto-verde me-1"></i>{{ conjunto.direccion }},
+      {{ conjunto.municipio }}
+    </div>
+    <p class="small texto-tenue mb-3" *ngIf="conjunto.descripcion">{{ conjunto.descripcion }}</p>
+    <div class="d-flex gap-3 small">
+      <span
+        ><i class="fa-solid fa-door-open texto-verde me-1"></i
+        >{{ conjunto.totalUnidades }} unidades</span
+      >
+      <span
+        ><i class="fa-solid fa-tree texto-verde me-1"></i
+        >{{ conjunto.totalEspacios }} espacios</span
+      >
+    </div>
+  </div>
+</div>
+
+<div class="gb-tarjeta p-3">
+  <div class="etiqueta-mayuscula mb-2">Cómo llegar</div>
+  <div class="gb-segmentos mb-3">
+    <button
+      type="button"
+      *ngFor="let opcion of MODOS"
+      [class.activo]="modo === opcion.valor"
+      (click)="cambiarModo.emit(opcion.valor)"
+    >
+      <i class="fa-solid {{ opcion.icono }}"></i>{{ opcion.texto }}
+    </button>
+  </div>
+
+  <button class="btn-gb w-100" type="button" (click)="comoLlegar.emit()" [disabled]="calculando">
+    <span [class]="claseSpinner(calculando, 'fa-route')"></span>{{ textoBotonRuta }}
+  </button>
+
+  <app-alertacomponent [mensaje]="error" clases="mt-3" />
+
+  <ng-container *ngIf="ruta">
+    <div class="resumen-ruta my-3">
+      <div>
+        <div class="valor numeros">{{ ruta.duracionSegundos / 60 | number: '1.0-0' }} min</div>
+        <div class="small texto-tenue">Tiempo estimado</div>
+      </div>
+      <div>
+        <div class="valor numeros">{{ ruta.distanciaMetros / 1000 | number: '1.1-1' }} km</div>
+        <div class="small texto-tenue">Distancia</div>
+      </div>
+    </div>
+
+    <button
+      class="btn-gb-borde btn-gb-sm w-100 mb-3"
+      type="button"
+      (click)="alternarSeguimiento.emit()"
+    >
+      <i class="fa-solid {{ iconoSeguimiento }}"></i>{{ textoSeguimiento }}
+    </button>
+
+    <div class="etiqueta-mayuscula mb-2">Indicaciones</div>
+    <ol class="pasos">
+      <li *ngFor="let paso of ruta.pasos">
+        <span>{{ paso.instruccion }}</span>
+        <span class="small texto-bajo numeros">{{ paso.distanciaMetros | number: '1.0-0' }} m</span>
+      </li>
+    </ol>
+  </ng-container>
+</div>

@@ -1,0 +1,57 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h2 class="h6 mb-0">1. Elige el día</h2>
+  <input
+    type="date"
+    class="form-control form-control-sm otra-fecha"
+    [min]="hoy"
+    [ngModel]="fecha"
+    (ngModelChange)="elegirFecha.emit($event)"
+    aria-label="Elegir otra fecha"
+  />
+</div>
+<div class="dias d-flex gap-2 pb-2 mb-4">
+  <button
+    *ngFor="let dia of dias"
+    type="button"
+    class="btn-gb-borde btn-gb-sm"
+    [class.activo]="dia === fecha"
+    (click)="elegirFecha.emit(dia)"
+  >
+    {{ dia | date: 'EEE d MMM' }}
+  </button>
+</div>
+
+<h2 class="h6 mb-3">2. Elige la franja horaria</h2>
+<div class="leyenda mb-3">
+  <span><span class="muestra libre"></span>Libre</span>
+  <span><span class="muestra ocupado"></span>Ocupado</span>
+  <span><span class="muestra elegido"></span>Tu elección</span>
+</div>
+
+<app-cargandocomponent [activo]="cargando" texto="Consultando disponibilidad..." />
+
+<app-alertacomponent [mensaje]="error" />
+
+<app-vaciocomponent
+  [visible]="sinFranjas"
+  icono="fa-clock"
+  titulo="No hay franjas disponibles este día"
+/>
+
+<div class="cuadricula" *ngIf="!cargando">
+  <button
+    *ngFor="let franja of franjas; let indice = index"
+    type="button"
+    class="bloque"
+    [ngClass]="claseFranja(franja, indice)"
+    [disabled]="!franja.disponible"
+    (click)="elegirFranja.emit(indice)"
+  >
+    <span class="fw-semibold numeros">{{ franja.horaInicio }}</span>
+    <span class="small">hasta {{ franja.horaFin }}</span>
+  </button>
+</div>
+<p class="small texto-bajo mt-3 mb-0">
+  <i class="fa-solid fa-circle-info me-1"></i>Toca una franja para empezar y otra posterior para
+  extender la reserva.
+</p>

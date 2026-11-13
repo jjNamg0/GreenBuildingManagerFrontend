@@ -1,83 +1,117 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { Toastservice } from '../../services/toastservice';
+import { Component, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DatosRestablecer, REGLAS_CORREO, REGLAS_RESTABLECER } from '../../models/authmodel';
+import { claseSpinner } from '../../models/opcionmodel';
+import { primerError } from '../../models/validacionmodel';
 import { Authservice } from '../../services/authservice';
-import { soloDigitos, validarContrasena, validarEmail } from '../../services/validaciones';
+import { Errorservice } from '../../services/errorservice';
+import { Toastservice } from '../../services/toastservice';
 
+/**
+ * Pantalla para recuperar la contraseña en dos pasos: pedir el código y escribir la nueva contraseña.
+ */
 @Component({
   selector: 'app-olvidecontrasenacomponent',
   standalone: false,
-  templateUrl: './olvidecontrasenacomponent.html',
   styleUrl: './olvidecontrasenacomponent.css',
+  templateUrl: './olvidecontrasenacomponent.html',
 })
-export class Olvidecontrasenacomponent {
-  paso: 'email' | 'codigo' = 'email';
-  email = '';
+export class Olvidecontrasenacomponent implements OnInit {
+  readonly claseSpinner = claseSpinner;
+
+  paso = signal<1 | 2>(1);
+  correo = '';
   codigo = '';
-  password = '';
-  confirmacion = '';
-  verContrasena = false;
-  error = '';
-  cargando = false;
-  enfocado = false;
+  nuevaPassword = '';
+  confirmarPassword = '';
+  verPassword = false;
+  error = signal('');
+  cargando = signal(false);
 
   constructor(
-    private auth: Authservice,
-    private router: Router,
+    private authService: Authservice,
+    private errorService: Errorservice,
     private toastService: Toastservice,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
-  get casillas(): string[] {
-    return Array.from({ length: 6 }, (_, i) => this.codigo.charAt(i));
+  /** Lee el correo de la URL. */
+  ngOnInit(): void {
+    this.correo = this.route.snapshot.queryParamMap.get('correo') ?? '';
   }
 
-  alCambiarCodigo(valor: string): void {
-    this.codigo = soloDigitos(valor, 6);
-    this.error = '';
+  get tipoCampoPassword(): string {
+    return this.verPassword ? 'text' : 'password';
   }
 
-  pedirCodigo(): void {
-    this.error = validarEmail(this.email);
-    if (this.error) {
+  get iconoPassword(): string {
+    return this.verPassword ? 'fa-eye-slash' : 'fa-eye';
+  }
+
+  /** Borra el mensaje de error del formulario. */
+  limpiarError(): void {
+    this.error.set('');
+  }
+
+  /** Valida el correo y pide al back que envíe el código. */
+  solicitarCodigo(): void {
+    const datos = { username: this.correo.trim() };
+    const problema = primerError(REGLAS_CORREO, datos);
+    if (problema) {
+      this.error.set(problema);
       return;
     }
-    this.cargando = true;
-    this.email = this.email.trim().toLowerCase();
-    this.auth.olvideContrasena(this.email).subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.toastService.mostrar(resultado.datos.mensaje);
-      this.paso = 'codigo';
+    this.cargando.set(true);
+    this.authService.solicitarRestablecimiento(datos).subscribe({
+      next: (mensaje) => {
+        this.cargando.set(false);
+        this.toastService.mostrar(mensaje || 'Te enviamos un código a tu correo.', 'info');
+        this.paso.set(2);
+      },
+      error: (error: unknown) => this.fallar(error, 'No pudimos enviar el código.'),
     });
   }
 
-  cambiarContrasena(): void {
-    if (this.codigo.length !== 6) {
-      this.error = 'El código debe tener 6 números.';
+  /** Valida los datos y restablece la contraseña con el código. */
+  restablecer(): void {
+    const datos: DatosRestablecer = {
+      username: this.correo.trim(),
+      codigo: this.codigo.trim(),
+      nuevaPassword: this.nuevaPassword,
+    };
+    const problema = primerError(REGLAS_RESTABLECER, {
+      datos,
+      confirmarPassword: this.confirmarPassword,
+    });
+    if (problema) {
+      this.error.set(problema);
       return;
     }
-    this.error = validarContrasena(this.password, this.confirmacion);
-    if (this.error) {
-      return;
-    }
-    this.cargando = true;
-    this.auth.restablecerContrasena(this.email, this.codigo, this.password).subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.toastService.mostrar(resultado.datos.mensaje);
-      this.router.navigate(['/login']);
+    this.cargando.set(true);
+    this.authService.restablecerPassword(datos).subscribe({
+      next: (mensaje) => this.terminar(mensaje, datos.username),
+      error: (error: unknown) => this.fallar(error, 'No pudimos restablecer la contraseña.'),
     });
   }
 
-  volverAlEmail(): void {
-    this.paso = 'email';
+  /** Vuelve al primer paso y borra el código y el error. */
+  volverAlPaso1(): void {
+    this.paso.set(1);
     this.codigo = '';
-    this.error = '';
+    this.error.set('');
+  }
+
+  /** Avisa el resultado y avanza al paso siguiente. */
+  private terminar(mensaje: string, correo: string): void {
+    this.cargando.set(false);
+    this.toastService.mostrar(mensaje || 'Tu contraseña se actualizó. Ya puedes iniciar sesión.');
+    this.router.navigate(['/login'], { queryParams: { correo } });
+  }
+
+  /** Muestra el mensaje del error. */
+  private fallar(error: unknown, porDefecto: string): void {
+    this.cargando.set(false);
+    this.error.set(this.errorService.obtenerMensaje(error, porDefecto));
   }
 }

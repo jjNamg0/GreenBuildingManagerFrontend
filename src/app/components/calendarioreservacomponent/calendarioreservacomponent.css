@@ -1,0 +1,81 @@
+.dias {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.dias button {
+  flex: none;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.dias button.activo {
+  background: var(--gb-verde);
+  border-color: var(--gb-verde);
+  color: var(--gb-sobre-acento);
+}
+
+.otra-fecha {
+  width: auto;
+}
+
+.leyenda {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.leyenda > span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--gb-campo);
+}
+
+.muestra {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.cuadricula {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 0.6rem;
+}
+
+.bloque {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-align: left;
+}
+
+.libre {
+  background: var(--gb-bloque-libre);
+  border-color: rgba(var(--gb-acento-rgb), 0.35);
+  color: var(--gb-verde-hover);
+}
+
+.bloque.libre:hover {
+  border-color: var(--gb-verde);
+}
+
+.ocupado {
+  background: var(--gb-bloque-ocupado);
+  color: var(--gb-texto-medio);
+}
+
+.elegido {
+  background: var(--gb-verde-hover);
+  border-color: var(--gb-verde-hover);
+  color: var(--gb-sobre-acento);
+}

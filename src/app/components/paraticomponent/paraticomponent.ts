@@ -1,65 +1,111 @@
-import { Component, OnInit } from '@angular/core';
-import { Eventoservice } from '../../services/eventoservice';
+import { Component, OnInit, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
+import { claseSpinner } from '../../models/opcionmodel';
+import {
+  INTERESES,
+  RecomendacionEspacio,
+  RecomendacionEvento,
+} from '../../models/recomendacionmodel';
 import { Authservice } from '../../services/authservice';
-import { Recomendaciones } from '../../models/eventomodel';
-import { Espacio } from '../../models/espaciomodel';
-import { TIPOS_ESPACIO, etiquetaDe } from '../../models/opcionesmodel';
+import { Errorservice } from '../../services/errorservice';
+import { Recomendacionservice } from '../../services/recomendacionservice';
+import { Toastservice } from '../../services/toastservice';
+import { Usuarioservice } from '../../services/usuarioservice';
 
+/** Pantalla de recomendaciones: intereses del residente y eventos y espacios sugeridos. */
 @Component({
   selector: 'app-paraticomponent',
   standalone: false,
-  templateUrl: './paraticomponent.html',
   styleUrl: './paraticomponent.css',
+  templateUrl: './paraticomponent.html',
 })
 export class Paraticomponent implements OnInit {
-  readonly IMAGEN_RESPALDO = 'assets/images/respaldo.svg';
+  readonly INTERESES = INTERESES;
+  readonly claseSpinner = claseSpinner;
 
-  recomendaciones: Recomendaciones = { espacios: [], eventos: [] };
-  cargando = true;
-  error = '';
+  intereses = signal<string[]>([]);
+  eventos = signal<RecomendacionEvento[]>([]);
+  espacios = signal<RecomendacionEspacio[]>([]);
+  cargando = signal(true);
+  error = signal('');
+  guardando = signal(false);
+  cambiosSinGuardar = signal(false);
 
   constructor(
-    private eventoService: Eventoservice,
-    public auth: Authservice,
+    private authService: Authservice,
+    private usuarioService: Usuarioservice,
+    private recomendacionService: Recomendacionservice,
+    private errorService: Errorservice,
+    private toastService: Toastservice,
   ) {}
 
+  /** Carga los intereses y las recomendaciones. */
   ngOnInit(): void {
-    this.cargar();
+    this.authService.cargarUsuario().subscribe({
+      next: (usuario) => this.intereses.set(usuario.intereses),
+      error: () => this.intereses.set([]),
+    });
+    this.cargarRecomendaciones();
   }
 
-  get sinRecomendaciones(): boolean {
-    return this.recomendaciones.espacios.length === 0 && this.recomendaciones.eventos.length === 0;
+  get listo(): boolean {
+    return !this.cargando() && this.error() === '';
   }
 
-  cargar(): void {
-    this.cargando = true;
-    this.error = '';
-    this.eventoService.obtenerRecomendaciones().subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.recomendaciones = resultado.datos;
+  /** Pide al back los eventos y los espacios recomendados. */
+  cargarRecomendaciones(): void {
+    this.cargando.set(true);
+    this.error.set('');
+    forkJoin({
+      eventos: this.recomendacionService.obtenerEventos(),
+      espacios: this.recomendacionService.obtenerEspacios(),
+    }).subscribe({
+      next: ({ eventos, espacios }) => {
+        this.eventos.set(eventos);
+        this.espacios.set(espacios);
+        this.cargando.set(false);
+      },
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(
+          this.errorService.obtenerMensaje(error, 'No pudimos cargar tus recomendaciones.'),
+        );
+      },
     });
   }
 
-  etiquetaTipo(tipo: string): string {
-    return etiquetaDe(TIPOS_ESPACIO, tipo);
+  /** Indica si el interés está seleccionado. */
+  estaElegido(valor: string): boolean {
+    return this.intereses().includes(valor);
   }
 
-  hora(valor: string): string {
-    return valor ? valor.slice(0, 5) : '';
+  /** Selecciona o quita un interés. */
+  alternarInteres(valor: string): void {
+    const actuales = this.intereses();
+    this.intereses.set(
+      this.estaElegido(valor)
+        ? actuales.filter((interes) => interes !== valor)
+        : [...actuales, valor],
+    );
+    this.cambiosSinGuardar.set(true);
   }
 
-  imagenDe(espacio: Espacio): string {
-    return espacio.imagen ? `assets/images/${espacio.imagen}` : this.IMAGEN_RESPALDO;
-  }
-
-  usarImagenRespaldo(evento: Event): void {
-    const imagen = evento.target as HTMLImageElement;
-    if (!imagen.src.endsWith(this.IMAGEN_RESPALDO)) {
-      imagen.src = this.IMAGEN_RESPALDO;
-    }
+  /** Guarda los intereses y recarga las recomendaciones. */
+  guardarIntereses(): void {
+    this.guardando.set(true);
+    this.usuarioService.actualizarIntereses({ intereses: this.intereses() }).subscribe({
+      next: (mensaje) => {
+        this.guardando.set(false);
+        this.cambiosSinGuardar.set(false);
+        this.toastService.mostrar(
+          mensaje || 'Guardamos tus intereses. Actualizamos tus recomendaciones.',
+        );
+        this.cargarRecomendaciones();
+      },
+      error: (error: unknown) => {
+        this.guardando.set(false);
+        this.toastService.mostrar(this.errorService.obtenerMensaje(error), 'error');
+      },
+    });
   }
 }

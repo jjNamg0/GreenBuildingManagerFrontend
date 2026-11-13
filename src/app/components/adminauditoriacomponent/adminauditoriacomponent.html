@@ -1,54 +1,95 @@
-<div class="p-3 p-lg-4">
-  <div class="mb-4">
-    <div class="sobretitulo mb-2">Bitácora del sistema</div>
-    <h1 class="titulo-pagina">Auditoría</h1>
-    <p class="texto-tenue mb-0">Todo lo importante que pasa en el sistema: quién, cuándo, qué hizo y desde dónde</p>
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Control</span>
+      <h1 class="titulo-pagina">Auditoría</h1>
+      <p class="texto-tenue mb-0">
+        Registro de todo lo que pasa en el sistema: persona, fecha, motivo y ubicación.
+      </p>
+    </div>
+    <span class="gb-insignia exito"
+      ><i class="fa-solid fa-shield-halved"></i>Solo administrador</span
+    >
   </div>
 
-  <form class="gb-tarjeta p-3 p-lg-4 mb-3" (ngSubmit)="buscar()" novalidate>
-    <div class="row g-3 align-items-end">
-      <div class="col-md-6 col-xl-2">
-        <label for="filtro-accion" class="form-label">Acción</label>
-        <select id="filtro-accion" name="accion" class="form-select" [(ngModel)]="filtros.accion">
-          <option value="">Todas</option>
-          <option *ngFor="let a of acciones" [value]="a">{{ etiquetaAccion(a) }}</option>
+  <div class="gb-tarjeta p-3 mb-3">
+    <form class="row g-3 align-items-end" (ngSubmit)="buscar()" novalidate>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label for="usuarioAuditoria" class="form-label">Persona</label>
+        <input
+          id="usuarioAuditoria"
+          name="usuario"
+          class="form-control form-control-sm"
+          placeholder="Nombre o correo"
+          [(ngModel)]="filtros.usuario"
+        />
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label for="accionAuditoria" class="form-label">Acción</label>
+        <select
+          id="accionAuditoria"
+          name="accion"
+          class="form-select form-select-sm"
+          [(ngModel)]="filtros.accion"
+        >
+          <option *ngFor="let accion of ACCIONES" [ngValue]="accion.valor">
+            {{ accion.texto }}
+          </option>
         </select>
       </div>
-      <div class="col-md-6 col-xl-3">
-        <label for="filtro-correo" class="form-label">Correo</label>
-        <input id="filtro-correo" name="correo" class="form-control" placeholder="nombre@correo.com" [(ngModel)]="filtros.email" />
+      <div class="col-6 col-xl-2">
+        <label for="desdeAuditoria" class="form-label">Desde</label>
+        <input
+          id="desdeAuditoria"
+          name="desde"
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="filtros.desde"
+        />
       </div>
-      <div class="col-md-4 col-xl-2">
-        <label for="filtro-resultado" class="form-label">Resultado</label>
-        <select id="filtro-resultado" name="exitoso" class="form-select" [(ngModel)]="filtros.exitoso">
-          <option value="">Todos</option>
-          <option value="true">Exitosos</option>
-          <option value="false">Fallidos</option>
-        </select>
+      <div class="col-6 col-xl-2">
+        <label for="hastaAuditoria" class="form-label">Hasta</label>
+        <input
+          id="hastaAuditoria"
+          name="hasta"
+          type="date"
+          class="form-control form-control-sm"
+          [(ngModel)]="filtros.hasta"
+        />
       </div>
-      <div class="col-md-4 col-xl-2-5">
-        <label for="filtro-desde" class="form-label">Desde</label>
-        <input id="filtro-desde" name="desde" type="datetime-local" class="form-control" [(ngModel)]="filtros.desde" />
+      <div class="col-12 col-xl-2 d-flex gap-2">
+        <button class="btn-gb btn-gb-sm flex-grow-1" type="submit">
+          <i class="fa-solid fa-filter"></i>Filtrar
+        </button>
+        <button
+          class="btn-gb-borde btn-gb-sm"
+          type="button"
+          title="Limpiar filtros"
+          (click)="limpiar()"
+        >
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
       </div>
-      <div class="col-md-4 col-xl-2-5">
-        <label for="filtro-hasta" class="form-label">Hasta</label>
-        <input id="filtro-hasta" name="hasta" type="datetime-local" class="form-control" [(ngModel)]="filtros.hasta" />
-      </div>
-    </div>
-    <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top">
-      <button class="btn-gb" type="submit"><i class="bi bi-search"></i>Buscar</button>
-      <button class="btn-gb-borde" type="button" (click)="limpiar()"><i class="bi bi-funnel"></i>Quitar filtros</button>
-      <span class="ms-auto small texto-tenue"><i class="bi bi-database texto-verde me-1"></i><strong class="text-body numeros">{{ totalElementos }}</strong> registros encontrados</span>
-    </div>
-  </form>
-
-  <div class="gb-alerta peligro mb-3" *ngIf="error"><i class="bi bi-exclamation-circle"></i><span>{{ error }}</span></div>
-  <div class="text-center texto-tenue py-4" *ngIf="cargando">
-    <span class="spinner-border spinner-border-sm me-2"></span>Cargando registros...
+    </form>
   </div>
 
-  <div class="gb-tarjeta overflow-hidden" *ngIf="!cargando && !error">
-    <div class="table-responsive">
+  <div class="gb-tarjeta">
+    <app-cargandocomponent [activo]="cargando()" texto="Cargando registros..." />
+
+    <app-alertacomponent
+      [mensaje]="error()"
+      clases="m-3"
+      textoAccion="Reintentar"
+      (accion)="cargar()"
+    />
+
+    <app-vaciocomponent
+      [visible]="sinRegistros"
+      icono="fa-clipboard-list"
+      titulo="No hay registros con estos filtros"
+    />
+
+    <div class="table-responsive" *ngIf="hayRegistros">
       <table class="gb-tabla">
         <thead>
           <tr>
@@ -57,44 +98,24 @@
             <th>Acción</th>
             <th>Motivo</th>
             <th>Ubicación</th>
-            <th>Resultado</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let r of registros">
-            <td class="text-nowrap numeros">
-              <strong>{{ r.fecha | date: 'dd/MM/yyyy' }}</strong><span class="texto-tenue ms-1">{{ r.fecha | date: 'h:mm:ss a' }}</span>
-            </td>
-            <td>
-              <div class="fw-semibold">{{ r.persona }}</div>
-              <div class="small texto-tenue" *ngIf="r.email">{{ r.email }}</div>
-            </td>
-            <td class="text-nowrap">
-              <i class="bi me-2" [ngClass]="iconoAccion(r.accion)" [class.texto-verde]="r.exitoso" [class.texto-rojo]="!r.exitoso"></i>{{ etiquetaAccion(r.accion) }}
-            </td>
-            <td class="small" [class.texto-rojo]="!r.exitoso" [class.texto-tenue]="r.exitoso">{{ r.motivo }}</td>
-            <td class="small numeros texto-tenue text-nowrap">{{ r.ubicacion }}</td>
-            <td>
-              <span class="gb-insignia punto" [class.exito]="r.exitoso" [class.peligro]="!r.exitoso">{{ r.exitoso ? 'Exitoso' : 'Fallido' }}</span>
-            </td>
-          </tr>
-          <tr *ngIf="registros.length === 0">
-            <td colspan="6" class="text-center texto-tenue py-4">No hay registros con esos filtros.</td>
-          </tr>
+          <tr
+            app-filaauditoriacomponent
+            *ngFor="let registro of registros"
+            [registro]="registro"
+          ></tr>
         </tbody>
       </table>
     </div>
-    <div class="gb-paginacion" *ngIf="totalPaginas > 1">
-      <span>Página {{ pagina + 1 }} de {{ totalPaginas }}</span>
-      <div class="d-flex gap-1">
-        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina === 0 || cargando" (click)="cargar(pagina - 1)">
-          <i class="bi bi-chevron-left"></i>Anterior
-        </button>
-        <button *ngFor="let p of paginas" type="button" class="btn-gb-sm" [class.btn-gb]="p === pagina" [class.btn-gb-fantasma]="p !== pagina" (click)="cargar(p)">{{ p + 1 }}</button>
-        <button class="btn-gb-borde btn-gb-sm" type="button" [disabled]="pagina + 1 >= totalPaginas || cargando" (click)="cargar(pagina + 1)">
-          Siguiente<i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
-    </div>
+
+    <app-paginacioncomponent
+      [pagina]="numeroPagina"
+      [totalPaginas]="totalPaginas"
+      [totalElementos]="totalRegistros"
+      [bloqueado]="cargando()"
+      (cambiar)="irAPagina($event)"
+    />
   </div>
-</div>
+</section>

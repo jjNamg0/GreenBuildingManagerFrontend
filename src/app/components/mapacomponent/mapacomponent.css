@@ -21,98 +21,6 @@
   height: 100%;
 }
 
-.icono-buscador {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--gb-texto-bajo);
-}
-
-.item-conjunto {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.75rem;
-  background: var(--gb-superficie);
-  border: 1px solid var(--gb-borde);
-  border-radius: 12px;
-  color: var(--gb-texto);
-}
-
-.item-conjunto:hover {
-  border-color: var(--gb-verde);
-}
-
-.foto {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--gb-borde);
-}
-
-.foto img {
-  width: 100%;
-  height: 210px;
-  object-fit: cover;
-  display: block;
-  background: var(--gb-verde-tenue);
-}
-
-.foto-insignia {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  background: var(--gb-velo);
-}
-
-.dato {
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.dato small {
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.siguiendo {
-  border-color: var(--gb-azul) !important;
-  color: var(--gb-azul) !important;
-}
-
-.pasos {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  font-size: 0.875rem;
-}
-
-.pasos li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-}
-
-.numero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(76, 154, 255, 0.15);
-  color: var(--gb-azul);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
 .control {
   display: inline-flex;
   align-items: center;
@@ -154,6 +62,7 @@
 }
 
 .aviso-ubicacion {
+  display: block;
   position: absolute;
   left: 1rem;
   right: 5rem;

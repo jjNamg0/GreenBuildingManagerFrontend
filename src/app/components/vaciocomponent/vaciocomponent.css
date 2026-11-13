@@ -1,0 +1,9 @@
+.gb-vacio .gb-icono {
+  margin-bottom: 1rem;
+}
+
+.gb-vacio p {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}

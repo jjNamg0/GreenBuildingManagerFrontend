@@ -1,3 +1,7 @@
-.mapa-formulario {
-  min-height: 460px;
+.mini-mapa {
+  height: 320px;
+  border: 1px solid var(--gb-borde);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: crosshair;
 }

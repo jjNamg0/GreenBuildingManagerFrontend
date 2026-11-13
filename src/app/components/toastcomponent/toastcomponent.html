@@ -1,6 +1,18 @@
-<div class="toast-notificacion" [class.toast-error]="esError()" role="status" aria-live="polite" *ngIf="mensaje()">
-  <span class="toast-icono" *ngIf="!esError()"><i class="bi bi-check-lg"></i></span>
-  <span class="toast-icono" *ngIf="esError()"><i class="bi bi-x-lg"></i></span>
+<div
+  class="toast-notificacion"
+  [ngClass]="'toast-' + tipo()"
+  role="status"
+  aria-live="polite"
+  *ngIf="mensaje()"
+>
+  <span class="toast-icono">
+    <i
+      class="fa-solid"
+      [class.fa-check]="tipo() === 'exito'"
+      [class.fa-xmark]="tipo() === 'error'"
+      [class.fa-info]="tipo() === 'info'"
+    ></i>
+  </span>
   <span class="flex-grow-1">{{ mensaje() }}</span>
   <button type="button" class="btn-close" aria-label="Cerrar aviso" (click)="cerrar()"></button>
 </div>

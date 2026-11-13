@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 
+/** Página con los términos de uso. */
 @Component({
   selector: 'app-terminoscomponent',
   standalone: false,
-  templateUrl: './terminoscomponent.html',
   styleUrl: './terminoscomponent.css',
+  templateUrl: './terminoscomponent.html',
 })
 export class Terminoscomponent {}

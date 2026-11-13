@@ -1,211 +1,153 @@
-import { Component, OnInit } from '@angular/core';
-import { Toastservice } from '../../services/toastservice';
-import { Eventoservice } from '../../services/eventoservice';
-import { Adminconjuntoservice } from '../../services/adminconjuntoservice';
+import { Component, OnInit, signal } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Conjunto } from '../../models/conjuntomodel';
-import { Evento, NuevoEvento } from '../../models/eventomodel';
-import { CATEGORIAS_EVENTO, DISENOS_INVITACION, etiquetaDe } from '../../models/opcionesmodel';
+import { Evento } from '../../models/eventomodel';
+import { Confirmacionservice } from '../../services/confirmacionservice';
+import { Conjuntoservice } from '../../services/conjuntoservice';
+import { Errorservice } from '../../services/errorservice';
+import { Eventoservice } from '../../services/eventoservice';
+import { Toastservice } from '../../services/toastservice';
 
+/**
+ * Pantalla para administrar los eventos: filtro por conjunto, creación, edición, invitaciones, cancelación y eliminación.
+ */
 @Component({
   selector: 'app-admineventoscomponent',
   standalone: false,
-  templateUrl: './admineventoscomponent.html',
   styleUrl: './admineventoscomponent.css',
+  templateUrl: './admineventoscomponent.html',
 })
 export class Admineventoscomponent implements OnInit {
-  readonly IMAGEN_RESPALDO = 'assets/images/respaldo.svg';
-
-  eventos: Evento[] = [];
-  conjuntos: Conjunto[] = [];
-  conjuntoId = 0;
-  pasados = false;
-  cargando = true;
-  error = '';
-
-  mostrarFormulario = false;
-  eventoEditando: Evento | null = null;
-  guardando = false;
-  errorEvento = '';
-
-  eventoPendiente: Evento | null = null;
-  motivo = '';
-  errorMotivo = '';
-  procesando = false;
-
-  eventoInvitacion: Evento | null = null;
-  datosInvitacion: NuevoEvento | null = null;
-  disenoInvitacion = 'CLASICO';
-  enviandoInvitacion = false;
-  errorInvitacion = '';
+  conjuntos = signal<Conjunto[]>([]);
+  conjuntoFiltro: number | null = null;
+  eventos = signal<Evento[]>([]);
+  cargando = signal(true);
+  error = signal('');
+  enviando = signal<number | null>(null);
+  formularioAbierto = signal(false);
+  eventoEditado = signal<Evento | null>(null);
 
   constructor(
     private eventoService: Eventoservice,
-    private adminConjuntoService: Adminconjuntoservice,
+    private conjuntoService: Conjuntoservice,
+    private confirmacionService: Confirmacionservice,
+    private errorService: Errorservice,
     private toastService: Toastservice,
   ) {}
 
+  /** Carga los conjuntos del filtro y la lista de eventos. */
   ngOnInit(): void {
-    this.adminConjuntoService
-      .obtenerConjuntos()
-      .subscribe((resultado) => (this.conjuntos = resultado.exito ? resultado.datos.filter((c) => c.activo) : []));
+    this.conjuntoService.obtenerTodos().subscribe({
+      next: (conjuntos) => this.conjuntos.set(conjuntos),
+      error: () => this.conjuntos.set([]),
+    });
     this.cargar();
   }
 
+  get sinEventos(): boolean {
+    return !this.cargando() && this.error() === '' && this.eventos().length === 0;
+  }
+
+  get hayEventos(): boolean {
+    return !this.cargando() && this.eventos().length > 0;
+  }
+
+  /** Pide al back los eventos del conjunto elegido. */
   cargar(): void {
-    this.cargando = true;
-    this.error = '';
-    this.eventoService.obtenerEventosAdmin(this.conjuntoId, this.pasados).subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.eventos = resultado.datos;
+    this.cargando.set(true);
+    this.error.set('');
+    this.eventoService.obtenerTodos(this.conjuntoFiltro).subscribe({
+      next: (eventos) => {
+        this.eventos.set(eventos);
+        this.cargando.set(false);
+      },
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos cargar los eventos.'));
+      },
     });
   }
 
-  cambiarVista(pasados: boolean): void {
-    if (this.pasados !== pasados) {
-      this.pasados = pasados;
-      this.cargar();
-    }
+  /** Filtra los eventos por conjunto y recarga la lista. */
+  filtrarPorConjunto(conjuntoId: number | null): void {
+    this.conjuntoFiltro = conjuntoId;
+    this.cargar();
   }
 
-  nuevoEvento(): void {
-    this.eventoEditando = null;
-    this.errorEvento = '';
-    this.mostrarFormulario = true;
+  /** Abre el formulario para crear un evento o editar el indicado. */
+  abrirFormulario(evento: Evento | null): void {
+    this.eventoEditado.set(evento);
+    this.formularioAbierto.set(true);
   }
 
-  editar(evento: Evento): void {
-    this.eventoEditando = evento;
-    this.errorEvento = '';
-    this.mostrarFormulario = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  /** Cierra el formulario y recarga la lista. */
+  alGuardar(): void {
+    this.formularioAbierto.set(false);
+    this.cargar();
   }
 
-  cerrarFormulario(): void {
-    this.mostrarFormulario = false;
-    this.eventoEditando = null;
-    this.errorEvento = '';
-  }
-
-  guardar(datos: NuevoEvento): void {
-    this.guardando = true;
-    this.errorEvento = '';
-    const peticion = this.eventoEditando
-      ? this.eventoService.editar(this.eventoEditando.id, datos)
-      : this.eventoService.crear(datos);
-    peticion.subscribe((resultado) => {
-      this.guardando = false;
-      if (!resultado.exito) {
-        this.errorEvento = resultado.mensaje;
-        return;
-      }
-      this.toastService.mostrar(this.eventoEditando ? 'Evento actualizado' : 'Evento creado');
-      this.cerrarFormulario();
-      this.cargar();
+  /** Pide confirmación y envía la invitación del evento a los residentes. */
+  async enviarInvitacion(evento: Evento): Promise<void> {
+    const confirmado = await this.confirmacionService.confirmar({
+      titulo: 'Enviar invitación por correo',
+      texto: `Se enviará "${evento.titulo}" a todos los residentes de ${evento.conjuntoNombre}.`,
+      textoConfirmar: 'Enviar invitación',
     });
-  }
-
-  pedirCancelacion(evento: Evento): void {
-    this.eventoPendiente = evento;
-    this.motivo = '';
-    this.errorMotivo = '';
-  }
-
-  cerrarCancelacion(): void {
-    this.eventoPendiente = null;
-  }
-
-  confirmarCancelacion(): void {
-    const evento = this.eventoPendiente;
-    if (!evento) {
+    if (!confirmado) {
       return;
     }
-    if (!this.motivo.trim()) {
-      this.errorMotivo = 'Escribe el motivo. Les llegará a los residentes por correo.';
-      return;
-    }
-    this.procesando = true;
-    this.eventoService.cancelar(evento.id, this.motivo.trim()).subscribe((resultado) => {
-      this.procesando = false;
-      if (!resultado.exito) {
-        this.errorMotivo = resultado.mensaje;
-        return;
-      }
-      this.toastService.mostrar('Evento cancelado');
-      this.cerrarCancelacion();
-      this.cargar();
+    this.enviando.set(evento.id);
+    this.eventoService.enviarInvitacion(evento.id).subscribe({
+      next: (mensaje) => {
+        this.enviando.set(null);
+        this.toastService.mostrar(mensaje || 'Invitaciones enviadas a los residentes.');
+      },
+      error: (error: unknown) => {
+        this.enviando.set(null);
+        this.toastService.mostrar(
+          this.errorService.obtenerMensaje(error, 'No pudimos enviar las invitaciones.'),
+          'error',
+        );
+      },
     });
   }
 
-  abrirInvitacion(evento: Evento): void {
-    this.eventoInvitacion = evento;
-    this.disenoInvitacion = evento.disenoInvitacion;
-    this.errorInvitacion = '';
-    this.datosInvitacion = {
-      conjuntoId: evento.conjuntoId,
-      espacioId: evento.espacioId,
-      nombre: evento.nombre,
-      descripcion: evento.descripcion,
-      categoria: evento.categoria,
-      inicio: evento.inicio,
-      fin: evento.fin,
-      fiestaNinos: evento.fiestaNinos,
-      edadMinima: evento.edadMinima,
-      edadMaxima: evento.edadMaxima,
-      imagen: evento.imagen ?? '',
-      disenoInvitacion: evento.disenoInvitacion,
-      enviarInvitacion: false,
-    };
-  }
-
-  cerrarInvitacion(): void {
-    this.eventoInvitacion = null;
-    this.datosInvitacion = null;
-  }
-
-  confirmarInvitacion(): void {
-    const evento = this.eventoInvitacion;
-    if (!evento) {
-      return;
-    }
-    this.enviandoInvitacion = true;
-    this.errorInvitacion = '';
-    this.eventoService.enviarInvitacion(evento.id, this.disenoInvitacion).subscribe((resultado) => {
-      this.enviandoInvitacion = false;
-      if (!resultado.exito) {
-        this.errorInvitacion = resultado.mensaje;
-        return;
-      }
-      const respuesta = resultado.datos;
-      this.toastService.mostrar(respuesta.mensaje);
-      this.eventos = this.eventos.map((e) => (e.id === respuesta.evento.id ? respuesta.evento : e));
-      this.cerrarInvitacion();
+  /** Pide el motivo y cancela el evento. */
+  async cancelar(evento: Evento): Promise<void> {
+    const motivo = await this.confirmacionService.pedirTexto({
+      titulo: `¿Cancelar "${evento.titulo}"?`,
+      texto: 'Los residentes verán el motivo y recibirán un aviso por correo.',
+      placeholder: 'Motivo de la cancelación',
+      textoConfirmar: 'Cancelar evento',
+      obligatorio: true,
     });
-  }
-
-  etiquetaDiseno(diseno: string): string {
-    return etiquetaDe(DISENOS_INVITACION, diseno);
-  }
-
-  esFuturo(evento: Evento): boolean {
-    return new Date(evento.inicio) > new Date();
-  }
-
-  etiquetaCategoria(categoria: string): string {
-    return etiquetaDe(CATEGORIAS_EVENTO, categoria);
-  }
-
-  imagenDe(evento: Evento): string {
-    return evento.imagen ? `assets/images/${evento.imagen}` : this.IMAGEN_RESPALDO;
-  }
-
-  usarImagenRespaldo(evento: Event): void {
-    const imagen = evento.target as HTMLImageElement;
-    if (!imagen.src.endsWith(this.IMAGEN_RESPALDO)) {
-      imagen.src = this.IMAGEN_RESPALDO;
+    if (motivo !== null) {
+      this.enviar(this.eventoService.cancelar(evento.id, { motivo }), 'Evento cancelado.');
     }
+  }
+
+  /** Pide confirmación y elimina el evento. */
+  async eliminar(evento: Evento): Promise<void> {
+    const confirmado = await this.confirmacionService.confirmar({
+      titulo: `¿Eliminar "${evento.titulo}"?`,
+      texto: 'Esta acción no se puede deshacer.',
+      textoConfirmar: 'Sí, eliminar',
+      peligro: true,
+    });
+    if (confirmado) {
+      this.enviar(this.eventoService.eliminar(evento.id), 'Evento eliminado.');
+    }
+  }
+
+  /** Ejecuta la petición recibida, avisa el resultado y recarga la lista. */
+  private enviar(peticion: Observable<string>, porDefecto: string): void {
+    peticion.subscribe({
+      next: (mensaje) => {
+        this.toastService.mostrar(mensaje || porDefecto);
+        this.cargar();
+      },
+      error: (error: unknown) =>
+        this.toastService.mostrar(this.errorService.obtenerMensaje(error), 'error'),
+    });
   }
 }

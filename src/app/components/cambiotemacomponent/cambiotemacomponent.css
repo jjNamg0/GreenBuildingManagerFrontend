@@ -8,7 +8,9 @@
   border: 1px solid var(--gb-borde);
   background: var(--gb-superficie);
   color: var(--gb-texto-medio);
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .cambio-tema:hover {

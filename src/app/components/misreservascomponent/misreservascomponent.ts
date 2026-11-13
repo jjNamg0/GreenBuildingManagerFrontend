@@ -1,132 +1,84 @@
-import { Component, OnInit } from '@angular/core';
-import { Toastservice } from '../../services/toastservice';
-import { Reservaservice } from '../../services/reservaservice';
-import { Authservice } from '../../services/authservice';
+import { Component, OnInit, signal } from '@angular/core';
 import { Reserva } from '../../models/reservamodel';
+import { Confirmacionservice } from '../../services/confirmacionservice';
+import { Errorservice } from '../../services/errorservice';
+import { Reservaservice } from '../../services/reservaservice';
+import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla del residente con sus reservas y el estado de cada una. */
 @Component({
   selector: 'app-misreservascomponent',
   standalone: false,
-  templateUrl: './misreservascomponent.html',
   styleUrl: './misreservascomponent.css',
+  templateUrl: './misreservascomponent.html',
 })
 export class Misreservascomponent implements OnInit {
-  reservas: Reserva[] = [];
-  cargando = true;
-  error = '';
-  vista: 'proximas' | 'pasadas' | 'canceladas' = 'proximas';
-
-  mostrarConfirmacion = false;
-  reservaPendiente: Reserva | null = null;
-  procesando = false;
-  comprobante: Reserva | null = null;
+  reservas = signal<Reserva[]>([]);
+  cargando = signal(true);
+  error = signal('');
+  cancelando = signal<number | null>(null);
 
   constructor(
     private reservaService: Reservaservice,
-    public auth: Authservice,
+    private confirmacionService: Confirmacionservice,
+    private errorService: Errorservice,
     private toastService: Toastservice,
   ) {}
 
+  /** Carga las reservas. */
   ngOnInit(): void {
     this.cargar();
   }
 
-  get filtradas(): Reserva[] {
-    return this.deVista(this.vista);
+  get sinReservas(): boolean {
+    return !this.cargando() && this.error() === '' && this.reservas().length === 0;
   }
 
-  cantidad(vista: 'proximas' | 'pasadas' | 'canceladas'): number {
-    return this.deVista(vista).length;
-  }
-
-  private deVista(vista: 'proximas' | 'pasadas' | 'canceladas'): Reserva[] {
-    const ahora = new Date();
-    if (vista === 'canceladas') {
-      return this.reservas.filter((r) => r.estado === 'CANCELADA' || r.estado === 'RECHAZADA');
-    }
-    const vivas = this.reservas.filter((r) => r.estado === 'PENDIENTE' || r.estado === 'CONFIRMADA');
-    if (vista === 'pasadas') {
-      return vivas.filter((r) => new Date(r.fin) <= ahora);
-    }
-    return vivas.filter((r) => new Date(r.fin) > ahora).sort((a, b) => a.inicio.localeCompare(b.inicio));
-  }
-
+  /** Pide al back las reservas del residente. */
   cargar(): void {
-    this.cargando = true;
-    this.error = '';
-    this.reservaService.obtenerMisReservas().subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.reservas = resultado.datos;
+    this.cargando.set(true);
+    this.error.set('');
+    this.reservaService.obtenerMias().subscribe({
+      next: (reservas) => {
+        this.reservas.set(reservas);
+        this.cargando.set(false);
+      },
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos cargar tus reservas.'));
+      },
     });
   }
 
-  sePuedeCancelar(reserva: Reserva): boolean {
-    return (reserva.estado === 'PENDIENTE' || reserva.estado === 'CONFIRMADA') && new Date(reserva.inicio) > new Date();
-  }
-
-  claseEstado(estado: string): string {
-    switch (estado) {
-      case 'CONFIRMADA':
-        return 'exito';
-      case 'PENDIENTE':
-        return 'pendiente';
-      case 'RECHAZADA':
-        return 'peligro';
-      default:
-        return 'neutro';
-    }
-  }
-
-  textoEstado(estado: string): string {
-    if (estado === 'PENDIENTE') {
-      return 'Pendiente de revisión';
-    }
-    return estado.charAt(0) + estado.slice(1).toLowerCase();
-  }
-
-  pedirConfirmacion(reserva: Reserva): void {
-    this.reservaPendiente = reserva;
-    this.mostrarConfirmacion = true;
-  }
-
-  cancelarConfirmacion(): void {
-    this.mostrarConfirmacion = false;
-    this.reservaPendiente = null;
-  }
-
-  confirmarCancelacion(): void {
-    const reserva = this.reservaPendiente;
-    if (!reserva) {
-      return;
-    }
-    this.procesando = true;
-    this.reservaService.cancelar(reserva.id).subscribe((resultado) => {
-      this.procesando = false;
-      if (!resultado.exito) {
-        this.toastService.mostrar(resultado.mensaje, 'error');
-        this.cancelarConfirmacion();
-        return;
-      }
-      const actualizada = resultado.datos;
-      this.reservas = this.reservas.map((r) => (r.id === actualizada.id ? actualizada : r));
-      this.toastService.mostrar('Reserva cancelada');
-      this.cancelarConfirmacion();
+  /** Pide confirmación y cancela la reserva. */
+  async cancelar(reserva: Reserva): Promise<void> {
+    const confirmado = await this.confirmacionService.confirmar({
+      titulo: '¿Cancelar la reserva?',
+      texto: `${reserva.espacioNombre} el ${reserva.fecha} de ${reserva.horaInicio} a ${reserva.horaFin}. El horario quedará libre para otros residentes.`,
+      textoConfirmar: 'Sí, cancelar',
+      peligro: true,
     });
+    if (confirmado) {
+      this.enviarCancelacion(reserva.id);
+    }
   }
 
-  verComprobante(reserva: Reserva): void {
-    this.comprobante = reserva;
-  }
-
-  cerrarComprobante(): void {
-    this.comprobante = null;
-  }
-
-  imprimir(): void {
-    window.print();
+  /** Envía la cancelación al back, avisa el resultado y recarga la lista. */
+  private enviarCancelacion(id: number): void {
+    this.cancelando.set(id);
+    this.reservaService.cancelar(id).subscribe({
+      next: (mensaje) => {
+        this.cancelando.set(null);
+        this.toastService.mostrar(mensaje || 'La reserva quedó cancelada.');
+        this.cargar();
+      },
+      error: (error: unknown) => {
+        this.cancelando.set(null);
+        this.toastService.mostrar(
+          this.errorService.obtenerMensaje(error, 'No pudimos cancelar la reserva.'),
+          'error',
+        );
+      },
+    });
   }
 }

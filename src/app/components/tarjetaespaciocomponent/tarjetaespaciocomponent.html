@@ -1,0 +1,47 @@
+<article class="gb-tarjeta espacio h-100">
+  <div class="foto">
+    <img class="imagen-tarjeta" [src]="imagenEspacio(espacio)" [alt]="espacio.nombre" />
+    <span class="gb-insignia sobre-imagen arriba">
+      <i class="fa-solid {{ iconoTipoEspacio(espacio.tipo) }}"></i
+      >{{ textoTipoEspacio(espacio.tipo) }}
+    </span>
+    <span class="mantenimiento" *ngIf="!espacio.disponible">
+      <i class="fa-solid fa-screwdriver-wrench me-1"></i>En mantenimiento
+    </span>
+  </div>
+
+  <div class="p-3 d-flex flex-column flex-grow-1">
+    <h3 class="h6 mb-1">{{ espacio.nombre }}</h3>
+    <p class="small texto-tenue mb-2 descripcion">{{ espacio.descripcion }}</p>
+
+    <app-alertacomponent
+      [mensaje]="motivo"
+      tipo="info"
+      icono="fa-wand-magic-sparkles"
+      clases="small mb-2"
+    />
+
+    <div class="gb-caja datos mb-3">
+      <span><i class="fa-solid fa-users texto-verde"></i>{{ espacio.capacidad }} personas</span>
+      <span>
+        <i class="fa-solid fa-clock texto-verde"></i>{{ espacio.horaApertura }} –
+        {{ espacio.horaCierre }}
+      </span>
+    </div>
+
+    <div class="mt-auto" *ngIf="mostrarReserva">
+      <a
+        class="btn-gb w-100"
+        *ngIf="sePuedeReservar(espacio); else noReservable"
+        [routerLink]="['/reservar', espacio.id]"
+      >
+        <i class="fa-solid fa-calendar-plus"></i>Reservar
+      </a>
+      <ng-template #noReservable>
+        <div class="no-disponible">
+          <i class="fa-solid {{ iconoNoReservable(espacio) }}"></i>{{ textoNoReservable(espacio) }}
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</article>

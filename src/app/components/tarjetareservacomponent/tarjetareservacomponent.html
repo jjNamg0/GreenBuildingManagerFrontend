@@ -1,0 +1,33 @@
+<article class="gb-tarjeta p-3 h-100 reserva" [class.inactiva]="!puedeCancelarReserva(reserva)">
+  <div class="calendario">
+    <span class="dia numeros">{{ reserva.fecha | date: 'd' }}</span>
+    <span class="mes">{{ reserva.fecha | date: 'MMM' }}</span>
+  </div>
+  <div class="flex-grow-1">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <h2 class="h6 mb-1">{{ reserva.espacioNombre }}</h2>
+      <span class="gb-insignia punto {{ claseEstadoReserva(reserva.estado) }}">
+        {{ textoEstadoReserva(reserva.estado) }}
+      </span>
+    </div>
+    <div class="small texto-tenue mb-2">
+      <i class="fa-solid fa-clock me-1"></i>{{ reserva.fecha | date: 'EEEE' }} ·
+      {{ reserva.horaInicio }} – {{ reserva.horaFin }}
+      <span *ngIf="reserva.asistentes"> · {{ reserva.asistentes }} personas</span>
+    </div>
+    <p class="small mb-2">{{ reserva.motivo }}</p>
+    <div class="observacion small mb-2" *ngIf="reserva.observacion">
+      <i class="fa-solid fa-comment me-1"></i>{{ reserva.observacion }}
+    </div>
+    <button
+      class="btn-gb-peligro btn-gb-sm"
+      type="button"
+      *ngIf="puedeCancelarReserva(reserva)"
+      [disabled]="cancelando"
+      (click)="cancelar.emit(reserva)"
+    >
+      <span [class]="claseSpinner(cancelando, 'fa-ban')"></span>
+      {{ cancelando ? 'Cancelando...' : 'Cancelar reserva' }}
+    </button>
+  </div>
+</article>

@@ -1,119 +1,77 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams, HttpResponse } from '@angular/common/http';
-import { Observable, catchError, map, of } from 'rxjs';
-import { Evento, NuevoEvento, Recomendaciones, RespuestaInvitacion, VistaPreviaInvitacion } from '../models/eventomodel';
-import { Resultado } from '../models/resultadomodel';
-import { armarError, armarLista, armarResultado } from './resultados';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { DatosCancelacion, DatosEvento, Evento, FiltrosEvento } from '../models/eventomodel';
 
-@Injectable({ providedIn: 'root' })
+/** Service de eventos, asistencia e invitaciones. */
+@Injectable({
+  providedIn: 'root',
+})
 export class Eventoservice {
   private cliente: HttpClient = inject(HttpClient);
-  private readonly URL_BASE: string = 'http://localhost:8080';
+  private readonly URL_BASE: string = `${environment.urlApi}/evento`;
 
-  pedirEventos(pasados: boolean): Observable<HttpResponse<Evento[]>> {
-    const params = new HttpParams().set('pasados', pasados);
-    return this.cliente.get<Evento[]>(`${this.URL_BASE}/eventos`, { params, observe: 'response' });
+  /** Pide los eventos de un conjunto con los filtros. */
+  obtenerPorConjunto(conjuntoId: number, filtros: FiltrosEvento): Observable<Evento[]> {
+    return this.cliente
+      .get<Evento[] | null>(`${this.URL_BASE}/getbyconjunto/${conjuntoId}`, {
+        params: { tipo: filtros.tipo, paraNinos: filtros.paraNinos },
+      })
+      .pipe(map((eventos) => eventos ?? []));
   }
 
-  pedirRecomendaciones(): Observable<HttpResponse<Recomendaciones>> {
-    return this.cliente.get<Recomendaciones>(`${this.URL_BASE}/recomendaciones`, { observe: 'response' });
+  /** Pide todos los eventos o los de un conjunto. */
+  obtenerTodos(conjuntoId: number | null): Observable<Evento[]> {
+    return this.cliente
+      .get<Evento[] | null>(`${this.URL_BASE}/getall`, {
+        params: conjuntoId ? { conjuntoId } : {},
+      })
+      .pipe(map((eventos) => eventos ?? []));
   }
 
-  pedirEventosAdmin(conjuntoId: number, pasados: boolean): Observable<HttpResponse<Evento[]>> {
-    let params = new HttpParams().set('pasados', pasados);
-    if (conjuntoId) {
-      params = params.set('conjuntoId', conjuntoId);
-    }
-    return this.cliente.get<Evento[]>(`${this.URL_BASE}/admin/eventos`, { params, observe: 'response' });
+  /** Pide al back crear un evento. */
+  crear(datos: DatosEvento): Observable<string> {
+    return this.cliente.post(`${this.URL_BASE}/createjson`, datos, { responseType: 'text' });
   }
 
-  enviarCrear(evento: NuevoEvento): Observable<HttpResponse<Evento>> {
-    return this.cliente.post<Evento>(`${this.URL_BASE}/admin/eventos`, evento, { observe: 'response' });
-  }
-
-  enviarEditar(id: number, evento: NuevoEvento): Observable<HttpResponse<Evento>> {
-    return this.cliente.put<Evento>(`${this.URL_BASE}/admin/eventos/${id}`, evento, { observe: 'response' });
-  }
-
-  enviarCancelar(id: number, motivo: string): Observable<HttpResponse<Evento>> {
-    return this.cliente.patch<Evento>(`${this.URL_BASE}/admin/eventos/${id}/cancelar`, { motivo }, {
-      observe: 'response',
+  /** Pide al back actualizar un evento. */
+  actualizar(id: number, datos: DatosEvento): Observable<string> {
+    return this.cliente.put(`${this.URL_BASE}/updatejson`, datos, {
+      params: { id },
+      responseType: 'text',
     });
   }
 
-  enviarVistaPrevia(datos: NuevoEvento): Observable<HttpResponse<VistaPreviaInvitacion>> {
-    return this.cliente.post<VistaPreviaInvitacion>(
-      `${this.URL_BASE}/admin/eventos/invitaciones/vista-previa`,
-      datos,
-      { observe: 'response' },
-    );
+  /** Pide al back cancelar un evento con su motivo. */
+  cancelar(id: number, datos: DatosCancelacion): Observable<string> {
+    return this.cliente.put(`${this.URL_BASE}/cancelar/${id}`, datos, { responseType: 'text' });
   }
 
-  enviarInvitacionEvento(id: number, diseno: string): Observable<HttpResponse<RespuestaInvitacion>> {
-    return this.cliente.post<RespuestaInvitacion>(
-      `${this.URL_BASE}/admin/eventos/${id}/invitacion`,
-      { diseno },
-      { observe: 'response' },
-    );
+  /** Pide al back eliminar un evento. */
+  eliminar(id: number): Observable<string> {
+    return this.cliente.delete(`${this.URL_BASE}/deletebyid/${id}`, { responseType: 'text' });
   }
 
-  obtenerEventos(pasados: boolean): Observable<Resultado<Evento[]>> {
-    return this.pedirEventos(pasados).pipe(
-      map((respuesta) => armarLista(respuesta)),
-      catchError((error: HttpErrorResponse) =>
-        of(armarError(error, 'No pudimos cargar los eventos de tu conjunto.')),
-      ),
-    );
+  /** Inscribe al residente en un evento. */
+  asistir(id: number): Observable<string> {
+    return this.cliente.post(`${this.URL_BASE}/asistir/${id}`, null, { responseType: 'text' });
   }
 
-  obtenerRecomendaciones(): Observable<Resultado<Recomendaciones>> {
-    return this.pedirRecomendaciones().pipe(
-      map((respuesta) => armarResultado(respuesta)),
-      catchError((error: HttpErrorResponse) =>
-        of(armarError(error, 'No pudimos cargar tus recomendaciones.')),
-      ),
-    );
+  /** Cancela la asistencia del residente a un evento. */
+  noAsistir(id: number): Observable<string> {
+    return this.cliente.delete(`${this.URL_BASE}/noasistir/${id}`, { responseType: 'text' });
   }
 
-  obtenerEventosAdmin(conjuntoId: number, pasados: boolean): Observable<Resultado<Evento[]>> {
-    return this.pedirEventosAdmin(conjuntoId, pasados).pipe(
-      map((respuesta) => armarLista(respuesta)),
-      catchError((error: HttpErrorResponse) => of(armarError(error, 'No pudimos cargar los eventos.'))),
-    );
+  /** Pide al back enviar por correo la invitación del evento. */
+  enviarInvitacion(id: number): Observable<string> {
+    return this.cliente.post(`${this.URL_BASE}/enviarinvitacion/${id}`, null, {
+      responseType: 'text',
+    });
   }
 
-  crear(evento: NuevoEvento): Observable<Resultado<Evento>> {
-    return this.enviarCrear(evento).pipe(
-      map((respuesta) => armarResultado(respuesta)),
-      catchError((error: HttpErrorResponse) => of(armarError(error, 'No pudimos guardar el evento.'))),
-    );
-  }
-
-  editar(id: number, evento: NuevoEvento): Observable<Resultado<Evento>> {
-    return this.enviarEditar(id, evento).pipe(
-      map((respuesta) => armarResultado(respuesta)),
-      catchError((error: HttpErrorResponse) => of(armarError(error, 'No pudimos guardar el evento.'))),
-    );
-  }
-
-  cancelar(id: number, motivo: string): Observable<Resultado<Evento>> {
-    return this.enviarCancelar(id, motivo).pipe(
-      map((respuesta) => armarResultado(respuesta)),
-      catchError((error: HttpErrorResponse) => of(armarError(error, 'No pudimos cancelar el evento.'))),
-    );
-  }
-
-  vistaPreviaInvitacion(datos: NuevoEvento): Observable<Resultado<VistaPreviaInvitacion>> {
-    return this.enviarVistaPrevia(datos).pipe(
-      map((respuesta) => armarResultado(respuesta)),
-      catchError((error: HttpErrorResponse) => of(armarError(error, 'No pudimos cargar la vista previa.'))),
-    );
-  }
-
-  enviarInvitacion(id: number, diseno: string): Observable<Resultado<RespuestaInvitacion>> {
-    return this.enviarInvitacionEvento(id, diseno).pipe(
-      map((respuesta) => armarResultado(respuesta)),
-      catchError((error: HttpErrorResponse) => of(armarError(error, 'No pudimos enviar la invitación.'))),
-    );
+  /** Pide el HTML de la invitación de un evento. */
+  obtenerVistaPrevia(datos: DatosEvento): Observable<string> {
+    return this.cliente.post(`${this.URL_BASE}/vistaprevia`, datos, { responseType: 'text' });
   }
 }

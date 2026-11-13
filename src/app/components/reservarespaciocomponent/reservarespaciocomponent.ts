@@ -1,233 +1,184 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Toastservice } from '../../services/toastservice';
-import { Residenteservice } from '../../services/residenteservice';
+import { Espacio, textoTipoEspacio } from '../../models/espaciomodel';
+import { claseSpinner } from '../../models/opcionmodel';
+import {
+  DatosReserva,
+  FranjaHoraria,
+  REGLAS_RESERVA,
+  proximosDias,
+} from '../../models/reservamodel';
+import { primerError } from '../../models/validacionmodel';
+import { Errorservice } from '../../services/errorservice';
+import { Espacioservice } from '../../services/espacioservice';
 import { Reservaservice } from '../../services/reservaservice';
-import { Espacio } from '../../models/espaciomodel';
-import { BloqueHorario, Disponibilidad } from '../../models/reservamodel';
-import { TIPOS_ESPACIO, etiquetaDe } from '../../models/opcionesmodel';
-import { duracionLegible, horaLegible, hoy, sumarDias } from '../../services/fechas';
+import { Toastservice } from '../../services/toastservice';
 
+/** Pantalla para reservar un espacio: elegir día, franja horaria, motivo y asistentes. */
 @Component({
   selector: 'app-reservarespaciocomponent',
   standalone: false,
-  templateUrl: './reservarespaciocomponent.html',
   styleUrl: './reservarespaciocomponent.css',
+  templateUrl: './reservarespaciocomponent.html',
 })
 export class Reservarespaciocomponent implements OnInit {
-  espacio: Espacio | null = null;
-  conjuntoNombre = '';
-  unidadDescripcion = '';
-  cargando = true;
-  error = '';
+  private readonly DIAS_VISIBLES = 14;
 
-  fecha = hoy();
-  fechaMinima = hoy();
-  fechaMaxima = hoy();
-  disponibilidad: Disponibilidad | null = null;
-  cargandoDisponibilidad = false;
+  readonly textoTipoEspacio = textoTipoEspacio;
+  readonly claseSpinner = claseSpinner;
 
-  horaInicio = '';
-  duracion = 0;
-  personas = 1;
-  observaciones = '';
-  errorFormulario = '';
-  guardando = false;
-  mostrarConfirmacion = false;
+  espacio = signal<Espacio | null>(null);
+  dias = signal<string[]>([]);
+  fecha = signal('');
+  hoy = '';
+  franjas = signal<FranjaHoraria[]>([]);
+  inicio = signal<number | null>(null);
+  fin = signal<number | null>(null);
+  motivo = '';
+  asistentes: number | null = null;
 
-  private consultaActual = 0;
+  cargandoEspacio = signal(true);
+  cargandoFranjas = signal(false);
+  errorEspacio = signal('');
+  errorFranjas = signal('');
+  error = signal('');
+  guardando = signal(false);
 
   constructor(
-    private residenteService: Residenteservice,
+    private espacioService: Espacioservice,
     private reservaService: Reservaservice,
+    private errorService: Errorservice,
+    private toastService: Toastservice,
     private route: ActivatedRoute,
     private router: Router,
-    private toastService: Toastservice,
   ) {}
 
+  /** Carga el espacio y las franjas del día de hoy. */
   ngOnInit(): void {
-    const espacioId = Number(this.route.snapshot.paramMap.get('espacioId'));
-    this.residenteService.obtenerMiConjunto().subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      const datos = resultado.datos;
-      const espacio = datos.espacios.find((e) => e.id === espacioId) ?? null;
-      if (!espacio) {
-        this.error = 'Este espacio no existe en tu conjunto.';
-        return;
-      }
-      if (espacio.modoReserva === 'NO_RESERVABLE') {
-        this.error = 'Este espacio no se reserva. Puedes usarlo libremente según sus reglas.';
-        return;
-      }
-      if (espacio.enMantenimiento) {
-        this.error = 'Este espacio está en mantenimiento. Intenta más adelante.';
-        return;
-      }
-      this.espacio = espacio;
-      this.conjuntoNombre = datos.conjunto.nombre;
-      this.unidadDescripcion = datos.unidad.descripcion;
-      this.fechaMaxima = sumarDias(this.fechaMinima, espacio.anticipacionMaximaDias);
-      this.duracion = espacio.duracionMinimaMinutos;
-      this.consultar(true);
+    this.dias.set(proximosDias(this.DIAS_VISIBLES));
+    this.hoy = this.dias()[0];
+    const id = Number(this.route.snapshot.paramMap.get('espacioId'));
+    this.espacioService.obtenerPorId(id).subscribe({
+      next: (espacio) => {
+        this.espacio.set(espacio);
+        this.cargandoEspacio.set(false);
+        this.seleccionarFecha(this.hoy);
+      },
+      error: (error: unknown) => {
+        this.cargandoEspacio.set(false);
+        this.errorEspacio.set(
+          this.errorService.obtenerMensaje(error, 'No encontramos este espacio.'),
+        );
+      },
     });
   }
 
-  get diasCercanos(): string[] {
-    const dias: string[] = [];
-    for (let i = 0; i < 7; i++) {
-      const dia = sumarDias(this.fechaMinima, i);
-      if (dia <= this.fechaMaxima) {
-        dias.push(dia);
-      }
-    }
-    return dias;
+  get textoHorario(): string {
+    return this.inicio() === null ? 'Sin elegir' : `${this.horaInicio()} – ${this.horaFin()}`;
   }
 
-  get bloques(): BloqueHorario[] {
-    return this.disponibilidad?.bloques ?? [];
-  }
-
-  get opcionesHora(): string[] {
-    return this.disponibilidad?.horasInicio ?? [];
-  }
-
-  get opcionesDuracion(): number[] {
-    return this.disponibilidad?.duraciones ?? [];
-  }
-
-  get horaFin(): string {
-    return this.disponibilidad?.horaFin ?? '';
-  }
-
-  get cuposLibres(): number {
-    return this.disponibilidad?.cuposLibres ?? this.espacio?.capacidad ?? 0;
-  }
-
-  get conflicto(): string {
-    return this.disponibilidad?.conflicto ?? '';
-  }
-
-  get esPorCupo(): boolean {
-    return this.espacio?.modoReserva === 'POR_CUPO';
-  }
-
-  get etiquetaTipo(): string {
-    return etiquetaDe(TIPOS_ESPACIO, this.espacio?.tipo);
-  }
-
-  elegirDia(fecha: string): void {
-    this.fecha = fecha;
-    this.cambiarFecha();
-  }
-
-  textoHora(hora: string): string {
-    return hora ? horaLegible(hora) : '';
-  }
-
-  textoDuracion(minutos: number): string {
-    return duracionLegible(minutos);
-  }
-
-  cambiarFecha(): void {
-    this.horaInicio = '';
-    this.errorFormulario = '';
-    if (!this.fecha) {
-      this.errorFormulario = 'Escoge una fecha.';
+  /** Elige un día, borra la selección y carga sus franjas. */
+  seleccionarFecha(fecha: string): void {
+    const espacio = this.espacio();
+    if (!fecha || !espacio) {
       return;
     }
-    this.consultar(true);
+    this.fecha.set(fecha);
+    this.inicio.set(null);
+    this.fin.set(null);
+    this.cargandoFranjas.set(true);
+    this.errorFranjas.set('');
+    this.reservaService.obtenerDisponibilidad(espacio.id, fecha).subscribe({
+      next: (franjas) => this.mostrarFranjas(franjas, ''),
+      error: (error: unknown) =>
+        this.mostrarFranjas(
+          [],
+          this.errorService.obtenerMensaje(error, 'No pudimos cargar la disponibilidad.'),
+        ),
+    });
   }
 
-  cambiarDetalle(): void {
-    this.errorFormulario = '';
-    if (this.horaInicio) {
-      this.consultar(false);
-    }
-  }
-
-  elegirBloque(bloque: BloqueHorario): void {
-    if (!bloque.libre || bloque.pasado || !this.opcionesHora.includes(bloque.inicio)) {
+  /** Elige la franja de inicio o amplía la selección hasta la franja de fin. */
+  elegirFranja(indice: number): void {
+    if (!this.franjas()[indice].disponible) {
       return;
     }
-    this.horaInicio = bloque.inicio;
-    this.cambiarDetalle();
+    if (this.extiendeSeleccion(indice)) {
+      this.fin.set(indice);
+    } else {
+      this.inicio.set(indice);
+      this.fin.set(null);
+    }
+    this.error.set('');
   }
 
-  estaSeleccionado(bloque: BloqueHorario): boolean {
-    return !!this.horaInicio && !!this.horaFin && bloque.inicio >= this.horaInicio && bloque.inicio < this.horaFin;
+  /** Devuelve la hora de inicio elegida o vacío. */
+  horaInicio(): string {
+    const inicio = this.inicio();
+    return inicio === null ? '' : this.franjas()[inicio].horaInicio;
   }
 
-  pedirConfirmacion(): void {
-    if (!this.horaInicio) {
-      this.errorFormulario = 'Escoge la hora de inicio tocando un bloque libre o en la lista.';
+  /** Devuelve la hora de fin elegida o vacío. */
+  horaFin(): string {
+    const inicio = this.inicio();
+    return inicio === null ? '' : this.franjas()[this.fin() ?? inicio].horaFin;
+  }
+
+  /** Valida el formulario y envía la reserva. */
+  reservar(): void {
+    const espacio = this.espacio();
+    if (!espacio) {
       return;
     }
-    this.errorFormulario = this.conflicto;
-    if (!this.errorFormulario) {
-      this.mostrarConfirmacion = true;
-    }
-  }
-
-  cancelarConfirmacion(): void {
-    this.mostrarConfirmacion = false;
-  }
-
-  confirmar(): void {
-    if (!this.espacio) {
+    const datos: DatosReserva = {
+      espacioId: espacio.id,
+      fecha: this.fecha(),
+      horaInicio: this.horaInicio(),
+      horaFin: this.horaFin(),
+      motivo: this.motivo.trim(),
+      asistentes: this.asistentes,
+    };
+    const problema = primerError(REGLAS_RESERVA, datos);
+    if (problema) {
+      this.error.set(problema);
       return;
     }
-    this.mostrarConfirmacion = false;
-    this.guardando = true;
-    this.reservaService
-      .crear({
-        espacioId: this.espacio.id,
-        inicio: `${this.fecha}T${this.horaInicio}:00`,
-        fin: `${this.fecha}T${this.horaFin}:00`,
-        personas: this.personas,
-        observaciones: this.observaciones.trim(),
-      })
-      .subscribe((resultado) => {
-        this.guardando = false;
-        if (!resultado.exito) {
-          this.errorFormulario = resultado.mensaje;
-          this.consultar(false);
-          return;
-        }
-        const reserva = resultado.datos;
+    this.enviarReserva(datos);
+  }
+
+  /** Envía la reserva al back y avisa el resultado. */
+  private enviarReserva(datos: DatosReserva): void {
+    this.guardando.set(true);
+    this.reservaService.crear(datos).subscribe({
+      next: (mensaje) => {
+        this.guardando.set(false);
         this.toastService.mostrar(
-          reserva.estado === 'PENDIENTE'
-            ? 'Reserva enviada. Te avisaremos cuando la administración la revise.'
-            : `Reserva confirmada. Comprobante ${reserva.comprobante}`,
+          mensaje || 'Solicitud enviada. La administración la revisará pronto.',
         );
         this.router.navigate(['/mis-reservas']);
-      });
+      },
+      error: (error: unknown) => {
+        this.guardando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos crear la reserva.'));
+      },
+    });
   }
 
-  private consultar(mostrarCarga: boolean): void {
-    if (!this.espacio) {
-      return;
+  /** Guarda las franjas y el error de la consulta. */
+  private mostrarFranjas(franjas: FranjaHoraria[], error: string): void {
+    this.franjas.set(franjas);
+    this.errorFranjas.set(error);
+    this.cargandoFranjas.set(false);
+  }
+
+  /** Indica si se puede ampliar la selección hasta la franja dada. */
+  private extiendeSeleccion(indice: number): boolean {
+    const inicio = this.inicio();
+    if (inicio === null || this.fin() !== null || indice <= inicio) {
+      return false;
     }
-    const numero = ++this.consultaActual;
-    this.cargandoDisponibilidad = mostrarCarga;
-    const consulta = this.horaInicio
-      ? { horaInicio: this.horaInicio, duracion: this.duracion, personas: Number(this.personas) || 0 }
-      : null;
-    this.reservaService.obtenerDisponibilidad(this.espacio.id, this.fecha, consulta).subscribe((resultado) => {
-      if (numero !== this.consultaActual) {
-        return;
-      }
-      this.cargandoDisponibilidad = false;
-      if (!resultado.exito) {
-        this.disponibilidad = null;
-        this.errorFormulario = resultado.mensaje;
-        return;
-      }
-      this.disponibilidad = resultado.datos;
-      this.duracion = resultado.datos.duracion;
-    });
+    return this.franjas()
+      .slice(inicio, indice + 1)
+      .every((franja) => franja.disponible);
   }
 }

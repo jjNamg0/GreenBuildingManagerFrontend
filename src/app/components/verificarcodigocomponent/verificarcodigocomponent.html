@@ -1,44 +1,76 @@
 <div class="gb-auth">
-  <div class="gb-auth-tarjeta text-center">
-    <span class="gb-icono gb-icono-grande mb-3"><i class="bi" [class.bi-shield-check]="modo === 'cuenta'" [class.bi-shield-lock]="modo === 'login'"></i></span>
-    <div class="mb-1" *ngIf="modo === 'login'"><span class="sobretitulo">Acceso de administrador</span></div>
-    <h1 class="h4 mb-2">{{ titulo }}</h1>
-    <p class="texto-tenue mb-4">
-      {{ explicacion }} <strong class="text-body">{{ email }}</strong>
-    </p>
+  <div class="gb-auth-tarjeta animate__animated animate__fadeIn">
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3"
+        ><i class="fa-solid fa-envelope-circle-check"></i
+      ></span>
+      <h1 class="h4 mb-1">Verifica tu correo</h1>
+      <p class="texto-tenue mb-0" *ngIf="correoDesdeEnlace; else sinCorreo">
+        Escribe el código de {{ LONGITUD_CODIGO }} dígitos que enviamos a
+        <strong class="texto-verde">{{ correo }}</strong>
+      </p>
+      <ng-template #sinCorreo>
+        <p class="texto-tenue mb-0">
+          Escribe tu correo y el código de {{ LONGITUD_CODIGO }} dígitos que te enviamos
+        </p>
+      </ng-template>
+    </div>
+
+    <app-alertacomponent [mensaje]="error()" clases="mb-3" />
 
     <form (ngSubmit)="verificar()" novalidate>
-      <div class="gb-codigo mb-3">
-        <div class="gb-codigo-casilla" *ngFor="let casilla of casillas; let i = index"
-          [class.vacia]="!casilla" [class.actual]="enfocado && i === codigo.length">{{ casilla }}</div>
-        <input class="gb-codigo-entrada" name="codigo" inputmode="numeric" autocomplete="one-time-code"
-          maxlength="6" aria-label="Código de 6 números" [ngModel]="codigo" (ngModelChange)="alCambiarCodigo($event)"
-          (focus)="enfocado = true" (blur)="enfocado = false" />
+      <div class="mb-3" *ngIf="!correoDesdeEnlace">
+        <label for="correo" class="form-label">Correo electrónico</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          class="form-control"
+          placeholder="nombre@correo.com"
+          autocomplete="email"
+          [(ngModel)]="correo"
+        />
       </div>
 
-      <p class="small texto-tenue mb-4"><i class="bi bi-hourglass-split me-1"></i>El código vence en <strong class="text-body">10 minutos</strong></p>
-
-      <div class="gb-alerta peligro mb-3 text-start" *ngIf="error">
-        <i class="bi bi-exclamation-circle"></i><span>{{ error }}</span>
+      <label for="codigo" class="form-label">Código de verificación</label>
+      <div class="gb-codigo mb-4">
+        <span
+          *ngFor="let digito of casillas(); let indice = index"
+          class="gb-codigo-casilla"
+          [class.vacia]="!digito"
+          [class.actual]="esCasillaActual(indice)"
+          >{{ digito }}</span
+        >
+        <input
+          #entradaCodigo
+          id="codigo"
+          class="gb-codigo-entrada"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          [attr.maxlength]="LONGITUD_CODIGO"
+          aria-label="Código de verificación"
+          (input)="actualizarCodigo(entradaCodigo)"
+          (focus)="enfocado.set(true)"
+          (blur)="enfocado.set(false)"
+        />
       </div>
 
-      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando">
-        <span *ngIf="cargando" class="spinner-border spinner-border-sm"></span>
-        {{ cargando ? 'Verificando...' : 'Verificar' }}
-        <i class="bi bi-arrow-right" *ngIf="!cargando"></i>
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando()">
+        <span [class]="claseSpinner(cargando(), 'fa-check')"></span>
+        {{ cargando() ? 'Verificando...' : 'Verificar cuenta' }}
       </button>
     </form>
 
-    <div class="small mt-4">
-      <span class="texto-tenue">¿No te llegó?</span>
-      <span class="texto-tenue" *ngIf="segundosParaReenviar > 0">
-        Podrás pedir otro en <strong class="text-body numeros">{{ segundosParaReenviar }} s</strong>
-      </span>
-      <button class="btn btn-link btn-sm p-0 align-baseline" type="button" *ngIf="segundosParaReenviar <= 0"
-        (click)="reenviar()">Reenviar código</button>
+    <div class="text-center mt-4">
+      <span class="small texto-tenue">¿No te llegó?</span>
+      <button
+        class="btn-gb-fantasma btn-gb-sm"
+        type="button"
+        (click)="reenviar()"
+        [disabled]="reenviando()"
+      >
+        <span [class]="claseSpinner(reenviando(), 'fa-rotate-right')"></span>Reenviar código
+      </button>
     </div>
-
-    <hr class="my-4" />
-    <a class="small texto-tenue" routerLink="/login"><i class="bi bi-arrow-left me-1"></i>Volver al inicio de sesión</a>
   </div>
 </div>

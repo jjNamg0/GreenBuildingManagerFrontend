@@ -1,61 +1,67 @@
-import { Injectable, NgZone } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Coordenadas } from '../models/rutamodel';
+import { Injectable, signal } from '@angular/core';
+import { Observable, Subscriber, throwError } from 'rxjs';
+import {
+  Coordenadas,
+  MENSAJE_SIN_GEOLOCALIZACION,
+  coordenadasDePosicion,
+  mensajeErrorUbicacion,
+} from '../models/ubicacionmodel';
 
-@Injectable({ providedIn: 'root' })
+/** Convierte un error de geolocalización en un error del observable. */
+const fallarUbicacion = (
+  observador: Subscriber<Coordenadas>,
+  error: GeolocationPositionError,
+): void => observador.error(new Error(mensajeErrorUbicacion(error.code)));
+
+/** Service que obtiene y sigue la ubicación del navegador. */
+@Injectable({
+  providedIn: 'root',
+})
 export class Ubicacionservice {
-  constructor(private zona: NgZone) {}
+  private readonly OPCIONES: PositionOptions = {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 30000,
+  };
 
-  get disponible(): boolean {
-    return 'geolocation' in navigator;
-  }
+  ultimaUbicacion = signal<Coordenadas | null>(null);
 
+  /** Obtiene la ubicación una sola vez. */
   obtenerUbicacion(): Observable<Coordenadas> {
+    if (!('geolocation' in navigator)) {
+      return throwError(() => new Error(MENSAJE_SIN_GEOLOCALIZACION));
+    }
     return new Observable<Coordenadas>((observador) => {
-      if (!this.disponible) {
-        observador.error('Tu navegador no permite obtener la ubicación.');
-        return;
-      }
       navigator.geolocation.getCurrentPosition(
-        (posicion) =>
-          this.zona.run(() => {
-            observador.next({ latitud: posicion.coords.latitude, longitud: posicion.coords.longitude });
-            observador.complete();
-          }),
-        (error) => this.zona.run(() => observador.error(this.describirError(error))),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 },
+        (posicion) => {
+          observador.next(this.guardar(posicion));
+          observador.complete();
+        },
+        (error) => fallarUbicacion(observador, error),
+        this.OPCIONES,
       );
     });
   }
 
-  seguirUbicacion(alMoverse: (coordenadas: Coordenadas) => void, alFallar: (mensaje: string) => void): number | null {
-    if (!this.disponible) {
-      alFallar('Tu navegador no permite obtener la ubicación.');
-      return null;
+  /** Emite la ubicación cada vez que cambia. */
+  seguirUbicacion(): Observable<Coordenadas> {
+    if (!('geolocation' in navigator)) {
+      return throwError(() => new Error(MENSAJE_SIN_GEOLOCALIZACION));
     }
-    return navigator.geolocation.watchPosition(
-      (posicion) =>
-        this.zona.run(() =>
-          alMoverse({ latitud: posicion.coords.latitude, longitud: posicion.coords.longitude }),
-        ),
-      (error) => this.zona.run(() => alFallar(this.describirError(error))),
-      { enableHighAccuracy: true, maximumAge: 5000 },
-    );
+    return new Observable<Coordenadas>((observador) => {
+      const id = navigator.geolocation.watchPosition(
+        (posicion) => observador.next(this.guardar(posicion)),
+        (error) => fallarUbicacion(observador, error),
+        this.OPCIONES,
+      );
+      return () => navigator.geolocation.clearWatch(id);
+    });
   }
 
-  dejarDeSeguir(id: number | null): void {
-    if (id !== null) {
-      navigator.geolocation.clearWatch(id);
-    }
-  }
-
-  private describirError(error: GeolocationPositionError): string {
-    if (error.code === error.PERMISSION_DENIED) {
-      return 'No diste permiso para usar tu ubicación. Actívalo en el navegador para ver la ruta desde donde estás.';
-    }
-    if (error.code === error.TIMEOUT) {
-      return 'Se demoró mucho obtener tu ubicación. Intenta de nuevo.';
-    }
-    return 'No pudimos obtener tu ubicación en este momento.';
+  /** Guarda y devuelve las coordenadas de la posición. */
+  private guardar(posicion: GeolocationPosition): Coordenadas {
+    const coordenadas = coordenadasDePosicion(posicion);
+    this.ultimaUbicacion.set(coordenadas);
+    return coordenadas;
   }
 }

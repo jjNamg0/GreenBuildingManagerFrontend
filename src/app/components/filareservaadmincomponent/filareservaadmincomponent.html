@@ -1,0 +1,42 @@
+<td>
+  <div class="fw-medium">{{ reserva.usuarioNombre }}</div>
+  <div class="small texto-tenue">{{ reserva.unidadDescripcion }}</div>
+</td>
+<td>
+  <div>{{ reserva.espacioNombre }}</div>
+  <div class="small texto-tenue">{{ reserva.conjuntoNombre }}</div>
+</td>
+<td class="text-nowrap">
+  <div>{{ reserva.fecha | date: 'EEE d MMM y' }}</div>
+  <div class="small texto-tenue numeros">{{ reserva.horaInicio }} – {{ reserva.horaFin }}</div>
+</td>
+<td class="motivo">
+  <div class="small">{{ reserva.motivo }}</div>
+  <div class="small texto-tenue" *ngIf="reserva.asistentes">{{ reserva.asistentes }} personas</div>
+  <div class="small texto-amarillo" *ngIf="reserva.observacion">{{ reserva.observacion }}</div>
+</td>
+<td>
+  <span class="gb-insignia punto {{ claseEstadoReserva(reserva.estado) }}">
+    {{ textoEstadoReserva(reserva.estado) }}
+  </span>
+</td>
+<td class="text-end text-nowrap">
+  <ng-container *ngIf="estaPendiente(reserva)">
+    <button
+      class="btn-gb btn-gb-sm me-1"
+      type="button"
+      [disabled]="procesando"
+      (click)="aprobar.emit(reserva)"
+    >
+      <i class="fa-solid fa-check"></i>Aprobar
+    </button>
+    <button
+      class="btn-gb-peligro btn-gb-sm"
+      type="button"
+      [disabled]="procesando"
+      (click)="rechazar.emit(reserva)"
+    >
+      <i class="fa-solid fa-xmark"></i>Rechazar
+    </button>
+  </ng-container>
+</td>

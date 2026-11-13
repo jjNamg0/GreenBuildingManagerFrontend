@@ -1,0 +1,67 @@
+<span class="sobretitulo mb-2">Mapa · Cundinamarca</span>
+<h1 class="h4 mb-1">Conjuntos residenciales</h1>
+<p class="small texto-tenue mb-3">Toca un conjunto para ver cómo llegar desde donde estás.</p>
+
+<app-alertacomponent [mensaje]="mensajeVisitante" tipo="info" icono="fa-route" clases="mb-3" />
+
+<form class="mb-3" (ngSubmit)="buscar.emit()" novalidate>
+  <div class="input-group mb-2">
+    <input
+      name="busqueda"
+      class="form-control"
+      placeholder="Buscar por nombre o municipio"
+      [ngModel]="busqueda"
+      (ngModelChange)="cambiarBusqueda($event)"
+    />
+    <button class="btn-gb-borde" type="submit" aria-label="Buscar">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </div>
+  <div class="gb-pildoras">
+    <button type="button" [class.activo]="tipo === ''" (click)="cambiarTipo('')">Todos</button>
+    <button
+      type="button"
+      *ngFor="let opcion of TIPOS"
+      [class.activo]="tipo === opcion.valor"
+      (click)="cambiarTipo(opcion.valor)"
+    >
+      <i class="fa-solid me-1 {{ opcion.icono }}"></i>{{ opcion.texto }}
+    </button>
+  </div>
+</form>
+
+<app-conjuntoscercanoscomponent [cercanos]="cercanos" (seleccionar)="seleccionar.emit($event)" />
+
+<app-cargandocomponent [activo]="cargando" texto="Cargando conjuntos..." />
+
+<app-alertacomponent [mensaje]="errorVisible" textoAccion="Reintentar" (accion)="buscar.emit()" />
+
+<app-vaciocomponent
+  [visible]="sinResultados"
+  icono="fa-city"
+  titulo="No encontramos conjuntos"
+  texto="Prueba con otra búsqueda."
+>
+  <button class="btn-gb-borde btn-gb-sm" type="button" (click)="limpiar.emit()">
+    Limpiar filtros
+  </button>
+</app-vaciocomponent>
+
+<div *ngIf="hayResultados">
+  <div class="etiqueta-mayuscula mb-2">{{ conjuntos.length }} conjuntos</div>
+  <button
+    type="button"
+    class="fila-conjunto"
+    *ngFor="let conjunto of conjuntos"
+    (click)="seleccionar.emit(conjunto)"
+  >
+    <span class="gb-icono"><i class="fa-solid {{ iconoTipoConjunto(conjunto.tipo) }}"></i></span>
+    <span class="flex-grow-1 text-start">
+      <span class="d-block fw-medium">{{ conjunto.nombre }}</span>
+      <span class="d-block small texto-tenue"
+        >{{ conjunto.municipio }} · {{ conjunto.direccion }}</span
+      >
+    </span>
+    <span class="gb-insignia neutro">{{ textoTipoConjunto(conjunto.tipo) }}</span>
+  </button>
+</div>

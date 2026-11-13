@@ -1,119 +1,111 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { Conjunto, TIPOS_CONJUNTO, textoTipoConjunto } from '../../models/conjuntomodel';
+import { Confirmacionservice } from '../../services/confirmacionservice';
+import { Conjuntoservice } from '../../services/conjuntoservice';
+import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
-import { Adminconjuntoservice } from '../../services/adminconjuntoservice';
-import { Conjunto } from '../../models/conjuntomodel';
-import { TIPOS_CONJUNTO, etiquetaDe } from '../../models/opcionesmodel';
-import { normalizarTexto } from '../../services/validaciones';
 
+/**
+ * Pantalla para administrar los conjuntos: búsqueda, filtro por tipo, creación, edición y eliminación.
+ */
 @Component({
   selector: 'app-adminconjuntoscomponent',
   standalone: false,
-  templateUrl: './adminconjuntoscomponent.html',
   styleUrl: './adminconjuntoscomponent.css',
+  templateUrl: './adminconjuntoscomponent.html',
 })
 export class Adminconjuntoscomponent implements OnInit {
-  conjuntos: Conjunto[] = [];
-  cargando = true;
-  error = '';
-  busqueda = '';
-  estado = '';
-  pagina = 1;
-  readonly TAMANO_PAGINA = 10;
+  readonly TIPOS = TIPOS_CONJUNTO;
+  readonly textoTipoConjunto = textoTipoConjunto;
 
-  mostrarConfirmacion = false;
-  conjuntoPendiente: Conjunto | null = null;
-  procesando = false;
+  conjuntos = signal<Conjunto[]>([]);
+  busqueda = '';
+  tipo = '';
+  cargando = signal(true);
+  error = signal('');
+  formularioAbierto = signal(false);
+  conjuntoEditado = signal<Conjunto | null>(null);
 
   constructor(
-    private adminConjuntoService: Adminconjuntoservice,
+    private conjuntoService: Conjuntoservice,
+    private confirmacionService: Confirmacionservice,
+    private errorService: Errorservice,
     private toastService: Toastservice,
   ) {}
 
+  /** Carga la lista de conjuntos. */
   ngOnInit(): void {
     this.cargar();
   }
 
-  get filtrados(): Conjunto[] {
-    const texto = normalizarTexto(this.busqueda);
-    return this.conjuntos.filter(
-      (c) =>
-        (!texto ||
-          normalizarTexto(c.nombre).includes(texto) ||
-          normalizarTexto(c.municipio).includes(texto) ||
-          normalizarTexto(c.direccion).includes(texto)) &&
-        (!this.estado || (this.estado === 'activos' ? c.activo : !c.activo)),
-    );
+  get sinConjuntos(): boolean {
+    return !this.cargando() && this.error() === '' && this.conjuntos().length === 0;
   }
 
-  get paginados(): Conjunto[] {
-    const inicio = (this.pagina - 1) * this.TAMANO_PAGINA;
-    return this.filtrados.slice(inicio, inicio + this.TAMANO_PAGINA);
+  get hayConjuntos(): boolean {
+    return !this.cargando() && this.conjuntos().length > 0;
   }
 
-  get totalPaginas(): number {
-    return Math.max(1, Math.ceil(this.filtrados.length / this.TAMANO_PAGINA));
-  }
-
-  get paginas(): number[] {
-    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
-  }
-
-  get activos(): number {
-    return this.conjuntos.filter((c) => c.activo).length;
-  }
-
-  get municipiosCubiertos(): number {
-    return new Set(this.conjuntos.map((c) => c.municipio)).size;
-  }
-
+  /** Pide al back los conjuntos con la búsqueda y el tipo actuales. */
   cargar(): void {
-    this.cargando = true;
-    this.error = '';
-    this.adminConjuntoService.obtenerConjuntos().subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.conjuntos = resultado.datos;
+    this.cargando.set(true);
+    this.error.set('');
+    this.conjuntoService.obtenerTodos(this.busqueda.trim(), this.tipo).subscribe({
+      next: (conjuntos) => {
+        this.conjuntos.set(conjuntos);
+        this.cargando.set(false);
+      },
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos cargar los conjuntos.'));
+      },
     });
   }
 
-  alFiltrar(): void {
-    this.pagina = 1;
+  /** Filtra la lista por tipo de conjunto. */
+  elegirTipo(tipo: string): void {
+    this.tipo = tipo;
+    this.cargar();
   }
 
-  etiquetaTipo(tipo: string): string {
-    return etiquetaDe(TIPOS_CONJUNTO, tipo);
+  /** Abre el formulario para crear un conjunto o editar el indicado. */
+  abrirFormulario(conjunto: Conjunto | null): void {
+    this.conjuntoEditado.set(conjunto);
+    this.formularioAbierto.set(true);
   }
 
-  pedirConfirmacion(conjunto: Conjunto): void {
-    this.conjuntoPendiente = conjunto;
-    this.mostrarConfirmacion = true;
+  /** Cierra el formulario y recarga la lista. */
+  alGuardar(): void {
+    this.formularioAbierto.set(false);
+    this.cargar();
   }
 
-  cancelarConfirmacion(): void {
-    this.mostrarConfirmacion = false;
-    this.conjuntoPendiente = null;
-  }
-
-  confirmarCambioEstado(): void {
-    const conjunto = this.conjuntoPendiente;
-    if (!conjunto) {
-      return;
+  /** Pide confirmación y elimina el conjunto indicado. */
+  async eliminar(conjunto: Conjunto): Promise<void> {
+    const confirmado = await this.confirmacionService.confirmar({
+      titulo: `¿Eliminar ${conjunto.nombre}?`,
+      texto:
+        'Se eliminarán también sus unidades, espacios y eventos. Esta acción no se puede deshacer.',
+      textoConfirmar: 'Sí, eliminar',
+      peligro: true,
+    });
+    if (confirmado) {
+      this.enviarEliminacion(conjunto.id);
     }
-    this.procesando = true;
-    this.adminConjuntoService.cambiarEstadoConjunto(conjunto.id, !conjunto.activo).subscribe((resultado) => {
-      this.procesando = false;
-      if (!resultado.exito) {
-        this.toastService.mostrar(resultado.mensaje, 'error');
-        this.cancelarConfirmacion();
-        return;
-      }
-      const actualizado = resultado.datos;
-      this.conjuntos = this.conjuntos.map((c) => (c.id === actualizado.id ? actualizado : c));
-      this.toastService.mostrar(actualizado.activo ? 'Conjunto activado' : 'Conjunto desactivado');
-      this.cancelarConfirmacion();
+  }
+
+  /** Envía la eliminación al back, avisa el resultado y recarga la lista. */
+  private enviarEliminacion(id: number): void {
+    this.conjuntoService.eliminar(id).subscribe({
+      next: (mensaje) => {
+        this.toastService.mostrar(mensaje || 'Conjunto eliminado.');
+        this.cargar();
+      },
+      error: (error: unknown) =>
+        this.toastService.mostrar(
+          this.errorService.obtenerMensaje(error, 'No pudimos eliminar el conjunto.'),
+          'error',
+        ),
     });
   }
 }

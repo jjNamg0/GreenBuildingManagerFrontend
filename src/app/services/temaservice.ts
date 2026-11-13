@@ -1,43 +1,46 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
+import { Tema } from '../models/temamodel';
 
-export type Tema = 'claro' | 'oscuro';
-
-@Injectable({ providedIn: 'root' })
+/** Service que guarda y aplica el tema claro u oscuro. */
+@Injectable({
+  providedIn: 'root',
+})
 export class Temaservice {
   private readonly CLAVE_TEMA = 'greenbuilding-tema';
-  private _tema: Tema = 'oscuro';
 
-  constructor() {
+  tema = signal<Tema>('oscuro');
+
+  /** Lee el tema guardado y lo aplica. */
+  iniciar(): void {
     try {
       const guardado = localStorage.getItem(this.CLAVE_TEMA);
       if (guardado === 'claro' || guardado === 'oscuro') {
-        this._tema = guardado;
+        this.tema.set(guardado);
       }
     } catch {
-      this._tema = 'oscuro';
+      this.tema.set('oscuro');
     }
     this.aplicar();
   }
 
-  get tema(): Tema {
-    return this._tema;
+  /** Indica si el tema actual es oscuro. */
+  esOscuro(): boolean {
+    return this.tema() === 'oscuro';
   }
 
-  get esOscuro(): boolean {
-    return this._tema === 'oscuro';
-  }
-
+  /** Cambia de tema y lo guarda. */
   alternar(): void {
-    this._tema = this.esOscuro ? 'claro' : 'oscuro';
+    this.tema.set(this.esOscuro() ? 'claro' : 'oscuro');
     this.aplicar();
     try {
-      localStorage.setItem(this.CLAVE_TEMA, this._tema);
+      localStorage.setItem(this.CLAVE_TEMA, this.tema());
     } catch {
       return;
     }
   }
 
+  /** Aplica el tema al documento. */
   private aplicar(): void {
-    document.documentElement.setAttribute('data-bs-theme', this.esOscuro ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-bs-theme', this.esOscuro() ? 'dark' : 'light');
   }
 }

@@ -1,0 +1,7 @@
+<div class="gb-alerta {{ tipo }} {{ clases }}" role="alert" *ngIf="mensaje">
+  <i class="fa-solid {{ icono }}"></i>
+  <span class="flex-grow-1">{{ mensaje }}</span>
+  <button class="btn-gb-borde btn-gb-sm" type="button" *ngIf="textoAccion" (click)="accion.emit()">
+    {{ textoAccion }}
+  </button>
+</div>

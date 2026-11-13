@@ -1,258 +1,124 @@
-import { Component, OnInit } from '@angular/core';
-import { Toastservice } from '../../services/toastservice';
-import { Adminservice } from '../../services/adminservice';
-import { Adminconjuntoservice } from '../../services/adminconjuntoservice';
-import { Authservice } from '../../services/authservice';
-import { Usuario } from '../../models/usuariomodel';
+import { Component, OnInit, signal } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Conjunto } from '../../models/conjuntomodel';
-import { Unidad } from '../../models/unidadmodel';
-import { normalizarTexto } from '../../services/validaciones';
+import {
+  FILTROS_USUARIOS,
+  FiltroUsuarios,
+  Usuario,
+  opcionesCambioEstado,
+} from '../../models/usuariomodel';
+import { Confirmacionservice } from '../../services/confirmacionservice';
+import { Conjuntoservice } from '../../services/conjuntoservice';
+import { Errorservice } from '../../services/errorservice';
+import { Toastservice } from '../../services/toastservice';
+import { Usuarioservice } from '../../services/usuarioservice';
 
+/**
+ * Pantalla para administrar los usuarios: búsqueda, filtros, asignar unidad, activar, desactivar y eliminar.
+ */
 @Component({
   selector: 'app-adminusuarioscomponent',
   standalone: false,
-  templateUrl: './adminusuarioscomponent.html',
   styleUrl: './adminusuarioscomponent.css',
+  templateUrl: './adminusuarioscomponent.html',
 })
 export class Adminusuarioscomponent implements OnInit {
-  usuarios: Usuario[] = [];
-  cargando = true;
-  error = '';
+  readonly FILTROS = FILTROS_USUARIOS;
+
+  usuarios = signal<Usuario[]>([]);
+  conjuntos = signal<Conjunto[]>([]);
+  filtro: FiltroUsuarios = 'TODOS';
   busqueda = '';
-  rol = '';
-  pagina = 1;
-  readonly TAMANO_PAGINA = 15;
-
-  mostrarConfirmacion = false;
-  usuarioPendiente: Usuario | null = null;
-  procesando = false;
-
-  mostrarAsignacion = false;
-  usuarioAsignando: Usuario | null = null;
-  conjuntos: Conjunto[] = [];
-  unidades: Unidad[] = [];
-  conjuntoElegido = 0;
-  unidadElegida = 0;
-  errorAsignacion = '';
-  guardandoAsignacion = false;
-
-  mostrarRechazo = false;
-  usuarioRechazando: Usuario | null = null;
-  motivoRechazo = '';
-  errorRechazo = '';
-  rechazando = false;
+  cargando = signal(true);
+  error = signal('');
+  usuarioAsignando = signal<Usuario | null>(null);
 
   constructor(
-    private adminService: Adminservice,
-    private adminConjuntoService: Adminconjuntoservice,
-    private auth: Authservice,
+    private usuarioService: Usuarioservice,
+    private conjuntoService: Conjuntoservice,
+    private confirmacionService: Confirmacionservice,
+    private errorService: Errorservice,
     private toastService: Toastservice,
   ) {}
 
+  /** Carga la lista de usuarios. */
   ngOnInit(): void {
+    this.cargar();
+    this.conjuntoService.obtenerTodos().subscribe({
+      next: (conjuntos) => this.conjuntos.set(conjuntos),
+      error: () => this.conjuntos.set([]),
+    });
+  }
+
+  get sinUsuarios(): boolean {
+    return !this.cargando() && this.error() === '' && this.usuarios().length === 0;
+  }
+
+  get hayUsuarios(): boolean {
+    return !this.cargando() && this.usuarios().length > 0;
+  }
+
+  /** Pide al back los usuarios con el filtro y la búsqueda actuales. */
+  cargar(): void {
+    this.cargando.set(true);
+    this.error.set('');
+    this.usuarioService.obtenerTodos(this.filtro, this.busqueda.trim()).subscribe({
+      next: (usuarios) => {
+        this.usuarios.set(usuarios);
+        this.cargando.set(false);
+      },
+      error: (error: unknown) => {
+        this.cargando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos cargar los usuarios.'));
+      },
+    });
+  }
+
+  /** Cambia el filtro de usuarios y recarga la lista. */
+  elegirFiltro(filtro: FiltroUsuarios): void {
+    this.filtro = filtro;
     this.cargar();
   }
 
-  get filtrados(): Usuario[] {
-    const texto = normalizarTexto(this.busqueda);
-    return this.usuarios.filter(
-      (u) =>
-        (!texto ||
-          normalizarTexto(`${u.nombre} ${u.apellido}`).includes(texto) ||
-          normalizarTexto(u.email).includes(texto) ||
-          normalizarTexto(u.conjuntoNombre ?? '').includes(texto)) &&
-        (!this.rol || (this.rol === 'SOLICITUD' ? !!u.conjuntoSolicitadoId : u.rol === this.rol)),
-    );
+  /** Cierra el modal de asignar unidad y recarga la lista. */
+  alAsignar(): void {
+    this.usuarioAsignando.set(null);
+    this.cargar();
   }
 
-  get paginados(): Usuario[] {
-    const inicio = (this.pagina - 1) * this.TAMANO_PAGINA;
-    return this.filtrados.slice(inicio, inicio + this.TAMANO_PAGINA);
+  /** Pide confirmación y activa o desactiva al usuario. */
+  async cambiarEstado(usuario: Usuario): Promise<void> {
+    const confirmado = await this.confirmacionService.confirmar(opcionesCambioEstado(usuario));
+    if (confirmado) {
+      this.enviar(
+        this.usuarioService.cambiarEstado(usuario.id, !usuario.activo),
+        'Estado actualizado.',
+      );
+    }
   }
 
-  get totalPaginas(): number {
-    return Math.max(1, Math.ceil(this.filtrados.length / this.TAMANO_PAGINA));
-  }
-
-  get paginas(): number[] {
-    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
-  }
-
-  get sinVerificar(): number {
-    return this.usuarios.filter((u) => !u.verificado).length;
-  }
-
-  get sinUnidad(): number {
-    return this.usuarios.filter((u) => u.rol === 'RESIDENTE' && !u.unidadId && !u.conjuntoSolicitadoId).length;
-  }
-
-  get solicitudes(): number {
-    return this.usuarios.filter((u) => !!u.conjuntoSolicitadoId).length;
-  }
-
-  get aceptando(): boolean {
-    return !!this.usuarioAsignando?.conjuntoSolicitadoId;
-  }
-
-  verSolicitudes(): void {
-    this.rol = 'SOLICITUD';
-    this.alFiltrar();
-  }
-
-  esYo(usuario: Usuario): boolean {
-    return this.auth.usuario?.id === usuario.id;
-  }
-
-  iniciales(usuario: Usuario): string {
-    return `${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}`.toUpperCase();
-  }
-
-  cargar(): void {
-    this.cargando = true;
-    this.error = '';
-    this.adminService.obtenerUsuarios().subscribe((resultado) => {
-      this.cargando = false;
-      if (!resultado.exito) {
-        this.error = resultado.mensaje;
-        return;
-      }
-      this.usuarios = resultado.datos;
+  /** Pide confirmación y elimina al usuario. */
+  async eliminar(usuario: Usuario): Promise<void> {
+    const confirmado = await this.confirmacionService.confirmar({
+      titulo: `¿Eliminar a ${usuario.nombre} ${usuario.apellido}?`,
+      texto: 'Se borrará su cuenta y sus reservas pendientes. Esta acción no se puede deshacer.',
+      textoConfirmar: 'Sí, eliminar',
+      peligro: true,
     });
-  }
-
-  alFiltrar(): void {
-    this.pagina = 1;
-  }
-
-  pedirConfirmacion(usuario: Usuario): void {
-    this.usuarioPendiente = usuario;
-    this.mostrarConfirmacion = true;
-  }
-
-  cancelarConfirmacion(): void {
-    this.mostrarConfirmacion = false;
-    this.usuarioPendiente = null;
-  }
-
-  confirmarCambioEstado(): void {
-    const usuario = this.usuarioPendiente;
-    if (!usuario) {
-      return;
+    if (confirmado) {
+      this.enviar(this.usuarioService.eliminar(usuario.id), 'Usuario eliminado.');
     }
-    this.procesando = true;
-    this.adminService.cambiarEstadoUsuario(usuario.id, !usuario.activo).subscribe((resultado) => {
-      this.procesando = false;
-      if (!resultado.exito) {
-        this.toastService.mostrar(resultado.mensaje, 'error');
-        this.cancelarConfirmacion();
-        return;
-      }
-      this.reemplazar(resultado.datos);
-      this.toastService.mostrar(resultado.datos.activo ? 'Usuario activado' : 'Usuario desactivado');
-      this.cancelarConfirmacion();
+  }
+
+  /** Ejecuta la petición recibida, avisa el resultado y recarga la lista. */
+  private enviar(peticion: Observable<string>, porDefecto: string): void {
+    peticion.subscribe({
+      next: (mensaje) => {
+        this.toastService.mostrar(mensaje || porDefecto);
+        this.cargar();
+      },
+      error: (error: unknown) =>
+        this.toastService.mostrar(this.errorService.obtenerMensaje(error), 'error'),
     });
-  }
-
-  abrirAsignacion(usuario: Usuario): void {
-    this.usuarioAsignando = usuario;
-    this.conjuntoElegido = usuario.conjuntoId ?? usuario.conjuntoSolicitadoId ?? 0;
-    this.unidadElegida = usuario.unidadId ?? 0;
-    this.errorAsignacion = '';
-    this.unidades = [];
-    this.mostrarAsignacion = true;
-    this.adminConjuntoService.obtenerConjuntos().subscribe((resultado) => {
-      if (!resultado.exito) {
-        this.errorAsignacion = resultado.mensaje;
-        return;
-      }
-      this.conjuntos = resultado.datos.filter((c) => c.activo);
-      if (this.conjuntoElegido) {
-        this.cargarUnidades(false);
-      }
-    });
-  }
-
-  cerrarAsignacion(): void {
-    this.mostrarAsignacion = false;
-    this.usuarioAsignando = null;
-  }
-
-  cargarUnidades(reiniciar: boolean): void {
-    if (reiniciar) {
-      this.unidadElegida = 0;
-    }
-    this.unidades = [];
-    this.errorAsignacion = '';
-    if (!this.conjuntoElegido) {
-      return;
-    }
-    this.adminConjuntoService.obtenerUnidades(this.conjuntoElegido).subscribe((resultado) => {
-      if (!resultado.exito) {
-        this.errorAsignacion = resultado.mensaje;
-        return;
-      }
-      this.unidades = resultado.datos.filter((u) => u.activo);
-    });
-  }
-
-  guardarAsignacion(quitar: boolean): void {
-    const usuario = this.usuarioAsignando;
-    if (!usuario) {
-      return;
-    }
-    if (!quitar && !this.unidadElegida) {
-      this.errorAsignacion = 'Escoge el conjunto y la unidad.';
-      return;
-    }
-    const aceptaba = this.aceptando;
-    this.guardandoAsignacion = true;
-    this.adminService.asignarUnidad(usuario.id, quitar ? null : Number(this.unidadElegida)).subscribe((resultado) => {
-      this.guardandoAsignacion = false;
-      if (!resultado.exito) {
-        this.errorAsignacion = resultado.mensaje;
-        return;
-      }
-      this.reemplazar(resultado.datos);
-      this.toastService.mostrar(quitar ? 'Se quitó la unidad' : aceptaba ? 'Solicitud aceptada' : 'Unidad asignada');
-      this.cerrarAsignacion();
-    });
-  }
-
-  abrirRechazo(usuario: Usuario): void {
-    this.usuarioRechazando = usuario;
-    this.motivoRechazo = '';
-    this.errorRechazo = '';
-    this.mostrarRechazo = true;
-  }
-
-  cerrarRechazo(): void {
-    this.mostrarRechazo = false;
-    this.usuarioRechazando = null;
-  }
-
-  confirmarRechazo(): void {
-    const usuario = this.usuarioRechazando;
-    if (!usuario) {
-      return;
-    }
-    if (!this.motivoRechazo.trim()) {
-      this.errorRechazo = 'Escribe el motivo. Le llegará al residente por correo.';
-      return;
-    }
-    this.rechazando = true;
-    this.adminService.rechazarSolicitudConjunto(usuario.id, this.motivoRechazo.trim()).subscribe((resultado) => {
-      this.rechazando = false;
-      if (!resultado.exito) {
-        this.errorRechazo = resultado.mensaje;
-        return;
-      }
-      this.reemplazar(resultado.datos);
-      this.toastService.mostrar('Solicitud rechazada');
-      this.cerrarRechazo();
-    });
-  }
-
-  private reemplazar(actualizado: Usuario): void {
-    this.usuarios = this.usuarios.map((u) => (u.id === actualizado.id ? actualizado : u));
   }
 }

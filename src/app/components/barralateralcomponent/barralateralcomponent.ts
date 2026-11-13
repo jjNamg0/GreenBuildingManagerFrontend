@@ -1,21 +1,28 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { EnlaceMenu } from '../../models/menumodel';
 
+/** Menú lateral del panel de administración. */
 @Component({
   selector: 'app-barralateralcomponent',
   standalone: false,
-  templateUrl: './barralateralcomponent.html',
   styleUrl: './barralateralcomponent.css',
+  templateUrl: './barralateralcomponent.html',
 })
 export class Barralateralcomponent {
   @Input() abierta = false;
-  @Output() cerrar = new EventEmitter<void>();
+  @Output() readonly cerrar = new EventEmitter<void>();
 
-  readonly enlaces = [
-    { ruta: '/admin/mapa', icono: 'bi-map', texto: 'Mapa', exacto: false },
-    { ruta: '/admin/conjuntos', icono: 'bi-buildings', texto: 'Conjuntos', exacto: false },
-    { ruta: '/admin/usuarios', icono: 'bi-people', texto: 'Usuarios', exacto: false },
-    { ruta: '/admin/reservas', icono: 'bi-calendar-check', texto: 'Reservas', exacto: false },
-    { ruta: '/admin/eventos', icono: 'bi-megaphone', texto: 'Eventos', exacto: false },
-    { ruta: '/admin/auditoria', icono: 'bi-shield-check', texto: 'Auditoría', exacto: false },
+  readonly ENLACES_OPERACION: EnlaceMenu[] = [
+    { texto: 'Inicio', ruta: '/admin', icono: 'fa-gauge-high', exacto: true },
+    { texto: 'Conjuntos', ruta: '/admin/conjuntos', icono: 'fa-city', exacto: false },
+    { texto: 'Usuarios', ruta: '/admin/usuarios', icono: 'fa-users', exacto: false },
+    { texto: 'Eventos', ruta: '/admin/eventos', icono: 'fa-calendar-days', exacto: false },
+    { texto: 'Reservas', ruta: '/admin/reservas', icono: 'fa-calendar-check', exacto: false },
+  ];
+
+  readonly ENLACES_CONTROL: EnlaceMenu[] = [
+    { texto: 'Auditoría', ruta: '/admin/auditoria', icono: 'fa-clipboard-list', exacto: false },
+    { texto: 'Mapa', ruta: '/mapa', icono: 'fa-map-location-dot', exacto: false },
+    { texto: 'Mi perfil', ruta: '/perfil', icono: 'fa-user-gear', exacto: false },
   ];
 }

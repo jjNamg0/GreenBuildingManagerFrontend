@@ -7,7 +7,7 @@
   align-items: center;
   gap: 12px;
   min-width: 280px;
-  max-width: 380px;
+  max-width: 400px;
   padding: 0.85rem 1rem;
   background: var(--gb-elevada);
   color: var(--gb-texto);
@@ -38,6 +38,15 @@
 .toast-error .toast-icono {
   background: rgba(240, 97, 109, 0.15);
   color: var(--gb-rojo);
+}
+
+.toast-info {
+  border-left-color: var(--gb-azul);
+}
+
+.toast-info .toast-icono {
+  background: rgba(76, 154, 255, 0.15);
+  color: var(--gb-azul);
 }
 
 @keyframes entrar {

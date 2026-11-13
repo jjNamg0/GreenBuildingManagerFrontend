@@ -1,0 +1,86 @@
+<div class="gb-tarjeta">
+  <div class="d-flex justify-content-between align-items-center p-3 borde-inferior">
+    <div>
+      <h2 class="h6 mb-0">Espacios de esparcimiento</h2>
+      <span class="small texto-tenue">Salones, parques, piscinas y zonas comunes</span>
+    </div>
+    <button class="btn-gb btn-gb-sm" type="button" (click)="abrirFormulario(null)">
+      <i class="fa-solid fa-plus"></i>Nuevo espacio
+    </button>
+  </div>
+
+  <app-cargandocomponent [activo]="cargando()" texto="Cargando espacios..." />
+
+  <app-alertacomponent
+    [mensaje]="error()"
+    clases="m-3"
+    textoAccion="Reintentar"
+    (accion)="cargar()"
+  />
+
+  <app-vaciocomponent
+    [visible]="sinEspacios"
+    icono="fa-tree"
+    titulo="Este conjunto aún no tiene espacios"
+  />
+
+  <div class="table-responsive" *ngIf="hayEspacios">
+    <table class="gb-tabla">
+      <thead>
+        <tr>
+          <th>Espacio</th>
+          <th>Capacidad</th>
+          <th>Horario</th>
+          <th>Reserva</th>
+          <th>Estado</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let espacio of espacios()">
+          <td>
+            <div class="fw-medium">
+              <i class="fa-solid texto-verde me-2 {{ iconoTipoEspacio(espacio.tipo) }}"></i
+              >{{ espacio.nombre }}
+            </div>
+            <div class="small texto-tenue">{{ textoTipoEspacio(espacio.tipo) }}</div>
+          </td>
+          <td class="numeros">{{ espacio.capacidad }}</td>
+          <td class="numeros text-nowrap">{{ espacio.horaApertura }} – {{ espacio.horaCierre }}</td>
+          <td>{{ textoUsoEspacio(espacio) }}</td>
+          <td>
+            <span class="gb-insignia punto {{ claseEstadoEspacio(espacio) }}">{{
+              textoEstadoEspacio(espacio)
+            }}</span>
+          </td>
+          <td class="text-end text-nowrap">
+            <button
+              class="btn-gb-fantasma btn-gb-sm"
+              type="button"
+              title="Editar"
+              (click)="abrirFormulario(espacio)"
+            >
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button
+              class="btn-gb-fantasma btn-gb-sm texto-rojo"
+              type="button"
+              title="Eliminar"
+              (click)="eliminar(espacio)"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-espacioformcomponent
+  *ngIf="formularioAbierto()"
+  [conjuntoId]="conjuntoId"
+  [espacio]="espacioEditado()"
+  (cerrar)="formularioAbierto.set(false)"
+  (guardado)="alGuardar()"
+/>
