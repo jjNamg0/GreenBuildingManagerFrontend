@@ -1,0 +1,171 @@
+<div
+  class="modal gb-modal"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tituloEvento"
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content animate__animated animate__fadeInDown animate__faster">
+      <form (ngSubmit)="guardar()" novalidate>
+        <div class="modal-header">
+          <h2 id="tituloEvento" class="modal-title h5">{{ titulo }}</h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cerrar.emit()"
+          ></button>
+        </div>
+
+        <div class="modal-body">
+          <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+
+          <div class="row g-4">
+            <div class="col-12 col-lg-6">
+              <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                  <label for="conjuntoEvento" class="form-label">Conjunto</label>
+                  <select
+                    id="conjuntoEvento"
+                    name="conjunto"
+                    class="form-select"
+                    [ngModel]="datos.conjuntoId"
+                    (ngModelChange)="cambiarConjunto($event)"
+                  >
+                    <option [ngValue]="null">Elige un conjunto</option>
+                    <option *ngFor="let conjunto of conjuntos" [ngValue]="conjunto.id">
+                      {{ conjunto.nombre }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label for="espacioEvento" class="form-label">Espacio (opcional)</label>
+                  <select
+                    id="espacioEvento"
+                    name="espacio"
+                    class="form-select"
+                    [(ngModel)]="datos.espacioId"
+                    [disabled]="datos.conjuntoId === null"
+                  >
+                    <option [ngValue]="null">Sin espacio específico</option>
+                    <option *ngFor="let espacio of espacios()" [ngValue]="espacio.id">
+                      {{ espacio.nombre }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="tituloEventoCampo" class="form-label">Título</label>
+                  <input
+                    id="tituloEventoCampo"
+                    name="titulo"
+                    class="form-control"
+                    placeholder="Fiesta de fin de año"
+                    [(ngModel)]="datos.titulo"
+                  />
+                </div>
+                <div class="col-12">
+                  <span class="form-label d-block">Tipo de evento</span>
+                  <div class="gb-pildoras">
+                    <button
+                      type="button"
+                      *ngFor="let tipo of TIPOS"
+                      [class.activo]="datos.tipo === tipo.valor"
+                      (click)="elegirTipo(tipo.valor)"
+                    >
+                      <i class="fa-solid me-1 {{ tipo.icono }}"></i>{{ tipo.texto }}
+                    </button>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label for="descripcionEvento" class="form-label">Descripción</label>
+                  <textarea
+                    id="descripcionEvento"
+                    name="descripcion"
+                    class="form-control"
+                    rows="3"
+                    [(ngModel)]="datos.descripcion"
+                  ></textarea>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label for="fechaEvento" class="form-label">Fecha</label>
+                  <input
+                    id="fechaEvento"
+                    name="fecha"
+                    type="date"
+                    class="form-control"
+                    [(ngModel)]="datos.fecha"
+                  />
+                </div>
+                <div class="col-6 col-sm-4">
+                  <label for="inicioEvento" class="form-label">Empieza</label>
+                  <input
+                    id="inicioEvento"
+                    name="inicio"
+                    type="time"
+                    class="form-control"
+                    [(ngModel)]="datos.horaInicio"
+                  />
+                </div>
+                <div class="col-6 col-sm-4">
+                  <label for="finEvento" class="form-label">Termina</label>
+                  <input
+                    id="finEvento"
+                    name="fin"
+                    type="time"
+                    class="form-control"
+                    [(ngModel)]="datos.horaFin"
+                  />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label for="cupo" class="form-label">Cupo máximo (opcional)</label>
+                  <input
+                    id="cupo"
+                    name="cupo"
+                    type="number"
+                    min="1"
+                    class="form-control"
+                    [(ngModel)]="datos.cupoMaximo"
+                  />
+                </div>
+                <div class="col-12 col-sm-6 d-flex align-items-end">
+                  <div class="form-check form-switch mb-2">
+                    <input
+                      id="paraNinos"
+                      name="paraNinos"
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      [(ngModel)]="datos.paraNinos"
+                    />
+                    <label class="form-check-label" for="paraNinos">
+                      <i class="fa-solid fa-children me-1"></i>Hay plan para niños
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+              <app-selectorplantillacomponent
+                [plantilla]="datos.plantilla"
+                [vistaPrevia]="vistaPrevia()"
+                [cargando]="cargandoVista()"
+                [error]="errorVista()"
+                (elegir)="elegirPlantilla($event)"
+                (generar)="verVistaPrevia()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-gb-borde" type="button" (click)="cerrar.emit()">Cancelar</button>
+          <button class="btn-gb" type="submit" [disabled]="guardando()">
+            <span [class]="claseSpinner(guardando(), 'fa-floppy-disk')"></span>Guardar evento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

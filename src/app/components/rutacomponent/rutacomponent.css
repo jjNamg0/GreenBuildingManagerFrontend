@@ -1,0 +1,36 @@
+.resumen-ruta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.resumen-ruta > div {
+  padding: 0.75rem;
+  border: 1px solid var(--gb-borde);
+  border-radius: 10px;
+  background: var(--gb-campo);
+}
+
+.resumen-ruta .valor {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--gb-verde);
+}
+
+.pasos {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.pasos li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--gb-borde);
+}
+
+.pasos li:last-child {
+  border-bottom: none;
+}

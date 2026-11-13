@@ -1,9 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Authservice } from './services/authservice';
+import { Temaservice } from './services/temaservice';
 
 @Component({
   selector: 'app-root',
   standalone: false,
-  templateUrl: './app.html',
   styleUrl: './app.css',
+  templateUrl: './app.html',
 })
-export class App {}
+export class App implements OnInit {
+  constructor(
+    private authService: Authservice,
+    private temaService: Temaservice,
+  ) {}
+
+  ngOnInit(): void {
+    this.temaService.iniciar();
+    this.authService.restaurarSesion();
+  }
+}

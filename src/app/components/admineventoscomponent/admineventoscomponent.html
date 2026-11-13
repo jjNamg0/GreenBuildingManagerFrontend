@@ -1,0 +1,81 @@
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Administración</span>
+      <h1 class="titulo-pagina">Eventos</h1>
+      <p class="texto-tenue mb-0">
+        Programa eventos en las instalaciones y envía la invitación por correo.
+      </p>
+    </div>
+    <button class="btn-gb" type="button" (click)="abrirFormulario(null)">
+      <i class="fa-solid fa-plus"></i>Programar evento
+    </button>
+  </div>
+
+  <div class="gb-tarjeta">
+    <div class="d-flex flex-wrap gap-3 align-items-center p-3 borde-inferior">
+      <label for="filtroConjunto" class="small texto-tenue mb-0">Conjunto</label>
+      <select
+        id="filtroConjunto"
+        class="form-select form-select-sm filtro"
+        [ngModel]="conjuntoFiltro"
+        (ngModelChange)="filtrarPorConjunto($event)"
+      >
+        <option [ngValue]="null">Todos los conjuntos</option>
+        <option *ngFor="let conjunto of conjuntos()" [ngValue]="conjunto.id">
+          {{ conjunto.nombre }}
+        </option>
+      </select>
+    </div>
+
+    <app-cargandocomponent [activo]="cargando()" texto="Cargando eventos..." />
+
+    <app-alertacomponent
+      [mensaje]="error()"
+      clases="m-3"
+      textoAccion="Reintentar"
+      (accion)="cargar()"
+    />
+
+    <app-vaciocomponent
+      [visible]="sinEventos"
+      icono="fa-calendar-plus"
+      titulo="No hay eventos programados"
+    />
+
+    <div class="table-responsive" *ngIf="hayEventos">
+      <table class="gb-tabla">
+        <thead>
+          <tr>
+            <th>Evento</th>
+            <th>Conjunto</th>
+            <th>Fecha y hora</th>
+            <th>Asistentes</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            app-filaeventoadmincomponent
+            *ngFor="let evento of eventos()"
+            [evento]="evento"
+            [enviando]="enviando() === evento.id"
+            (invitar)="enviarInvitacion($event)"
+            (editar)="abrirFormulario($event)"
+            (cancelar)="cancelar($event)"
+            (eliminar)="eliminar($event)"
+          ></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<app-eventoformcomponent
+  *ngIf="formularioAbierto()"
+  [evento]="eventoEditado()"
+  [conjuntos]="conjuntos()"
+  (cerrar)="formularioAbierto.set(false)"
+  (guardado)="alGuardar()"
+/>

@@ -1,0 +1,89 @@
+.vista-mapa {
+  display: flex;
+  height: calc(100vh - var(--gb-alto-barra));
+}
+
+.panel {
+  width: 420px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  background: var(--gb-fondo);
+  border-right: 1px solid var(--gb-borde);
+}
+
+.zona-mapa {
+  position: relative;
+  flex: 1;
+}
+
+.mapa {
+  width: 100%;
+  height: 100%;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--gb-elevada);
+  border: 1px solid var(--gb-borde);
+  border-radius: 10px;
+  color: var(--gb-texto);
+  font-weight: 500;
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.65);
+}
+
+.control:hover {
+  border-color: var(--gb-verde);
+}
+
+.boton-ubicacion {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  padding: 0.6rem 1rem;
+}
+
+.controles-zoom {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.controles-zoom .control {
+  width: 44px;
+  height: 44px;
+}
+
+.aviso-ubicacion {
+  display: block;
+  position: absolute;
+  left: 1rem;
+  right: 5rem;
+  bottom: 1.5rem;
+  z-index: 1000;
+}
+
+@media (max-width: 991.98px) {
+  .vista-mapa {
+    flex-direction: column-reverse;
+    height: auto;
+  }
+
+  .panel {
+    width: 100%;
+    border-right: none;
+    overflow: visible;
+  }
+
+  .zona-mapa {
+    height: 55vh;
+    flex: none;
+  }
+}

@@ -1,0 +1,18 @@
+<div class="mb-4" *ngIf="cercanos.length > 0">
+  <div class="etiqueta-mayuscula mb-2">
+    <i class="fa-solid fa-location-crosshairs me-1"></i>Cerca de ti
+  </div>
+  <button
+    type="button"
+    class="fila-conjunto"
+    *ngFor="let cercano of cercanos"
+    (click)="seleccionar.emit(cercano.conjunto)"
+  >
+    <span class="gb-icono"><i class="fa-solid fa-star"></i></span>
+    <span class="flex-grow-1 text-start">
+      <span class="d-block fw-medium">{{ cercano.conjunto.nombre }}</span>
+      <span class="d-block small texto-tenue">{{ cercano.motivo }}</span>
+    </span>
+    <span class="small texto-verde numeros">{{ cercano.distanciaKm | number: '1.1-1' }} km</span>
+  </button>
+</div>

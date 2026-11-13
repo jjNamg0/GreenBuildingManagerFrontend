@@ -1,0 +1,70 @@
+<div
+  class="modal gb-modal"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tituloUnidad"
+>
+  <div class="modal-dialog">
+    <div class="modal-content animate__animated animate__fadeInDown animate__faster">
+      <form (ngSubmit)="guardar()" novalidate>
+        <div class="modal-header">
+          <h2 id="tituloUnidad" class="modal-title h5">{{ titulo }}</h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cerrar.emit()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p class="small texto-tenue">{{ conjunto.nombre }}</p>
+          <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+          <div class="mb-3">
+            <span class="form-label d-block">Tipo de unidad</span>
+            <div class="gb-segmentos">
+              <button
+                type="button"
+                *ngFor="let tipo of TIPOS"
+                [class.activo]="datos.tipo === tipo.valor"
+                (click)="datos.tipo = tipo.valor"
+              >
+                <i class="fa-solid {{ tipo.icono }}"></i>{{ tipo.texto }}
+              </button>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-7">
+              <label for="agrupacion" class="form-label">{{
+                etiquetaAgrupacion(datos.tipo)
+              }}</label>
+              <input
+                id="agrupacion"
+                name="agrupacion"
+                class="form-control"
+                [placeholder]="ejemploAgrupacion(datos.tipo)"
+                [(ngModel)]="datos.agrupacion"
+              />
+            </div>
+            <div class="col-5">
+              <label for="numero" class="form-label">Número</label>
+              <input
+                id="numero"
+                name="numero"
+                class="form-control"
+                [placeholder]="ejemploNumero(datos.tipo)"
+                [(ngModel)]="datos.numero"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-gb-borde" type="button" (click)="cerrar.emit()">Cancelar</button>
+          <button class="btn-gb" type="submit" [disabled]="guardando()">
+            <span [class]="claseSpinner(guardando(), 'fa-floppy-disk')"></span>Guardar unidad
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

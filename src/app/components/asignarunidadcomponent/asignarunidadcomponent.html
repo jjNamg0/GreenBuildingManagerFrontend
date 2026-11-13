@@ -1,0 +1,68 @@
+<div
+  class="modal gb-modal"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tituloAsignar"
+>
+  <div class="modal-dialog">
+    <div class="modal-content animate__animated animate__fadeInDown animate__faster">
+      <form (ngSubmit)="guardar()" novalidate>
+        <div class="modal-header">
+          <h2 id="tituloAsignar" class="modal-title h5">Asignar unidad</h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cerrar.emit()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="gb-caja p-3 mb-3 small">
+            <div class="fw-medium">{{ nombreCompleto(usuario) }}</div>
+            <div class="texto-tenue" *ngIf="usuario.unidadSolicitada">
+              Solicitó: {{ usuario.unidadSolicitada }}
+            </div>
+          </div>
+          <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+          <div class="mb-3">
+            <label for="conjuntoAsignar" class="form-label">Conjunto</label>
+            <select
+              id="conjuntoAsignar"
+              name="conjunto"
+              class="form-select"
+              [ngModel]="conjuntoElegido"
+              (ngModelChange)="cambiarConjunto($event)"
+            >
+              <option [ngValue]="null">Elige un conjunto</option>
+              <option *ngFor="let conjunto of conjuntos" [ngValue]="conjunto.id">
+                {{ conjunto.nombre }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label for="unidadAsignar" class="form-label">Unidad</label>
+            <select
+              id="unidadAsignar"
+              name="unidad"
+              class="form-select"
+              [(ngModel)]="unidadElegida"
+              [disabled]="conjuntoElegido === null || cargandoUnidades()"
+            >
+              <option [ngValue]="null">{{ textoPrimeraUnidad }}</option>
+              <option *ngFor="let unidad of unidades()" [ngValue]="unidad.id">
+                {{ textoOpcionUnidad(unidad) }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-gb-borde" type="button" (click)="cerrar.emit()">Cancelar</button>
+          <button class="btn-gb" type="submit" [disabled]="guardando()">
+            <span [class]="claseSpinner(guardando(), 'fa-house-user')"></span>Asignar unidad
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

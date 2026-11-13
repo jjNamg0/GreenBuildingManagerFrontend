@@ -1,12 +1,11 @@
 import { Injectable, signal } from '@angular/core';
-
-export type TipoToast = 'exito' | 'error';
+import { TipoToast } from '../models/toastmodel';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Toastservice {
-  private readonly DURACION = 3000;
+  private readonly DURACION = 3500;
   private temporizador: ReturnType<typeof setTimeout> | null = null;
 
   mensaje = signal('');

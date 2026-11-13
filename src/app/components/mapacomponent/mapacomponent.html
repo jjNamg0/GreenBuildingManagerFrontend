@@ -1,0 +1,74 @@
+<div class="vista-mapa">
+  <aside class="panel">
+    <div class="p-4" *ngIf="seleccionado() as conjunto; else lista">
+      <app-rutacomponent
+        [conjunto]="conjunto"
+        [ruta]="ruta()"
+        [modo]="modo()"
+        [calculando]="calculandoRuta()"
+        [error]="errorRuta()"
+        [siguiendo]="siguiendo()"
+        (cerrar)="cerrarDetalle()"
+        (cambiarModo)="cambiarModo($event)"
+        (comoLlegar)="comoLlegar()"
+        (alternarSeguimiento)="alternarSeguimiento()"
+      />
+    </div>
+
+    <ng-template #lista>
+      <div class="p-4">
+        <app-listaconjuntoscomponent
+          [conjuntos]="conjuntos()"
+          [cercanos]="cercanos()"
+          [cargando]="cargandoConjuntos()"
+          [error]="errorConjuntos()"
+          [haySesion]="haySesion()"
+          [(busqueda)]="busqueda"
+          [(tipo)]="tipo"
+          (buscar)="cargarConjuntos()"
+          (limpiar)="limpiarFiltros()"
+          (seleccionar)="seleccionar($event)"
+        />
+      </div>
+    </ng-template>
+  </aside>
+
+  <section class="zona-mapa">
+    <div
+      #contenedorMapa
+      class="mapa"
+      role="region"
+      aria-label="Mapa de conjuntos de Cundinamarca"
+    ></div>
+
+    <button
+      class="control boton-ubicacion"
+      type="button"
+      (click)="dondeEstoy()"
+      [disabled]="buscandoUbicacion()"
+    >
+      <span
+        [class]="claseSpinner(buscandoUbicacion(), 'fa-location-crosshairs texto-verde')"
+      ></span>
+      Dónde estoy
+    </button>
+
+    <div class="controles-zoom">
+      <button class="control" type="button" aria-label="Acercar" (click)="acercar()">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button class="control" type="button" aria-label="Alejar" (click)="alejar()">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+    </div>
+
+    <app-alertacomponent
+      class="aviso-ubicacion"
+      [mensaje]="avisoUbicacion()"
+      tipo="pendiente"
+      icono="fa-location-dot texto-amarillo"
+      textoAccion="Cerrar"
+      (accion)="avisoUbicacion.set('')"
+    />
+  </section>
+</div>

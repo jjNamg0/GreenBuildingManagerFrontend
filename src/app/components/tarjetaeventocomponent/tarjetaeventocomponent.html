@@ -1,0 +1,57 @@
+<article class="gb-tarjeta evento h-100" [class.cancelado]="estaCancelado">
+  <div class="foto">
+    <img class="imagen-tarjeta" [src]="imagenPlantilla(evento.plantilla)" [alt]="evento.titulo" />
+    <div class="fecha">
+      <div class="dia numeros">{{ evento.fecha | date: 'd' }}</div>
+      <div class="mes">{{ evento.fecha | date: 'MMM' }}</div>
+    </div>
+    <span class="gb-insignia sobre-imagen categoria">
+      <i class="fa-solid {{ iconoTipoEvento(evento.tipo) }}"></i>{{ textoTipoEvento(evento.tipo) }}
+    </span>
+  </div>
+
+  <div class="p-3 d-flex flex-column flex-grow-1">
+    <div class="d-flex flex-wrap gap-2 mb-2">
+      <span class="gb-insignia info" *ngIf="evento.paraNinos">
+        <i class="fa-solid fa-children"></i>Plan para niños
+      </span>
+      <span class="gb-insignia {{ insignia.clase }}" *ngIf="insigniaEvento(evento) as insignia">
+        <i class="fa-solid {{ insignia.icono }}"></i>{{ insignia.texto }}
+      </span>
+    </div>
+
+    <h3 class="h6 mb-1">{{ evento.titulo }}</h3>
+    <p class="small texto-tenue mb-2 descripcion">{{ evento.descripcion }}</p>
+
+    <app-alertacomponent
+      [mensaje]="motivo"
+      tipo="info"
+      icono="fa-wand-magic-sparkles"
+      clases="small mb-2"
+    />
+
+    <div class="small mb-1">
+      <i class="fa-solid fa-clock texto-verde me-2"></i>{{ evento.fecha | date: 'EEEE d MMMM' }} ·
+      {{ evento.horaInicio }} – {{ evento.horaFin }}
+    </div>
+    <div class="small mb-1">
+      <i class="fa-solid fa-location-dot texto-verde me-2"></i>{{ textoLugarEvento(evento) }}
+    </div>
+    <div class="small mb-3">
+      <i class="fa-solid fa-users texto-verde me-2"></i>{{ textoAsistentes(evento) }} asistentes
+    </div>
+
+    <app-alertacomponent [mensaje]="motivoCancelacion" icono="fa-ban" clases="small mb-3" />
+
+    <div class="mt-auto" *ngIf="puedeMarcarAsistencia">
+      <button
+        type="button"
+        [class]="claseBotonAsistencia"
+        [disabled]="procesando"
+        (click)="alternarAsistencia.emit(evento)"
+      >
+        <span [class]="claseSpinner(procesando, iconoAsistencia)"></span>{{ textoAsistencia }}
+      </button>
+    </div>
+  </div>
+</article>

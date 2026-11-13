@@ -1,0 +1,76 @@
+<div class="gb-auth">
+  <div class="gb-auth-tarjeta animate__animated animate__fadeIn">
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3"
+        ><i class="fa-solid fa-envelope-circle-check"></i
+      ></span>
+      <h1 class="h4 mb-1">Verifica tu correo</h1>
+      <p class="texto-tenue mb-0" *ngIf="correoDesdeEnlace; else sinCorreo">
+        Escribe el código de {{ LONGITUD_CODIGO }} dígitos que enviamos a
+        <strong class="texto-verde">{{ correo }}</strong>
+      </p>
+      <ng-template #sinCorreo>
+        <p class="texto-tenue mb-0">
+          Escribe tu correo y el código de {{ LONGITUD_CODIGO }} dígitos que te enviamos
+        </p>
+      </ng-template>
+    </div>
+
+    <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+
+    <form (ngSubmit)="verificar()" novalidate>
+      <div class="mb-3" *ngIf="!correoDesdeEnlace">
+        <label for="correo" class="form-label">Correo electrónico</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          class="form-control"
+          placeholder="nombre@correo.com"
+          autocomplete="email"
+          [(ngModel)]="correo"
+        />
+      </div>
+
+      <label for="codigo" class="form-label">Código de verificación</label>
+      <div class="gb-codigo mb-4">
+        <span
+          *ngFor="let digito of casillas(); let indice = index"
+          class="gb-codigo-casilla"
+          [class.vacia]="!digito"
+          [class.actual]="esCasillaActual(indice)"
+          >{{ digito }}</span
+        >
+        <input
+          #entradaCodigo
+          id="codigo"
+          class="gb-codigo-entrada"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          [attr.maxlength]="LONGITUD_CODIGO"
+          aria-label="Código de verificación"
+          (input)="actualizarCodigo(entradaCodigo)"
+          (focus)="enfocado.set(true)"
+          (blur)="enfocado.set(false)"
+        />
+      </div>
+
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando()">
+        <span [class]="claseSpinner(cargando(), 'fa-check')"></span>
+        {{ cargando() ? 'Verificando...' : 'Verificar cuenta' }}
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <span class="small texto-tenue">¿No te llegó?</span>
+      <button
+        class="btn-gb-fantasma btn-gb-sm"
+        type="button"
+        (click)="reenviar()"
+        [disabled]="reenviando()"
+      >
+        <span [class]="claseSpinner(reenviando(), 'fa-rotate-right')"></span>Reenviar código
+      </button>
+    </div>
+  </div>
+</div>

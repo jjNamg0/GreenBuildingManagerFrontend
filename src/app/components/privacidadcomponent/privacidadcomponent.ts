@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-privacidadcomponent',
   standalone: false,
-  templateUrl: './privacidadcomponent.html',
   styleUrl: './privacidadcomponent.css',
+  templateUrl: './privacidadcomponent.html',
 })
 export class Privacidadcomponent {}

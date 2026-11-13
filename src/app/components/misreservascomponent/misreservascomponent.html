@@ -1,0 +1,35 @@
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Residente</span>
+      <h1 class="titulo-pagina">Mis reservas</h1>
+      <p class="texto-tenue mb-0">El estado de cada solicitud de espacio que has hecho.</p>
+    </div>
+    <a class="btn-gb" routerLink="/mi-conjunto"><i class="fa-solid fa-plus"></i>Nueva reserva</a>
+  </div>
+
+  <app-cargandocomponent [activo]="cargando()" texto="Cargando reservas..." />
+
+  <app-alertacomponent [mensaje]="error()" textoAccion="Reintentar" (accion)="cargar()" />
+
+  <app-vaciocomponent
+    [visible]="sinReservas"
+    [grande]="true"
+    [enTarjeta]="true"
+    icono="fa-calendar-xmark"
+    titulo="Aún no tienes reservas"
+    texto="Reserva el salón social, la piscina o la zona BBQ desde tu conjunto."
+  >
+    <a class="btn-gb-borde" routerLink="/mi-conjunto">Ver espacios</a>
+  </app-vaciocomponent>
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-6" *ngFor="let reserva of reservas()">
+      <app-tarjetareservacomponent
+        [reserva]="reserva"
+        [cancelando]="cancelando() === reserva.id"
+        (cancelar)="cancelar($event)"
+      />
+    </div>
+  </div>
+</section>

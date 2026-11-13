@@ -1,0 +1,78 @@
+<section class="portada">
+  <div class="contenedor-pagina portada-interior">
+    <div class="portada-texto animate__animated animate__fadeInUp">
+      <span class="sobretitulo mb-3">Conjuntos residenciales · Cundinamarca</span>
+      <h1 class="portada-titulo">Todo tu conjunto, en un solo lugar</h1>
+      <p class="portada-descripcion texto-tenue">
+        Administra apartamentos y casas, reserva los espacios de esparcimiento y entérate de cada
+        evento de tu conjunto.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn-gb py-2 px-4" routerLink="/mapa"
+          ><i class="fa-solid fa-map-location-dot"></i>Ver mapa de conjuntos</a
+        >
+        <a class="btn-gb-borde py-2 px-4" routerLink="/registro" *ngIf="!haySesion()"
+          >Crear cuenta</a
+        >
+        <a class="btn-gb-borde py-2 px-4" [routerLink]="destinoInicial()" *ngIf="haySesion()">
+          Ir a mi panel<i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+      <p class="small texto-bajo mt-3 mb-0">
+        <i class="fa-solid fa-route me-1"></i>¿Solo vas de visita? Mira la ruta al conjunto sin
+        registrarte.
+      </p>
+    </div>
+
+    <div class="portada-tarjeta gb-tarjeta p-4 d-none d-lg-block animate__animated animate__fadeIn">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <span class="gb-icono"><i class="fa-solid fa-building-user"></i></span>
+        <div>
+          <div class="fw-semibold">Torres del Parque</div>
+          <div class="small texto-tenue">
+            <i class="fa-solid fa-location-dot me-1"></i>Chía, Cundinamarca
+          </div>
+        </div>
+      </div>
+      <div class="gb-caja p-3 mb-2 d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-champagne-glasses texto-verde me-2"></i>Salón social</span>
+        <span class="gb-insignia exito punto">Libre</span>
+      </div>
+      <div class="gb-caja p-3 mb-2 d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-person-swimming texto-verde me-2"></i>Piscina</span>
+        <span class="gb-insignia pendiente punto">Pendiente</span>
+      </div>
+      <div class="gb-caja p-3 d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-children texto-verde me-2"></i>Fiesta para niños</span>
+        <span class="gb-insignia info">Sábado</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contenedor-pagina">
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-xl-3" *ngFor="let funcion of FUNCIONES">
+      <div class="gb-tarjeta interactiva p-4 h-100">
+        <span class="gb-icono mb-3"><i class="fa-solid" [ngClass]="funcion.icono"></i></span>
+        <h2 class="h6 mb-2">{{ funcion.titulo }}</h2>
+        <p class="small texto-tenue mb-0">{{ funcion.texto }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="gb-tarjeta p-4 mt-4">
+    <span class="etiqueta-mayuscula">Cómo empezar</span>
+    <div class="row g-3 mt-1">
+      <div class="col-12 col-md-4" *ngFor="let paso of PASOS">
+        <div class="d-flex gap-3">
+          <span class="numero-paso">{{ paso.numero }}</span>
+          <div>
+            <div class="fw-semibold">{{ paso.titulo }}</div>
+            <div class="small texto-tenue">{{ paso.texto }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

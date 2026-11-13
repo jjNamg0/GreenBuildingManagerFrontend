@@ -1,0 +1,34 @@
+<div class="gb-paginacion" *ngIf="totalElementos > 0">
+  <span>Página {{ pagina + 1 }} de {{ totalPaginas }} · {{ totalElementos }} registros</span>
+  <div class="d-flex flex-wrap gap-1" *ngIf="totalPaginas > 1">
+    <button
+      class="btn-gb-borde btn-gb-sm"
+      type="button"
+      [disabled]="!hayAnterior() || bloqueado"
+      (click)="ir(pagina - 1)"
+      aria-label="Página anterior"
+    >
+      <i class="fa-solid fa-chevron-left"></i>Anterior
+    </button>
+    <button
+      *ngFor="let numero of paginas()"
+      type="button"
+      class="btn-gb-sm"
+      [class.btn-gb]="numero === pagina"
+      [class.btn-gb-fantasma]="numero !== pagina"
+      [disabled]="bloqueado"
+      (click)="ir(numero)"
+    >
+      {{ numero + 1 }}
+    </button>
+    <button
+      class="btn-gb-borde btn-gb-sm"
+      type="button"
+      [disabled]="!haySiguiente() || bloqueado"
+      (click)="ir(pagina + 1)"
+      aria-label="Página siguiente"
+    >
+      Siguiente<i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
+</div>

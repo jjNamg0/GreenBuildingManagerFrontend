@@ -1,21 +1,24 @@
-import {Component} from '@angular/core';
-import {Temaservice} from '../../services/temaservice';
+import { Component, signal } from '@angular/core';
+import { Temaservice } from '../../services/temaservice';
 
 @Component({
   selector: 'app-cambiotemacomponent',
   standalone: false,
-  templateUrl: './cambiotemacomponent.html',
   styleUrl: './cambiotemacomponent.css',
+  templateUrl: './cambiotemacomponent.html',
 })
 export class Cambiotemacomponent {
-  girando = false;
+  girando = signal(false);
 
-  constructor(public tema: Temaservice) {
+  constructor(private temaService: Temaservice) {}
+
+  esOscuro(): boolean {
+    return this.temaService.esOscuro();
   }
 
   alternar(): void {
-    this.girando = true;
-    this.tema.alternar();
-    setTimeout(() => (this.girando = false), 400);
+    this.temaService.alternar();
+    this.girando.set(false);
+    setTimeout(() => this.girando.set(true));
   }
 }

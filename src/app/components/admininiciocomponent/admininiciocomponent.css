@@ -1,0 +1,11 @@
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--gb-texto);
+  text-decoration: none;
+}
+
+.acceso:hover {
+  text-decoration: none;
+}

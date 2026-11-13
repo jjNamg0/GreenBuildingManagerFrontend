@@ -1,0 +1,4 @@
+.resumen {
+  position: sticky;
+  top: calc(var(--gb-alto-barra) + 1rem);
+}

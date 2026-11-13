@@ -1,0 +1,8 @@
+<div class="gb-vacio" [class.gb-tarjeta]="enTarjeta" *ngIf="visible">
+  <span class="gb-icono" [class.gb-icono-grande]="grande"
+    ><i class="fa-solid {{ icono }}"></i
+  ></span>
+  <div class="fw-medium" [class.h5]="grande">{{ titulo }}</div>
+  <p class="small texto-tenue mb-3" *ngIf="texto">{{ texto }}</p>
+  <ng-content />
+</div>

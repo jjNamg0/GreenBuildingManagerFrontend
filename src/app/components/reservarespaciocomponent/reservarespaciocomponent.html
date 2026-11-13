@@ -1,0 +1,85 @@
+<section class="contenedor-pagina">
+  <a class="btn-gb-fantasma btn-gb-sm mb-3 px-2" routerLink="/mi-conjunto">
+    <i class="fa-solid fa-arrow-left"></i>Volver a mi conjunto
+  </a>
+
+  <app-cargandocomponent [activo]="cargandoEspacio()" texto="Cargando espacio..." />
+
+  <app-alertacomponent [mensaje]="errorEspacio()" />
+
+  <div class="row g-4" *ngIf="espacio() as espacio">
+    <div class="col-12 col-lg-8">
+      <span class="sobretitulo mb-2">Reservar espacio</span>
+      <h1 class="titulo-pagina">{{ espacio.nombre }}</h1>
+      <p class="texto-tenue mb-4">
+        {{ textoTipoEspacio(espacio.tipo) }} · Capacidad {{ espacio.capacidad }} personas · Abre
+        {{ espacio.horaApertura }} a {{ espacio.horaCierre }}
+      </p>
+
+      <div class="gb-tarjeta p-4">
+        <app-calendarioreservacomponent
+          [dias]="dias()"
+          [fecha]="fecha()"
+          [hoy]="hoy"
+          [franjas]="franjas()"
+          [cargando]="cargandoFranjas()"
+          [error]="errorFranjas()"
+          [inicio]="inicio()"
+          [fin]="fin()"
+          (elegirFecha)="seleccionarFecha($event)"
+          (elegirFranja)="elegirFranja($event)"
+        />
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="gb-tarjeta p-4 resumen">
+        <h2 class="h6 mb-3">3. Confirma tu solicitud</h2>
+        <div class="gb-caja p-3 mb-3 small">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="texto-tenue">Fecha</span><span>{{ fecha() | date: 'EEEE d MMMM' }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="texto-tenue">Horario</span>
+            <span class="numeros">{{ textoHorario }}</span>
+          </div>
+        </div>
+
+        <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+
+        <form (ngSubmit)="reservar()" novalidate>
+          <div class="mb-3">
+            <label for="motivo" class="form-label">Motivo</label>
+            <textarea
+              id="motivo"
+              name="motivo"
+              class="form-control"
+              rows="3"
+              placeholder="Cumpleaños, reunión familiar..."
+              [(ngModel)]="motivo"
+            ></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="asistentes" class="form-label">Número de asistentes</label>
+            <input
+              id="asistentes"
+              name="asistentes"
+              type="number"
+              min="1"
+              class="form-control"
+              [attr.max]="espacio.capacidad"
+              [(ngModel)]="asistentes"
+            />
+          </div>
+          <button class="btn-gb w-100 py-2" type="submit" [disabled]="guardando()">
+            <span [class]="claseSpinner(guardando(), 'fa-paper-plane')"></span>
+            {{ guardando() ? 'Enviando...' : 'Solicitar reserva' }}
+          </button>
+        </form>
+        <p class="small texto-bajo mt-3 mb-0">
+          La administración aprueba o rechaza cada solicitud y te avisa por correo.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,85 @@
+<section class="contenedor-pagina perfil">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Cuenta</span>
+      <h1 class="titulo-pagina">Mi perfil</h1>
+      <p class="texto-tenue mb-0">Tus datos personales y tu contraseña.</p>
+    </div>
+  </div>
+
+  <app-cargandocomponent [activo]="cargando()" texto="Cargando perfil..." />
+
+  <app-alertacomponent [mensaje]="errorCarga()" textoAccion="Reintentar" (accion)="cargar()" />
+
+  <div class="row g-4" *ngIf="usuario() as usuario">
+    <div class="col-12 col-lg-4">
+      <div class="gb-tarjeta p-4 text-center">
+        <span class="avatar-grande mb-3">{{ inicialesUsuario(usuario) }}</span>
+        <h2 class="h5 mb-1">{{ usuario.nombre }} {{ usuario.apellido }}</h2>
+        <p class="small texto-tenue mb-3">{{ usuario.username }}</p>
+        <span class="gb-insignia {{ insigniaRol(usuario.role).clase }}">
+          <i class="fa-solid {{ insigniaRol(usuario.role).icono }}"></i
+          >{{ insigniaRol(usuario.role).texto }}
+        </span>
+        <div class="gb-caja p-3 text-start small mt-4" *ngIf="!esAdministrador(usuario)">
+          <div class="mb-1">
+            <span class="texto-tenue">Conjunto:</span> {{ usuario.conjuntoNombre || 'Sin asignar' }}
+          </div>
+          <div>
+            <span class="texto-tenue">Unidad:</span>
+            {{ usuario.unidadDescripcion || 'Pendiente de asignación' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+      <div class="gb-tarjeta p-4 mb-4">
+        <h2 class="h6 mb-3">Datos personales</h2>
+        <app-alertacomponent [mensaje]="errorPerfil()" clases="mb-3" />
+        <form (ngSubmit)="guardarPerfil()" novalidate>
+          <div class="row g-3">
+            <div class="col-12 col-sm-6">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input id="nombre" name="nombre" class="form-control" [(ngModel)]="datos.nombre" />
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="apellido" class="form-label">Apellido</label>
+              <input
+                id="apellido"
+                name="apellido"
+                class="form-control"
+                [(ngModel)]="datos.apellido"
+              />
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="correo" class="form-label">Correo</label>
+              <input
+                id="correo"
+                name="correo"
+                class="form-control"
+                [value]="usuario.username"
+                disabled
+              />
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="telefono" class="form-label">Teléfono</label>
+              <input
+                id="telefono"
+                name="telefono"
+                type="tel"
+                class="form-control"
+                [(ngModel)]="datos.telefono"
+              />
+            </div>
+          </div>
+          <button class="btn-gb mt-4" type="submit" [disabled]="guardandoPerfil()">
+            <span [class]="claseSpinner(guardandoPerfil(), 'fa-floppy-disk')"></span>Guardar cambios
+          </button>
+        </form>
+      </div>
+
+      <app-cambiopasswordcomponent />
+    </div>
+  </div>
+</section>

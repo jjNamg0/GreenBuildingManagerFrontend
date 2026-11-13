@@ -1,0 +1,36 @@
+.texto-angosto {
+  max-width: 560px;
+}
+
+.encabezado-conjunto {
+  display: flex;
+}
+
+.encabezado-conjunto img {
+  width: 300px;
+  object-fit: cover;
+  background: var(--gb-verde-tenue);
+}
+
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--gb-texto);
+  text-decoration: none;
+}
+
+.acceso:hover {
+  text-decoration: none;
+}
+
+@media (max-width: 767.98px) {
+  .encabezado-conjunto {
+    flex-direction: column;
+  }
+
+  .encabezado-conjunto img {
+    width: 100%;
+    height: 170px;
+  }
+}

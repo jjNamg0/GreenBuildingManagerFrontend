@@ -1,0 +1,75 @@
+<div class="gb-auth">
+  <div class="gb-auth-tarjeta animate__animated animate__fadeIn">
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3"><i class="fa-solid fa-building-user"></i></span>
+      <h1 class="h4 mb-1">Iniciar sesión</h1>
+      <p class="texto-tenue mb-0">Entra para ver tu conjunto y sus espacios</p>
+    </div>
+
+    <app-alertacomponent
+      [mensaje]="avisoAcceso"
+      [tipo]="tipoAviso"
+      [icono]="iconoAviso"
+      clases="mb-3"
+    />
+    <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+
+    <form (ngSubmit)="iniciarSesion()" novalidate>
+      <div class="mb-3">
+        <label for="correo" class="form-label">Correo electrónico</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          class="form-control"
+          placeholder="nombre@correo.com"
+          autocomplete="email"
+          [(ngModel)]="correo"
+          (ngModelChange)="limpiarError()"
+        />
+      </div>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-baseline">
+          <label for="contrasena" class="form-label">Contraseña</label>
+          <a class="small" routerLink="/olvide-contrasena" [queryParams]="{ correo: correo }">
+            Olvidé mi contraseña
+          </a>
+        </div>
+        <div class="input-group">
+          <input
+            id="contrasena"
+            name="contrasena"
+            class="form-control"
+            autocomplete="current-password"
+            [type]="tipoCampoPassword"
+            [(ngModel)]="password"
+            (ngModelChange)="limpiarError()"
+          />
+          <button
+            class="btn-gb-borde"
+            type="button"
+            aria-label="Mostrar u ocultar la contraseña"
+            (click)="verPassword = !verPassword"
+          >
+            <i class="fa-solid {{ iconoPassword }}"></i>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-gb w-100 py-2" type="submit" [disabled]="cargando()">
+        <span [class]="claseSpinner(cargando(), 'fa-right-to-bracket')"></span>
+        {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <div class="gb-separador my-4">o</div>
+
+    <p class="text-center small texto-tenue mb-2">
+      ¿No tienes cuenta? <a routerLink="/registro">Regístrate</a>
+    </p>
+    <p class="text-center small texto-tenue mb-0">
+      ¿Solo quieres llegar a un conjunto? <a routerLink="/mapa">Mira el mapa y la ruta</a>
+    </p>
+  </div>
+</div>

@@ -1,0 +1,64 @@
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Administración</span>
+      <h1 class="titulo-pagina">Reservas</h1>
+      <p class="texto-tenue mb-0">Aprueba o rechaza las solicitudes de los residentes.</p>
+    </div>
+  </div>
+
+  <div class="gb-tarjeta">
+    <div class="p-3 borde-inferior">
+      <div class="gb-pildoras">
+        <button
+          type="button"
+          *ngFor="let opcion of ESTADOS"
+          [class.activo]="estado === opcion.valor"
+          (click)="elegirEstado(opcion.valor)"
+        >
+          {{ opcion.texto }}
+        </button>
+      </div>
+    </div>
+
+    <app-cargandocomponent [activo]="cargando()" texto="Cargando reservas..." />
+
+    <app-alertacomponent
+      [mensaje]="error()"
+      clases="m-3"
+      textoAccion="Reintentar"
+      (accion)="cargar()"
+    />
+
+    <app-vaciocomponent
+      [visible]="sinReservas"
+      icono="fa-calendar-check"
+      titulo="No hay reservas en este estado"
+    />
+
+    <div class="table-responsive" *ngIf="hayReservas">
+      <table class="gb-tabla">
+        <thead>
+          <tr>
+            <th>Residente</th>
+            <th>Espacio</th>
+            <th>Fecha y horario</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            app-filareservaadmincomponent
+            *ngFor="let reserva of reservas()"
+            [reserva]="reserva"
+            [procesando]="procesando() === reserva.id"
+            (aprobar)="aprobar($event)"
+            (rechazar)="rechazar($event)"
+          ></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,100 @@
+<section class="contenedor-pagina">
+  <app-cargandocomponent [activo]="cargando()" texto="Cargando tu conjunto..." />
+
+  <app-alertacomponent [mensaje]="error()" textoAccion="Reintentar" (accion)="cargar()" />
+
+  <div class="gb-tarjeta gb-vacio texto-angosto mx-auto" *ngIf="pendienteDeUnidad">
+    <span class="gb-icono gb-icono-grande"><i class="fa-solid fa-hourglass-half"></i></span>
+    <h1 class="h4 mb-2">Tu solicitud está en revisión</h1>
+    <p class="texto-tenue mb-3">
+      La administración debe asignarte tu unidad para que puedas reservar espacios y ver los eventos
+      de tu conjunto.
+    </p>
+    <div class="gb-caja p-3 text-start small mb-3">
+      <div>
+        <span class="texto-tenue">Conjunto solicitado:</span>
+        {{ usuario()?.conjuntoNombre || 'Sin elegir' }}
+      </div>
+      <div>
+        <span class="texto-tenue">Unidad solicitada:</span>
+        {{ usuario()?.unidadSolicitada || 'Sin indicar' }}
+      </div>
+    </div>
+    <a class="btn-gb-borde" routerLink="/mapa">
+      <i class="fa-solid fa-map-location-dot"></i>Ver el mapa mientras tanto
+    </a>
+  </div>
+
+  <ng-container *ngIf="conjunto() as conjunto">
+    <div class="gb-tarjeta overflow-hidden mb-4 encabezado-conjunto">
+      <img [src]="imagenConjunto(conjunto)" [alt]="conjunto.nombre" />
+      <div class="p-4 flex-grow-1">
+        <span class="sobretitulo mb-2">Mi conjunto</span>
+        <h1 class="titulo-pagina">{{ conjunto.nombre }}</h1>
+        <p class="texto-tenue mb-3">
+          <i class="fa-solid fa-location-dot texto-verde me-1"></i>{{ conjunto.direccion }},
+          {{ conjunto.municipio }}
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="gb-insignia exito">
+            <i class="fa-solid fa-house-user"></i>{{ usuario()?.unidadDescripcion }}
+          </span>
+          <span class="gb-insignia neutro">{{ textoTipoConjunto(conjunto.tipo) }}</span>
+          <span class="gb-insignia neutro">{{ conjunto.totalEspacios }} espacios</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <a class="gb-tarjeta interactiva acceso p-3" routerLink="/eventos">
+          <span class="gb-icono"><i class="fa-solid fa-champagne-glasses"></i></span>
+          <span>
+            <span class="d-block fw-medium">Eventos</span>
+            <span class="small texto-tenue">Fiestas y actividades</span>
+          </span>
+        </a>
+      </div>
+      <div class="col-12 col-md-4">
+        <a class="gb-tarjeta interactiva acceso p-3" routerLink="/mis-reservas">
+          <span class="gb-icono"><i class="fa-solid fa-calendar-check"></i></span>
+          <span>
+            <span class="d-block fw-medium">Mis reservas</span>
+            <span class="small texto-tenue">Estado de tus solicitudes</span>
+          </span>
+        </a>
+      </div>
+      <div class="col-12 col-md-4">
+        <a class="gb-tarjeta interactiva acceso p-3" routerLink="/para-ti">
+          <span class="gb-icono"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <span>
+            <span class="d-block fw-medium">Para ti</span>
+            <span class="small texto-tenue">Recomendaciones</span>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="encabezado-pagina mb-3">
+      <div>
+        <h2 class="h5 mb-1">Espacios de esparcimiento</h2>
+        <p class="small texto-tenue mb-0">
+          Elige un espacio para ver su disponibilidad y reservarlo.
+        </p>
+      </div>
+    </div>
+
+    <app-vaciocomponent
+      [visible]="sinEspacios"
+      [enTarjeta]="true"
+      icono="fa-tree"
+      titulo="Tu conjunto aún no tiene espacios registrados"
+    />
+
+    <div class="row g-3">
+      <div class="col-12 col-md-6 col-xl-4" *ngFor="let espacio of espacios()">
+        <app-tarjetaespaciocomponent [espacio]="espacio" />
+      </div>
+    </div>
+  </ng-container>
+</section>

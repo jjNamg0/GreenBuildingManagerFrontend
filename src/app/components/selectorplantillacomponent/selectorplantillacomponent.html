@@ -1,0 +1,42 @@
+<span class="form-label d-block">Plantilla de la invitación por correo</span>
+<div class="row g-2 mb-3">
+  <div class="col-4" *ngFor="let opcion of PLANTILLAS">
+    <button
+      type="button"
+      class="opcion"
+      [class.activa]="plantilla === opcion.valor"
+      (click)="elegir.emit(opcion.valor)"
+    >
+      <span class="miniatura"><img [src]="opcion.imagen" [alt]="opcion.texto" /></span>
+      <span class="d-block small fw-medium mt-2">{{ opcion.texto }}</span>
+    </button>
+  </div>
+</div>
+
+<div class="vista-previa">
+  <div class="barra-correo d-flex justify-content-between align-items-center">
+    <span class="small texto-tenue"
+      ><i class="fa-solid fa-envelope me-1"></i>Vista previa del correo</span
+    >
+    <button
+      class="btn-gb-borde btn-gb-sm"
+      type="button"
+      (click)="generar.emit()"
+      [disabled]="cargando"
+    >
+      <span [class]="claseSpinner(cargando, 'fa-eye')"></span>Generar
+    </button>
+  </div>
+  <app-alertacomponent [mensaje]="error" clases="m-3" />
+  <iframe
+    *ngIf="vistaPrevia; else sinVista"
+    [srcdoc]="vistaPrevia"
+    title="Vista previa de la invitación"
+    [class.opaca]="cargando"
+  ></iframe>
+  <ng-template #sinVista>
+    <div class="gb-vacio small texto-tenue">
+      El back arma el correo con la plantilla elegida. Toca "Generar" para verlo.
+    </div>
+  </ng-template>
+</div>

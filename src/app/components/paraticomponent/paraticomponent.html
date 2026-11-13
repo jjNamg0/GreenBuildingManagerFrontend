@@ -1,0 +1,90 @@
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Recomendaciones</span>
+      <h1 class="titulo-pagina">Para ti</h1>
+      <p class="texto-tenue mb-0">
+        Eventos y espacios elegidos según tus intereses y lo que más usas en tu conjunto.
+      </p>
+    </div>
+  </div>
+
+  <div class="gb-tarjeta p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div>
+        <h2 class="h6 mb-1">Tus intereses</h2>
+        <p class="small texto-tenue mb-0">
+          Elige lo que te gusta para mejorar las recomendaciones.
+        </p>
+      </div>
+      <button
+        class="btn-gb btn-gb-sm"
+        type="button"
+        [disabled]="!cambiosSinGuardar() || guardando()"
+        (click)="guardarIntereses()"
+      >
+        <span [class]="claseSpinner(guardando(), 'fa-floppy-disk')"></span>Guardar intereses
+      </button>
+    </div>
+    <div class="gb-pildoras">
+      <button
+        type="button"
+        *ngFor="let interes of INTERESES"
+        [class.activo]="estaElegido(interes.valor)"
+        (click)="alternarInteres(interes.valor)"
+      >
+        <i class="fa-solid me-1 {{ interes.icono }}"></i>{{ interes.texto }}
+      </button>
+    </div>
+  </div>
+
+  <app-cargandocomponent [activo]="cargando()" texto="Buscando recomendaciones..." />
+
+  <app-alertacomponent
+    [mensaje]="error()"
+    textoAccion="Reintentar"
+    (accion)="cargarRecomendaciones()"
+  />
+
+  <ng-container *ngIf="listo">
+    <h2 class="h5 mb-3">
+      <i class="fa-solid fa-champagne-glasses texto-verde me-2"></i>Eventos recomendados
+    </h2>
+    <div class="mb-4">
+      <app-vaciocomponent
+        [visible]="eventos().length === 0"
+        [enTarjeta]="true"
+        icono="fa-calendar-day"
+        titulo="Todavía no tenemos eventos para recomendarte"
+        texto="Elige tus intereses o vuelve cuando haya eventos programados."
+      />
+    </div>
+    <div class="row g-3 mb-5">
+      <div class="col-12 col-md-6 col-xl-4" *ngFor="let recomendacion of eventos()">
+        <app-tarjetaeventocomponent
+          [evento]="recomendacion.evento"
+          [motivo]="recomendacion.motivo"
+          [permitirAsistencia]="false"
+        />
+      </div>
+    </div>
+
+    <h2 class="h5 mb-3">
+      <i class="fa-solid fa-tree texto-verde me-2"></i>Espacios que te pueden gustar
+    </h2>
+    <app-vaciocomponent
+      [visible]="espacios().length === 0"
+      [enTarjeta]="true"
+      icono="fa-tree"
+      titulo="Todavía no tenemos espacios para recomendarte"
+    />
+    <div class="row g-3">
+      <div class="col-12 col-md-6 col-xl-4" *ngFor="let recomendacion of espacios()">
+        <app-tarjetaespaciocomponent
+          [espacio]="recomendacion.espacio"
+          [motivo]="recomendacion.motivo"
+        />
+      </div>
+    </div>
+  </ng-container>
+</section>

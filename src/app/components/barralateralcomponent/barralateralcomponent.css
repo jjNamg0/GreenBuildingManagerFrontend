@@ -7,6 +7,7 @@
   flex-direction: column;
   width: var(--gb-ancho-lateral);
   height: 100vh;
+  overflow-y: auto;
   background: var(--gb-campo);
   border-right: 1px solid var(--gb-borde);
 }
@@ -15,7 +16,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  height: var(--gb-alto-barra);
+  min-height: var(--gb-alto-barra);
   padding: 0 1.25rem;
   border-bottom: 1px solid var(--gb-borde);
 }
@@ -49,8 +50,8 @@
   color: var(--gb-sobre-acento);
 }
 
-.enlace .bi {
-  font-size: 1.1rem;
+.enlace i {
+  font-size: 1rem;
 }
 
 .fondo-lateral {

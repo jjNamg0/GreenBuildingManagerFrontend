@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
+import { TipoToast } from '../../models/toastmodel';
 import { Toastservice } from '../../services/toastservice';
 
 @Component({
   selector: 'app-toastcomponent',
   standalone: false,
-  templateUrl: './toastcomponent.html',
   styleUrl: './toastcomponent.css',
+  templateUrl: './toastcomponent.html',
 })
 export class Toastcomponent {
   constructor(private toastService: Toastservice) {}
@@ -14,8 +15,8 @@ export class Toastcomponent {
     return this.toastService.mensaje();
   }
 
-  esError(): boolean {
-    return this.toastService.tipo() === 'error';
+  tipo(): TipoToast {
+    return this.toastService.tipo();
   }
 
   cerrar(): void {

@@ -1,0 +1,48 @@
+<section class="contenedor-pagina">
+  <a class="btn-gb-fantasma btn-gb-sm mb-3 px-2" routerLink="/admin/conjuntos">
+    <i class="fa-solid fa-arrow-left"></i>Volver a conjuntos
+  </a>
+
+  <app-cargandocomponent [activo]="cargando()" texto="Cargando conjunto..." />
+
+  <app-alertacomponent [mensaje]="error()" />
+
+  <ng-container *ngIf="conjunto() as conjunto">
+    <div class="encabezado-pagina">
+      <div>
+        <span class="sobretitulo mb-2"
+          >{{ textoTipoConjunto(conjunto.tipo) }} · {{ conjunto.municipio }}</span
+        >
+        <h1 class="titulo-pagina">{{ conjunto.nombre }}</h1>
+        <p class="texto-tenue mb-0">
+          <i class="fa-solid fa-location-dot texto-verde me-1"></i>{{ conjunto.direccion }}
+        </p>
+      </div>
+      <div class="gb-segmentos pestanas">
+        <button
+          type="button"
+          [class.activo]="pestana() === 'unidades'"
+          (click)="pestana.set('unidades')"
+        >
+          <i class="fa-solid fa-door-open"></i>Unidades
+        </button>
+        <button
+          type="button"
+          [class.activo]="pestana() === 'espacios'"
+          (click)="pestana.set('espacios')"
+        >
+          <i class="fa-solid fa-tree"></i>Espacios
+        </button>
+      </div>
+    </div>
+
+    <app-tablaunidadescomponent
+      *ngIf="pestana() === 'unidades'; else espacios"
+      [conjunto]="conjunto"
+    />
+
+    <ng-template #espacios>
+      <app-tablaespacioscomponent [conjuntoId]="conjunto.id" />
+    </ng-template>
+  </ng-container>
+</section>

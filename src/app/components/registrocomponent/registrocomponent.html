@@ -1,0 +1,161 @@
+<div class="gb-auth">
+  <div class="gb-auth-tarjeta tarjeta-registro animate__animated animate__fadeIn">
+    <div class="text-center mb-4">
+      <span class="gb-icono gb-icono-grande mb-3"><i class="fa-solid fa-user-plus"></i></span>
+      <h1 class="h4 mb-1">Crear cuenta de residente</h1>
+      <p class="texto-tenue mb-0">Te enviaremos un código a tu correo para activarla</p>
+    </div>
+
+    <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+
+    <form (ngSubmit)="registrar()" novalidate>
+      <div class="row g-3">
+        <div class="col-12 col-sm-6">
+          <label for="nombre" class="form-label">Nombre</label>
+          <input
+            id="nombre"
+            name="nombre"
+            class="form-control"
+            autocomplete="given-name"
+            [(ngModel)]="datos.nombre"
+            (ngModelChange)="limpiarError()"
+          />
+        </div>
+        <div class="col-12 col-sm-6">
+          <label for="apellido" class="form-label">Apellido</label>
+          <input
+            id="apellido"
+            name="apellido"
+            class="form-control"
+            autocomplete="family-name"
+            [(ngModel)]="datos.apellido"
+            (ngModelChange)="limpiarError()"
+          />
+        </div>
+        <div class="col-12 col-sm-7">
+          <label for="correo" class="form-label">Correo electrónico</label>
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            class="form-control"
+            placeholder="nombre@correo.com"
+            autocomplete="email"
+            [(ngModel)]="datos.username"
+            (ngModelChange)="limpiarError()"
+          />
+        </div>
+        <div class="col-12 col-sm-5">
+          <label for="telefono" class="form-label">Teléfono</label>
+          <input
+            id="telefono"
+            name="telefono"
+            type="tel"
+            class="form-control"
+            placeholder="300 123 4567"
+            autocomplete="tel"
+            [(ngModel)]="datos.telefono"
+            (ngModelChange)="limpiarError()"
+          />
+        </div>
+
+        <div class="col-12 col-sm-7">
+          <label for="conjunto" class="form-label">Conjunto donde vives</label>
+          <select
+            id="conjunto"
+            name="conjunto"
+            class="form-select"
+            [(ngModel)]="datos.conjuntoId"
+            (ngModelChange)="limpiarError()"
+            [disabled]="cargandoConjuntos()"
+          >
+            <option [ngValue]="null">{{ textoPrimeraOpcion }}</option>
+            <option *ngFor="let conjunto of conjuntos()" [ngValue]="conjunto.id">
+              {{ conjunto.nombre }} · {{ conjunto.municipio }}
+            </option>
+          </select>
+          <div class="form-text texto-rojo">{{ errorConjuntos() }}</div>
+        </div>
+        <div class="col-12 col-sm-5">
+          <label for="unidad" class="form-label">Tu unidad</label>
+          <input
+            id="unidad"
+            name="unidad"
+            class="form-control"
+            placeholder="Torre 2 · Apto 301"
+            [(ngModel)]="datos.unidadSolicitada"
+            (ngModelChange)="limpiarError()"
+          />
+        </div>
+        <div class="col-12">
+          <div class="form-text mt-0">
+            <i class="fa-solid fa-circle-info me-1"></i>La administración revisa tu solicitud y te
+            asigna la unidad.
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+          <label for="contrasena" class="form-label">Contraseña</label>
+          <div class="input-group">
+            <input
+              id="contrasena"
+              name="contrasena"
+              class="form-control"
+              autocomplete="new-password"
+              [type]="tipoCampoPassword"
+              [(ngModel)]="datos.password"
+              (ngModelChange)="limpiarError()"
+            />
+            <button
+              class="btn-gb-borde"
+              type="button"
+              aria-label="Mostrar u ocultar la contraseña"
+              (click)="verPassword = !verPassword"
+            >
+              <i class="fa-solid {{ iconoPassword }}"></i>
+            </button>
+          </div>
+          <div class="form-text">Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.</div>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label for="confirmar" class="form-label">Confirmar contraseña</label>
+          <input
+            id="confirmar"
+            name="confirmar"
+            class="form-control"
+            autocomplete="new-password"
+            [type]="tipoCampoPassword"
+            [(ngModel)]="confirmarPassword"
+            (ngModelChange)="limpiarError()"
+          />
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input
+              id="terminos"
+              name="terminos"
+              type="checkbox"
+              class="form-check-input"
+              [(ngModel)]="aceptaTerminos"
+              (ngModelChange)="limpiarError()"
+            />
+            <label for="terminos" class="form-check-label small">
+              Acepto los <a routerLink="/terminos" target="_blank">términos de uso</a> y la
+              <a routerLink="/privacidad" target="_blank">política de privacidad</a>.
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-gb w-100 py-2 mt-4" type="submit" [disabled]="cargando()">
+        <span [class]="claseSpinner(cargando(), 'fa-user-plus')"></span>
+        {{ cargando() ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="text-center small texto-tenue mt-4 mb-0">
+      ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+    </p>
+  </div>
+</div>

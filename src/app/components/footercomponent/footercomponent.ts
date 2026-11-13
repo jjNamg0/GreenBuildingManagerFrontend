@@ -1,18 +1,18 @@
-import {Component} from '@angular/core';
-import {Router} from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-footercomponent',
   standalone: false,
-  templateUrl: './footercomponent.html',
   styleUrl: './footercomponent.css',
+  templateUrl: './footercomponent.html',
 })
 export class Footercomponent {
-  constructor(private router: Router) {
-  }
+  readonly ANIO = new Date().getFullYear();
 
-  get mostrar(): boolean {
-    const ruta = this.router.url.split('?')[0];
-    return !ruta.startsWith('/ubicacion/') && ruta !== '/admin/mapa';
+  constructor(private router: Router) {}
+
+  mostrar(): boolean {
+    return !this.router.url.startsWith('/mapa');
   }
 }

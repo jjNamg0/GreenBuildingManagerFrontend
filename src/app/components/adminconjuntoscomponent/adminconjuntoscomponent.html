@@ -1,0 +1,122 @@
+<section class="contenedor-pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <span class="sobretitulo mb-2">Administración</span>
+      <h1 class="titulo-pagina">Conjuntos</h1>
+      <p class="texto-tenue mb-0">
+        Conjuntos de apartamentos o de casas, con su ubicación en Cundinamarca.
+      </p>
+    </div>
+    <button class="btn-gb" type="button" (click)="abrirFormulario(null)">
+      <i class="fa-solid fa-plus"></i>Nuevo conjunto
+    </button>
+  </div>
+
+  <div class="gb-tarjeta">
+    <div
+      class="d-flex flex-wrap gap-3 justify-content-between align-items-center p-3 borde-inferior"
+    >
+      <form class="d-flex gap-2 buscador" (ngSubmit)="cargar()" novalidate>
+        <input
+          name="busqueda"
+          class="form-control form-control-sm"
+          placeholder="Buscar por nombre o municipio"
+          [(ngModel)]="busqueda"
+        />
+        <button class="btn-gb-borde btn-gb-sm" type="submit">
+          <i class="fa-solid fa-magnifying-glass"></i>Buscar
+        </button>
+      </form>
+      <div class="gb-pildoras">
+        <button type="button" [class.activo]="tipo === ''" (click)="elegirTipo('')">Todos</button>
+        <button
+          type="button"
+          *ngFor="let opcion of TIPOS"
+          [class.activo]="tipo === opcion.valor"
+          (click)="elegirTipo(opcion.valor)"
+        >
+          {{ opcion.texto }}
+        </button>
+      </div>
+    </div>
+
+    <app-cargandocomponent [activo]="cargando()" texto="Cargando conjuntos..." />
+
+    <app-alertacomponent
+      [mensaje]="error()"
+      clases="m-3"
+      textoAccion="Reintentar"
+      (accion)="cargar()"
+    />
+
+    <app-vaciocomponent
+      [visible]="sinConjuntos"
+      icono="fa-city"
+      titulo="No hay conjuntos registrados"
+      texto="Crea el primero para que aparezca en el mapa."
+    />
+
+    <div class="table-responsive" *ngIf="hayConjuntos">
+      <table class="gb-tabla">
+        <thead>
+          <tr>
+            <th>Conjunto</th>
+            <th>Tipo</th>
+            <th>Municipio</th>
+            <th class="text-end">Unidades</th>
+            <th class="text-end">Espacios</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let conjunto of conjuntos()">
+            <td>
+              <a class="fw-medium" [routerLink]="['/admin/conjuntos', conjunto.id]">{{
+                conjunto.nombre
+              }}</a>
+              <div class="small texto-tenue">{{ conjunto.direccion }}</div>
+            </td>
+            <td>
+              <span class="gb-insignia neutro">{{ textoTipoConjunto(conjunto.tipo) }}</span>
+            </td>
+            <td>{{ conjunto.municipio }}</td>
+            <td class="text-end numeros">{{ conjunto.totalUnidades }}</td>
+            <td class="text-end numeros">{{ conjunto.totalEspacios }}</td>
+            <td class="text-end text-nowrap">
+              <a
+                class="btn-gb-fantasma btn-gb-sm"
+                [routerLink]="['/admin/conjuntos', conjunto.id]"
+                title="Unidades y espacios"
+              >
+                <i class="fa-solid fa-door-open"></i>
+              </a>
+              <button
+                class="btn-gb-fantasma btn-gb-sm"
+                type="button"
+                title="Editar"
+                (click)="abrirFormulario(conjunto)"
+              >
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button
+                class="btn-gb-fantasma btn-gb-sm texto-rojo"
+                type="button"
+                title="Eliminar"
+                (click)="eliminar(conjunto)"
+              >
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<app-conjuntoformcomponent
+  *ngIf="formularioAbierto()"
+  [conjunto]="conjuntoEditado()"
+  (cerrar)="formularioAbierto.set(false)"
+  (guardado)="alGuardar()"
+/>

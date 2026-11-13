@@ -1,0 +1,16 @@
+.perfil {
+  max-width: 1080px;
+}
+
+.avatar-grande {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--gb-verde);
+  color: var(--gb-sobre-acento);
+  font-size: 1.6rem;
+  font-weight: 600;
+}

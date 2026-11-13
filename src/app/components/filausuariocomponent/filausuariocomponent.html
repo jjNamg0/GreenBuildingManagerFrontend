@@ -1,0 +1,45 @@
+<td>
+  <div class="fw-medium">{{ nombreCompleto(usuario) }}</div>
+  <div class="small texto-tenue">{{ usuario.username }} · {{ usuario.telefono }}</div>
+</td>
+<td>
+  <span class="gb-insignia {{ insignia.clase }}">
+    <i class="fa-solid {{ insignia.icono }}"></i>{{ insignia.texto }}
+  </span>
+</td>
+<td>
+  <div>{{ textoConjunto }}</div>
+  <div class="small texto-tenue">{{ textoUnidad }}</div>
+  <span class="gb-insignia pendiente punto mt-1" *ngIf="sinUnidad">Sin unidad</span>
+</td>
+<td>
+  <span class="gb-insignia punto {{ claseEstadoUsuario(usuario) }}">{{
+    textoEstadoUsuario(usuario)
+  }}</span>
+  <div class="small texto-amarillo mt-1" *ngIf="!usuario.verificado">
+    <i class="fa-solid fa-envelope me-1"></i>Correo sin verificar
+  </div>
+</td>
+<td class="text-end text-nowrap">
+  <ng-container *ngIf="!esAdmin">
+    <button class="btn-gb-borde btn-gb-sm me-1" type="button" (click)="asignar.emit(usuario)">
+      <i class="fa-solid fa-house-user"></i>{{ textoBotonAsignar }}
+    </button>
+    <button
+      class="btn-gb-fantasma btn-gb-sm"
+      type="button"
+      [title]="textoAccionEstado(usuario)"
+      (click)="cambiarEstado.emit(usuario)"
+    >
+      <i class="fa-solid {{ iconoCambioEstado(usuario) }}"></i>
+    </button>
+    <button
+      class="btn-gb-fantasma btn-gb-sm texto-rojo"
+      type="button"
+      title="Eliminar"
+      (click)="eliminar.emit(usuario)"
+    >
+      <i class="fa-solid fa-trash-can"></i>
+    </button>
+  </ng-container>
+</td>

@@ -1,0 +1,27 @@
+<td class="text-nowrap numeros">
+  <div>{{ registro.fecha | date: 'dd/MM/yyyy' }}</div>
+  <div class="small texto-tenue">{{ registro.fecha | date: 'HH:mm:ss' }}</div>
+</td>
+<td>
+  <div class="fw-medium">{{ registro.nombreUsuario }}</div>
+  <div class="small texto-tenue">{{ registro.username }} · {{ registro.role }}</div>
+</td>
+<td>
+  <span class="gb-insignia {{ claseAccion(registro.accion) }}">{{
+    textoAccion(registro.accion)
+  }}</span>
+  <div class="small texto-tenue mt-1">{{ registro.entidad }}</div>
+</td>
+<td class="motivo small">{{ registro.motivo }}</td>
+<td class="small">
+  <div>{{ registro.ubicacion || 'Sin ubicación' }}</div>
+  <a
+    *ngIf="tieneCoordenadas(registro)"
+    [href]="enlaceMapaAuditoria(registro)"
+    target="_blank"
+    rel="noopener"
+  >
+    <i class="fa-solid fa-map-location-dot me-1"></i>Ver en mapa
+  </a>
+  <div class="texto-bajo" *ngIf="registro.ip">IP {{ registro.ip }}</div>
+</td>
