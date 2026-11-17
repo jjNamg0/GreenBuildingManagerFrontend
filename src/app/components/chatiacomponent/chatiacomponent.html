@@ -1,0 +1,64 @@
+<div class="gb-chat" *ngIf="haySesion()">
+  <section
+    class="gb-chat-panel animate__animated animate__fadeInUp"
+    *ngIf="abierto()"
+    role="dialog"
+    aria-label="Asistente de ayuda"
+    (keydown.escape)="cerrar()"
+  >
+    <header class="gb-chat-cabecera">
+      <span class="gb-icono"><i class="fa-solid fa-leaf"></i></span>
+      <div class="flex-grow-1">
+        <div class="fw-medium">Asistente Green Building</div>
+        <div class="small texto-tenue">Te ayudo a usar la aplicación</div>
+      </div>
+      <button
+        class="btn-gb-borde btn-gb-sm"
+        type="button"
+        aria-label="Cerrar el asistente"
+        (click)="cerrar()"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </header>
+
+    <div class="gb-chat-lista" #lista aria-live="polite">
+      <app-chatburbujacomponent [mensaje]="bienvenida" />
+      <app-chatburbujacomponent *ngFor="let mensaje of mensajes()" [mensaje]="mensaje" />
+      <div class="gb-chat-escribiendo" *ngIf="cargando()" role="status">
+        <span></span><span></span><span></span>
+        <span class="visually-hidden">El asistente está escribiendo</span>
+      </div>
+    </div>
+
+    <app-alertacomponent [mensaje]="error()" clases="m-2" />
+
+    <form class="gb-chat-formulario" (ngSubmit)="enviar()">
+      <input
+        #campo
+        name="texto"
+        type="text"
+        class="form-control"
+        placeholder="Escribe tu pregunta"
+        autocomplete="off"
+        aria-label="Tu pregunta"
+        [maxlength]="maxCaracteres"
+        [(ngModel)]="texto"
+        [disabled]="cargando()"
+      />
+      <button class="btn-gb" type="submit" aria-label="Enviar la pregunta" [disabled]="cargando()">
+        <i [class]="claseSpinner(cargando(), 'fa-paper-plane')"></i>
+      </button>
+    </form>
+  </section>
+
+  <button
+    class="gb-chat-boton"
+    type="button"
+    aria-label="Abrir el asistente de ayuda"
+    [attr.aria-expanded]="abierto()"
+    (click)="alternar()"
+  >
+    <i class="fa-solid" [class.fa-comments]="!abierto()" [class.fa-chevron-down]="abierto()"></i>
+  </button>
+</div>

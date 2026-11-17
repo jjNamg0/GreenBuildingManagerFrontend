@@ -25,13 +25,8 @@
 </td>
 <td class="text-end text-nowrap">
   <ng-container *ngIf="estaProgramado(evento)">
-    <button
-      class="btn-gb-borde btn-gb-sm me-1"
-      type="button"
-      [disabled]="enviando"
-      (click)="invitar.emit(evento)"
-    >
-      <span [class]="claseSpinner(enviando, 'fa-paper-plane')"></span>Invitar
+    <button class="btn-gb-borde btn-gb-sm me-1" type="button" (click)="invitar.emit(evento)">
+      <i class="fa-solid fa-paper-plane"></i>Invitar
     </button>
     <button
       class="btn-gb-fantasma btn-gb-sm"

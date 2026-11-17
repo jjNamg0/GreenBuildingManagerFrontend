@@ -20,6 +20,14 @@
       <i class="fa-solid fa-comment me-1"></i>{{ reserva.observacion }}
     </div>
     <button
+      class="btn-gb btn-gb-sm me-2"
+      type="button"
+      *ngIf="puedeInvitarReserva(reserva)"
+      (click)="invitar.emit(reserva)"
+    >
+      <i class="fa-solid fa-paper-plane"></i>Invitar
+    </button>
+    <button
       class="btn-gb-peligro btn-gb-sm"
       type="button"
       *ngIf="puedeCancelarReserva(reserva)"

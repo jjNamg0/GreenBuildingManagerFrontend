@@ -7,4 +7,6 @@ import { Component } from '@angular/core';
   styleUrl: './privacidadcomponent.css',
   templateUrl: './privacidadcomponent.html',
 })
-export class Privacidadcomponent {}
+export class Privacidadcomponent {
+  readonly titulo = 'Política de privacidad';
+}

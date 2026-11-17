@@ -7,6 +7,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
 import { authinterceptor } from './interceptors/authinterceptor';
+import { Temaservice } from './services/temaservice';
 import { Navbarcomponent } from './components/navbarcomponent/navbarcomponent';
 import { Barralateralcomponent } from './components/barralateralcomponent/barralateralcomponent';
 import { Footercomponent } from './components/footercomponent/footercomponent';
@@ -25,6 +26,8 @@ import { Olvidecontrasenacomponent } from './components/olvidecontrasenacomponen
 import { Mapacomponent } from './components/mapacomponent/mapacomponent';
 import { Listaconjuntoscomponent } from './components/listaconjuntoscomponent/listaconjuntoscomponent';
 import { Rutacomponent } from './components/rutacomponent/rutacomponent';
+import { Invitacioncomponent } from './components/invitacioncomponent/invitacioncomponent';
+import { Invitarcomponent } from './components/invitarcomponent/invitarcomponent';
 import { Miconjuntocomponent } from './components/miconjuntocomponent/miconjuntocomponent';
 import { Tarjetaespaciocomponent } from './components/tarjetaespaciocomponent/tarjetaespaciocomponent';
 import { Reservarespaciocomponent } from './components/reservarespaciocomponent/reservarespaciocomponent';
@@ -58,6 +61,8 @@ import { Filaeventoadmincomponent } from './components/filaeventoadmincomponent/
 import { Selectorplantillacomponent } from './components/selectorplantillacomponent/selectorplantillacomponent';
 import { Filareservaadmincomponent } from './components/filareservaadmincomponent/filareservaadmincomponent';
 import { Filaauditoriacomponent } from './components/filaauditoriacomponent/filaauditoriacomponent';
+import { Chatiacomponent } from './components/chatiacomponent/chatiacomponent';
+import { Chatburbujacomponent } from './components/chatburbujacomponent/chatburbujacomponent';
 
 registerLocaleData(localeEsCo);
 
@@ -85,6 +90,8 @@ registerLocaleData(localeEsCo);
     Mapacomponent,
     Listaconjuntoscomponent,
     Rutacomponent,
+    Invitacioncomponent,
+    Invitarcomponent,
     Miconjuntocomponent,
     Tarjetaespaciocomponent,
     Reservarespaciocomponent,
@@ -118,6 +125,8 @@ registerLocaleData(localeEsCo);
     Selectorplantillacomponent,
     Filareservaadmincomponent,
     Filaauditoriacomponent,
+    Chatiacomponent,
+    Chatburbujacomponent,
   ],
   imports: [BrowserModule, CommonModule, FormsModule, AppRoutingModule],
   providers: [
@@ -127,4 +136,8 @@ registerLocaleData(localeEsCo);
   ],
   bootstrap: [App],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private readonly temaService: Temaservice) {
+    this.temaService.iniciar();
+  }
+}

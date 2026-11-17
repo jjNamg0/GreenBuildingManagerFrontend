@@ -4,6 +4,7 @@ import {
   FILTROS_AUDITORIA_VACIOS,
   FiltrosAuditoria,
   RegistroAuditoria,
+  TIPOS_USUARIO_AUDITORIA,
 } from '../../models/auditoriamodel';
 import { Pagina } from '../../models/paginamodel';
 import { Auditoriaservice } from '../../services/auditoriaservice';
@@ -18,6 +19,7 @@ import { Errorservice } from '../../services/errorservice';
 })
 export class Adminauditoriacomponent implements OnInit {
   readonly ACCIONES = ACCIONES_AUDITORIA;
+  readonly TIPOS_USUARIO = TIPOS_USUARIO_AUDITORIA;
 
   filtros: FiltrosAuditoria = { ...FILTROS_AUDITORIA_VACIOS };
   pagina = signal<Pagina<RegistroAuditoria> | null>(null);
@@ -81,7 +83,11 @@ export class Adminauditoriacomponent implements OnInit {
     this.cargando.set(true);
     this.error.set('');
     this.auditoriaService
-      .obtenerRegistros({ ...this.filtros, usuario: this.filtros.usuario.trim() })
+      .obtenerRegistros({
+        ...this.filtros,
+        usuario: this.filtros.usuario.trim(),
+        motivo: this.filtros.motivo.trim(),
+      })
       .subscribe({
         next: (pagina) => {
           this.pagina.set(pagina);

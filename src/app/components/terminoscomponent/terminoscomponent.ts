@@ -7,4 +7,6 @@ import { Component } from '@angular/core';
   styleUrl: './terminoscomponent.css',
   templateUrl: './terminoscomponent.html',
 })
-export class Terminoscomponent {}
+export class Terminoscomponent {
+  readonly titulo = 'Términos de uso';
+}

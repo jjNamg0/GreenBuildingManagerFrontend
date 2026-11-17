@@ -18,6 +18,8 @@ export interface RegistroAuditoria {
 export interface FiltrosAuditoria {
   usuario: string;
   accion: string;
+  role: string;
+  motivo: string;
   desde: string;
   hasta: string;
   pagina: number;
@@ -29,6 +31,8 @@ export const TAMANO_PAGINA_AUDITORIA = 20;
 export const FILTROS_AUDITORIA_VACIOS: FiltrosAuditoria = {
   usuario: '',
   accion: '',
+  role: '',
+  motivo: '',
   desde: '',
   hasta: '',
   pagina: 0,
@@ -38,6 +42,7 @@ export const FILTROS_AUDITORIA_VACIOS: FiltrosAuditoria = {
 export const ACCIONES_AUDITORIA: Opcion[] = [
   { valor: '', texto: 'Todas las acciones' },
   { valor: 'LOGIN', texto: 'Inicio de sesión' },
+  { valor: 'LOGOUT', texto: 'Cierre de sesión' },
   { valor: 'REGISTRO', texto: 'Registro' },
   { valor: 'VERIFICACION', texto: 'Verificación de correo' },
   { valor: 'RESTABLECER_PASSWORD', texto: 'Restablecer contraseña' },
@@ -46,6 +51,15 @@ export const ACCIONES_AUDITORIA: Opcion[] = [
   { valor: 'ELIMINAR', texto: 'Eliminación' },
   { valor: 'RESERVA', texto: 'Reservas' },
   { valor: 'EVENTO', texto: 'Eventos' },
+  { valor: 'INVITACION', texto: 'Invitaciones' },
+  { valor: 'ASISTENTE', texto: 'Asistente de ayuda' },
+];
+
+export const TIPOS_USUARIO_AUDITORIA: Opcion[] = [
+  { valor: '', texto: 'Todos los usuarios' },
+  { valor: 'ADMIN', texto: 'Administrador' },
+  { valor: 'USER', texto: 'Residente' },
+  { valor: 'PUBLICO', texto: 'Sin sesión' },
 ];
 
 const CLASES_ACCION: Record<string, string> = {
@@ -53,6 +67,9 @@ const CLASES_ACCION: Record<string, string> = {
   CREAR: 'exito',
   REGISTRO: 'exito',
   LOGIN: 'info',
+  LOGOUT: 'info',
+  ASISTENTE: 'info',
+  INVITACION: 'info',
   VERIFICACION: 'info',
 };
 

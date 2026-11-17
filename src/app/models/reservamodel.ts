@@ -80,6 +80,10 @@ export const claseEstadoReserva = (estado: EstadoReserva): string => CLASES_ESTA
 export const puedeCancelarReserva = (reserva: Reserva): boolean =>
   reserva.estado === 'PENDIENTE' || reserva.estado === 'APROBADA';
 
+/** Indica si el residente puede invitar a la reserva: aprobada y sin empezar. */
+export const puedeInvitarReserva = (reserva: Reserva): boolean =>
+  reserva.estado === 'APROBADA' && new Date(`${reserva.fecha}T${reserva.horaInicio}`) > new Date();
+
 /** Indica si la reserva está pendiente. */
 export const estaPendiente = (reserva: Reserva): boolean => reserva.estado === 'PENDIENTE';
 

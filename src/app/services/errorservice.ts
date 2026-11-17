@@ -5,7 +5,7 @@ const SIN_CONEXION = 0;
 
 const MENSAJES_POR_ESTADO: Record<number, string> = {
   [SIN_CONEXION]:
-    'No se pudo conectar con el servidor. Verifica que el back esté encendido en localhost:8080.',
+    'No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo en unos minutos.',
   401: 'Tu sesión expiró. Inicia sesión de nuevo.',
   403: 'No tienes permisos para realizar esta acción.',
   404: 'No se encontró la información solicitada.',

@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { DestinoInvitacion, destinoReserva } from '../../models/invitacionmodel';
 import { Reserva } from '../../models/reservamodel';
 import { Confirmacionservice } from '../../services/confirmacionservice';
 import { Errorservice } from '../../services/errorservice';
@@ -17,6 +18,7 @@ export class Misreservascomponent implements OnInit {
   cargando = signal(true);
   error = signal('');
   cancelando = signal<number | null>(null);
+  destinoInvitacion = signal<DestinoInvitacion | null>(null);
 
   constructor(
     private reservaService: Reservaservice,
@@ -50,11 +52,16 @@ export class Misreservascomponent implements OnInit {
     });
   }
 
+  /** Abre la ventana para invitar personas a la reserva. */
+  invitar(reserva: Reserva): void {
+    this.destinoInvitacion.set(destinoReserva(reserva));
+  }
+
   /** Pide confirmación y cancela la reserva. */
   async cancelar(reserva: Reserva): Promise<void> {
     const confirmado = await this.confirmacionService.confirmar({
       titulo: '¿Cancelar la reserva?',
-      texto: `${reserva.espacioNombre} el ${reserva.fecha} de ${reserva.horaInicio} a ${reserva.horaFin}. El horario quedará libre para otros residentes.`,
+      texto: `${reserva.espacioNombre} el ${reserva.fecha} de ${reserva.horaInicio} a ${reserva.horaFin}. El horario quedará libre y tus invitados recibirán un aviso.`,
       textoConfirmar: 'Sí, cancelar',
       peligro: true,
     });

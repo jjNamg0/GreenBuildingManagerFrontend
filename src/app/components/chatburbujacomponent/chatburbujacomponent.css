@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.gb-burbuja-fila {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.gb-burbuja-fila-usuario {
+  justify-content: flex-end;
+}
+
+.gb-burbuja {
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gb-borde);
+  border-radius: 1rem 1rem 1rem 0.25rem;
+  background: var(--gb-elevada);
+  color: var(--gb-texto);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.gb-burbuja-usuario {
+  border-color: transparent;
+  border-radius: 1rem 1rem 0.25rem 1rem;
+  background: var(--gb-verde);
+  color: var(--gb-sobre-acento);
+}
