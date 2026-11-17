@@ -1,0 +1,92 @@
+<div
+  class="modal gb-modal"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="tituloInvitar"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content animate__animated animate__fadeInDown animate__faster">
+      <form (ngSubmit)="enviar()" novalidate>
+        <div class="modal-header">
+          <h2 id="tituloInvitar" class="modal-title h5">Invitar a {{ destino.titulo }}</h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cerrar.emit()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <app-alertacomponent [mensaje]="error()" clases="mb-3" />
+
+          <label for="enlaceInvitacion" class="form-label">Enlace de la invitación</label>
+          <p class="small texto-tenue mb-2">
+            Quien lo abra ve el plan, el mapa y cómo llegar, sin necesidad de una cuenta.
+          </p>
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <input
+              #campoEnlace
+              id="enlaceInvitacion"
+              class="form-control enlace"
+              type="text"
+              readonly
+              placeholder="Generando enlace..."
+              [value]="enlace()"
+            />
+            <button
+              class="btn-gb-borde"
+              type="button"
+              [disabled]="enlace() === ''"
+              (click)="copiarEnlace(campoEnlace)"
+            >
+              <i class="fa-solid fa-copy"></i>Copiar
+            </button>
+            <a
+              class="btn-gb-borde"
+              target="_blank"
+              rel="noopener"
+              [class.disabled]="enlace() === ''"
+              [href]="enlaceWhatsapp"
+            >
+              <i class="fa-brands fa-whatsapp"></i>WhatsApp
+            </a>
+          </div>
+
+          <label for="correosInvitacion" class="form-label">Enviar por correo</label>
+          <p class="small texto-tenue mb-2">
+            Pega los correos separados por comas, espacios o en líneas distintas.
+          </p>
+          <textarea
+            id="correosInvitacion"
+            name="correos"
+            class="form-control mb-1"
+            rows="4"
+            placeholder="ana@correo.com, luis@correo.com"
+            [(ngModel)]="texto"
+          ></textarea>
+          <div class="small texto-tenue text-end mb-4 numeros">{{ textoContador }}</div>
+
+          <div class="etiqueta-mayuscula mb-2">Ya invitados</div>
+          <app-vaciocomponent
+            [visible]="sinInvitados"
+            icono="fa-envelope-open"
+            titulo="Aún no has invitado a nadie por correo"
+          />
+          <ul class="list-unstyled invitados mb-0">
+            <li *ngFor="let invitado of invitados()">
+              <span><i class="fa-solid fa-envelope texto-verde me-2"></i>{{ invitado.correo }}</span>
+              <span class="small texto-tenue numeros">{{ invitado.fechaEnvio | date: "d MMM y, h:mm a" }}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-gb-borde" type="button" (click)="cerrar.emit()">Cerrar</button>
+          <button class="btn-gb" type="submit" [disabled]="enviando()">
+            <span [class]="claseSpinner(enviando(), 'fa-paper-plane')"></span>Enviar invitaciones
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

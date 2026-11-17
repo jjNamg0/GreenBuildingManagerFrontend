@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Authservice } from './services/authservice';
-import { Temaservice } from './services/temaservice';
 
 /** Component raíz que contiene la estructura general de la aplicación. */
 @Component({
@@ -10,14 +9,10 @@ import { Temaservice } from './services/temaservice';
   templateUrl: './app.html',
 })
 export class App implements OnInit {
-  constructor(
-    private authService: Authservice,
-    private temaService: Temaservice,
-  ) {}
+  constructor(private authService: Authservice) {}
 
-  /** Inicia el tema y restaura la sesión guardada. */
+  /** Restaura la sesión guardada. */
   ngOnInit(): void {
-    this.temaService.iniciar();
     this.authService.restaurarSesion();
   }
 }

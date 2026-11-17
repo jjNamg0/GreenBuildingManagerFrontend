@@ -9,7 +9,6 @@ import {
   textoLugarEvento,
   textoTipoEvento,
 } from '../../models/eventomodel';
-import { claseSpinner } from '../../models/opcionmodel';
 
 /** Fila de la tabla de eventos del administrador con sus acciones. */
 @Component({
@@ -20,7 +19,6 @@ import { claseSpinner } from '../../models/opcionmodel';
 })
 export class Filaeventoadmincomponent {
   @Input() evento!: Evento;
-  @Input() enviando = false;
   @Output() readonly invitar = new EventEmitter<Evento>();
   @Output() readonly editar = new EventEmitter<Evento>();
   @Output() readonly cancelar = new EventEmitter<Evento>();
@@ -33,5 +31,4 @@ export class Filaeventoadmincomponent {
   readonly textoAsistentes = textoAsistentes;
   readonly textoLugarEvento = textoLugarEvento;
   readonly estaProgramado = estaProgramado;
-  readonly claseSpinner = claseSpinner;
 }

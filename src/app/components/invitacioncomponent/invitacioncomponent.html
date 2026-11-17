@@ -1,0 +1,61 @@
+<section class="contenedor-pagina">
+  <app-cargandocomponent [activo]="cargando()" texto="Abriendo la invitación..." />
+
+  <app-alertacomponent [mensaje]="error()" />
+
+  <div class="row g-4" *ngIf="invitacion() as invitacion">
+    <div class="col-12 col-lg-5">
+      <article class="gb-tarjeta overflow-hidden">
+        <img class="cabecera" [src]="imagenInvitacion(invitacion)" alt="" />
+        <div class="p-4">
+          <span class="sobretitulo mb-2">{{ invitacion.anfitrion }} te invita</span>
+          <h1 class="titulo-pagina mb-2">{{ invitacion.titulo }}</h1>
+          <p class="texto-tenue" *ngIf="invitacion.descripcion">{{ invitacion.descripcion }}</p>
+
+          <app-alertacomponent
+            [mensaje]="avisoEstadoInvitacion(invitacion)"
+            tipo="pendiente"
+            icono="fa-circle-info texto-amarillo"
+            clases="mb-3"
+          />
+
+          <ul class="list-unstyled datos">
+            <li>
+              <i class="fa-solid fa-calendar-day texto-verde"></i>
+              {{ invitacion.fecha | date: "EEEE d 'de' MMMM 'de' y" }}
+            </li>
+            <li>
+              <i class="fa-solid fa-clock texto-verde"></i>
+              <span class="numeros">{{ invitacion.horaInicio }} – {{ invitacion.horaFin }}</span>
+            </li>
+            <li>
+              <i class="fa-solid fa-location-dot texto-verde"></i>
+              {{ lugarInvitacion(invitacion) }}
+            </li>
+            <li>
+              <i class="fa-solid fa-map texto-verde"></i>
+              {{ invitacion.direccion }}, {{ invitacion.municipio }}
+            </li>
+          </ul>
+
+          <a
+            class="btn-gb w-100"
+            routerLink="/mapa"
+            [queryParams]="{ conjunto: invitacion.conjuntoId }"
+          >
+            <i class="fa-solid fa-route"></i>Cómo llegar desde mi ubicación
+          </a>
+        </div>
+      </article>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <div
+        #contenedorMapa
+        class="mapa gb-tarjeta"
+        role="region"
+        aria-label="Ubicación del plan en el mapa"
+      ></div>
+    </div>
+  </div>
+</section>

@@ -19,6 +19,8 @@ export class Auditoriaservice {
       params: {
         usuario: filtros.usuario,
         accion: filtros.accion,
+        role: filtros.role,
+        motivo: filtros.motivo,
         desde: filtros.desde,
         hasta: filtros.hasta,
         pagina: filtros.pagina,

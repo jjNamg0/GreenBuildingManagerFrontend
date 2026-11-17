@@ -7,6 +7,7 @@ import {
   ViewChild,
   signal,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Conjunto } from '../../models/conjuntomodel';
 import { Anillo } from '../../models/geografiamodel';
@@ -58,6 +59,7 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
   private haloUbicacion: CircleMarker | null = null;
   private seguimiento: Subscription | null = null;
   private suscripciones = new Subscription();
+  private conjuntoPedido: number | null = null;
 
   conjuntos = signal<Conjunto[]>([]);
   cercanos = signal<RecomendacionConjunto[]>([]);
@@ -83,10 +85,12 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     private geografiaService: Geografiaservice,
     private sesionService: Sesionservice,
     private errorService: Errorservice,
+    private rutaActiva: ActivatedRoute,
   ) {}
 
-  /** Carga los conjuntos. */
+  /** Lee el conjunto pedido en el enlace y carga los conjuntos. */
   ngOnInit(): void {
+    this.conjuntoPedido = Number(this.rutaActiva.snapshot.queryParamMap.get('conjunto')) || null;
     this.cargarConjuntos();
   }
 
@@ -230,6 +234,16 @@ export class Mapacomponent implements OnInit, AfterViewInit, OnDestroy {
     this.conjuntos.set(conjuntos);
     this.cargandoConjuntos.set(false);
     this.pintarMarcadores();
+    this.abrirConjuntoPedido(conjuntos);
+  }
+
+  /** Selecciona el conjunto que llegó en el enlace, una sola vez. */
+  private abrirConjuntoPedido(conjuntos: Conjunto[]): void {
+    const pedido = conjuntos.find((conjunto) => conjunto.id === this.conjuntoPedido);
+    this.conjuntoPedido = null;
+    if (pedido) {
+      this.seleccionar(pedido);
+    }
   }
 
   /** Cancela el seguimiento de la ubicación. */

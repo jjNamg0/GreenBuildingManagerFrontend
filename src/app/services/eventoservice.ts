@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { DatosCancelacion, DatosEvento, Evento, FiltrosEvento } from '../models/eventomodel';
 
-/** Service de eventos, asistencia e invitaciones. */
+/** Service de eventos y asistencia. */
 @Injectable({
   providedIn: 'root',
 })
@@ -61,13 +61,6 @@ export class Eventoservice {
   /** Cancela la asistencia del residente a un evento. */
   noAsistir(id: number): Observable<string> {
     return this.cliente.delete(`${this.URL_BASE}/noasistir/${id}`, { responseType: 'text' });
-  }
-
-  /** Pide al back enviar por correo la invitación del evento. */
-  enviarInvitacion(id: number): Observable<string> {
-    return this.cliente.post(`${this.URL_BASE}/enviarinvitacion/${id}`, null, {
-      responseType: 'text',
-    });
   }
 
   /** Pide el HTML de la invitación de un evento. */

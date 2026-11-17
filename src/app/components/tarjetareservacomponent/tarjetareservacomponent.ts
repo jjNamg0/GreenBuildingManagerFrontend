@@ -4,6 +4,7 @@ import {
   Reserva,
   claseEstadoReserva,
   puedeCancelarReserva,
+  puedeInvitarReserva,
   textoEstadoReserva,
 } from '../../models/reservamodel';
 
@@ -18,9 +19,11 @@ export class Tarjetareservacomponent {
   @Input() reserva!: Reserva;
   @Input() cancelando = false;
   @Output() readonly cancelar = new EventEmitter<Reserva>();
+  @Output() readonly invitar = new EventEmitter<Reserva>();
 
   readonly claseEstadoReserva = claseEstadoReserva;
   readonly textoEstadoReserva = textoEstadoReserva;
   readonly puedeCancelarReserva = puedeCancelarReserva;
+  readonly puedeInvitarReserva = puedeInvitarReserva;
   readonly claseSpinner = claseSpinner;
 }

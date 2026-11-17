@@ -7,4 +7,6 @@ import { Component } from '@angular/core';
   styleUrl: './notfoundcomponent.css',
   templateUrl: './notfoundcomponent.html',
 })
-export class Notfoundcomponent {}
+export class Notfoundcomponent {
+  readonly rutaInicio = '/';
+}

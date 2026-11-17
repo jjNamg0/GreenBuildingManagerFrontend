@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Conjunto } from '../../models/conjuntomodel';
 import { Evento } from '../../models/eventomodel';
+import { DestinoInvitacion, destinoEvento } from '../../models/invitacionmodel';
 import { Confirmacionservice } from '../../services/confirmacionservice';
 import { Conjuntoservice } from '../../services/conjuntoservice';
 import { Errorservice } from '../../services/errorservice';
@@ -23,7 +24,7 @@ export class Admineventoscomponent implements OnInit {
   eventos = signal<Evento[]>([]);
   cargando = signal(true);
   error = signal('');
-  enviando = signal<number | null>(null);
+  destinoInvitacion = signal<DestinoInvitacion | null>(null);
   formularioAbierto = signal(false);
   eventoEditado = signal<Evento | null>(null);
 
@@ -86,37 +87,16 @@ export class Admineventoscomponent implements OnInit {
     this.cargar();
   }
 
-  /** Pide confirmación y envía la invitación del evento a los residentes. */
-  async enviarInvitacion(evento: Evento): Promise<void> {
-    const confirmado = await this.confirmacionService.confirmar({
-      titulo: 'Enviar invitación por correo',
-      texto: `Se enviará "${evento.titulo}" a todos los residentes de ${evento.conjuntoNombre}.`,
-      textoConfirmar: 'Enviar invitación',
-    });
-    if (!confirmado) {
-      return;
-    }
-    this.enviando.set(evento.id);
-    this.eventoService.enviarInvitacion(evento.id).subscribe({
-      next: (mensaje) => {
-        this.enviando.set(null);
-        this.toastService.mostrar(mensaje || 'Invitaciones enviadas a los residentes.');
-      },
-      error: (error: unknown) => {
-        this.enviando.set(null);
-        this.toastService.mostrar(
-          this.errorService.obtenerMensaje(error, 'No pudimos enviar las invitaciones.'),
-          'error',
-        );
-      },
-    });
+  /** Abre la ventana para invitar personas al evento. */
+  invitar(evento: Evento): void {
+    this.destinoInvitacion.set(destinoEvento(evento));
   }
 
   /** Pide el motivo y cancela el evento. */
   async cancelar(evento: Evento): Promise<void> {
     const motivo = await this.confirmacionService.pedirTexto({
       titulo: `¿Cancelar "${evento.titulo}"?`,
-      texto: 'Los residentes verán el motivo y recibirán un aviso por correo.',
+      texto: 'Los residentes verán el motivo, y los inscritos e invitados recibirán un aviso por correo.',
       placeholder: 'Motivo de la cancelación',
       textoConfirmar: 'Cancelar evento',
       obligatorio: true,

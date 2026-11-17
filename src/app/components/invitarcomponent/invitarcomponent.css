@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.enlace {
+  flex: 1;
+  min-width: 220px;
+  font-size: 0.875rem;
+}
+
+.invitados {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.invitados li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gb-borde);
+  word-break: break-all;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}

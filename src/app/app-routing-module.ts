@@ -22,6 +22,7 @@ import { Admineventoscomponent } from './components/admineventoscomponent/admine
 import { Adminreservascomponent } from './components/adminreservascomponent/adminreservascomponent';
 import { Adminauditoriacomponent } from './components/adminauditoriacomponent/adminauditoriacomponent';
 import { Notfoundcomponent } from './components/notfoundcomponent/notfoundcomponent';
+import { Invitacioncomponent } from './components/invitacioncomponent/invitacioncomponent';
 import { authguard } from './guards/authguard';
 import { residenteguard } from './guards/residenteguard';
 import { adminguard } from './guards/adminguard';
@@ -37,6 +38,11 @@ const routes: Routes = [
     path: 'mapa',
     component: Mapacomponent,
     title: 'Green Building — Mapa de conjuntos',
+  },
+  {
+    path: 'invitacion/:codigo',
+    component: Invitacioncomponent,
+    title: 'Green Building — Invitación',
   },
   {
     path: 'login',
@@ -168,4 +174,6 @@ const routes: Routes = [
   ],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule {
+  readonly rutas = routes;
+}

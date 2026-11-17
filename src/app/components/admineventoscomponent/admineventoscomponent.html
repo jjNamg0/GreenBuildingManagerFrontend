@@ -4,7 +4,7 @@
       <span class="sobretitulo mb-2">Administración</span>
       <h1 class="titulo-pagina">Eventos</h1>
       <p class="texto-tenue mb-0">
-        Programa eventos en las instalaciones y envía la invitación por correo.
+        Programa eventos en las instalaciones e invita por enlace o por correo.
       </p>
     </div>
     <button class="btn-gb" type="button" (click)="abrirFormulario(null)">
@@ -60,8 +60,7 @@
             app-filaeventoadmincomponent
             *ngFor="let evento of eventos()"
             [evento]="evento"
-            [enviando]="enviando() === evento.id"
-            (invitar)="enviarInvitacion($event)"
+            (invitar)="invitar($event)"
             (editar)="abrirFormulario($event)"
             (cancelar)="cancelar($event)"
             (eliminar)="eliminar($event)"
@@ -78,4 +77,10 @@
   [conjuntos]="conjuntos()"
   (cerrar)="formularioAbierto.set(false)"
   (guardado)="alGuardar()"
+/>
+
+<app-invitarcomponent
+  *ngIf="destinoInvitacion() as destino"
+  [destino]="destino"
+  (cerrar)="destinoInvitacion.set(null)"
 />

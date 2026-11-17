@@ -29,7 +29,14 @@
         [reserva]="reserva"
         [cancelando]="cancelando() === reserva.id"
         (cancelar)="cancelar($event)"
+        (invitar)="invitar($event)"
       />
     </div>
   </div>
 </section>
+
+<app-invitarcomponent
+  *ngIf="destinoInvitacion() as destino"
+  [destino]="destino"
+  (cerrar)="destinoInvitacion.set(null)"
+/>
