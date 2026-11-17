@@ -32,17 +32,13 @@ export class Invitacioncomponent implements OnInit, OnDestroy {
 
   private mapa: MapaLeaflet | null = null;
 
+  @ViewChild('contenedorMapa') contenedorMapa?: ElementRef<HTMLDivElement>;
+
   constructor(
     private rutaActiva: ActivatedRoute,
     private invitacionService: Invitacionservice,
     private errorService: Errorservice,
   ) {}
-
-  @ViewChild('contenedorMapa') set contenedorMapa(contenedor: ElementRef<HTMLDivElement> | undefined) {
-    if (contenedor) {
-      this.crearMapa(contenedor.nativeElement);
-    }
-  }
 
   /** Pide al back la invitación del enlace. */
   ngOnInit(): void {
@@ -51,6 +47,7 @@ export class Invitacioncomponent implements OnInit, OnDestroy {
       next: (invitacion) => {
         this.invitacion.set(invitacion);
         this.cargando.set(false);
+        setTimeout(() => this.crearMapa());
       },
       error: (error: unknown) => {
         this.cargando.set(false);
@@ -65,9 +62,10 @@ export class Invitacioncomponent implements OnInit, OnDestroy {
   }
 
   /** Crea el mapa centrado en el conjunto de la invitación, con su marcador. */
-  private crearMapa(contenedor: HTMLElement): void {
+  private crearMapa(): void {
     const invitacion = this.invitacion();
-    if (!invitacion || this.mapa) {
+    const contenedor = this.contenedorMapa?.nativeElement;
+    if (!invitacion || !contenedor || this.mapa) {
       return;
     }
     const mapa = leaflet().map(contenedor);
