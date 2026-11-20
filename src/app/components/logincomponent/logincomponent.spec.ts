@@ -1,21 +1,36 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Logincomponent } from './logincomponent';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { AppModule } from '../../app-module';
+
+/** Configura el módulo de pruebas con toda la aplicación y un HTTP simulado que no llama al back. */
+const configurarPruebas = (): Promise<void> =>
+  TestBed.configureTestingModule({
+    imports: [AppModule],
+    providers: [provideHttpClientTesting()],
+  }).compileComponents();
+
+/** Devuelve el texto que se ve en pantalla de un component de prueba. */
+const textoDe = <T>(fixture: ComponentFixture<T>): string =>
+  (fixture.nativeElement as HTMLElement).textContent ?? '';
 
 describe('Logincomponent', () => {
   let component: Logincomponent;
   let fixture: ComponentFixture<Logincomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Logincomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Logincomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('muestra "Iniciar sesión"', () => {
+    expect(textoDe(fixture)).toContain('Iniciar sesión');
   });
 });
