@@ -1,35 +1,194 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  signal,
+} from '@angular/core';
+import { Observable } from 'rxjs';
+import {
+  Conjunto,
+  DatosConjunto,
+  REGLAS_CONJUNTO,
+  TIPOS_CONJUNTO,
+  datosDeConjunto,
+  limpiarDatosConjunto,
+} from '../../models/conjuntomodel';
+import {
+  CENTRO_CUNDINAMARCA,
+  OPCIONES_TESELAS,
+  URL_TESELAS,
+  crearIconoMarcador,
+} from '../../models/mapamodel';
+import {
+  EventoClicMapa,
+  LatLngTuple,
+  MapaLeaflet,
+  Marker,
+  leaflet,
+} from '../../models/leafletmodel';
+import { claseSpinner } from '../../models/opcionmodel';
+import { primerError } from '../../models/validacionmodel';
+import { Conjuntoservice } from '../../services/conjuntoservice';
+import { Errorservice } from '../../services/errorservice';
+import { Toastservice } from '../../services/toastservice';
+import { Ubicacionservice } from '../../services/ubicacionservice';
 
-// Cada anillo es una lista de [longitud, latitud]
-export type Anillo = [number, number][];
+const ZOOM_GENERAL = 9;
+const ZOOM_CERCANO = 15;
+const DECIMALES_COORDENADA = 6;
 
-@Injectable({ providedIn: 'root' })
-export class Geografiaservice {
-  constructor(private http: HttpClient) {}
+/** Formulario para crear o editar un conjunto, con un mapa para elegir su ubicación. */
+@Component({
+  selector: 'app-conjuntoformcomponent',
+  standalone: false,
+  styleUrl: './conjuntoformcomponent.css',
+  templateUrl: './conjuntoformcomponent.html',
+})
+export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
+  @Input() conjunto: Conjunto | null = null;
+  @Output() readonly cerrar = new EventEmitter<void>();
+  @Output() readonly guardado = new EventEmitter<void>();
+  @ViewChild('contenedorMapa') contenedorMapa!: ElementRef<HTMLDivElement>;
 
-  obtenerContornos(): Observable<Anillo[]> {
-    return this.http.get<any>('assets/geo/cundinamarca.geojson').pipe(
-      map((geo: any) => {
-        const anillos: Anillo[] = [];
+  readonly TIPOS = TIPOS_CONJUNTO;
+  readonly claseSpinner = claseSpinner;
 
-        for (const feature of geo.features ?? []) {
-          const g = feature.geometry;
+  private mapa: MapaLeaflet | null = null;
+  private marcador: Marker | null = null;
 
-          if (g.type === 'Polygon') {
-            anillos.push(g.coordinates[0] as Anillo);
-          } else if (g.type === 'MultiPolygon') {
-            for (const poligono of g.coordinates) {
-              anillos.push(poligono[0] as Anillo);
-            }
-          }
-        }
+  datos: DatosConjunto = {
+    nombre: '',
+    tipo: 'APARTAMENTOS',
+    direccion: '',
+    municipio: '',
+    latitud: null,
+    longitud: null,
+    descripcion: '',
+    imagenUrl: null,
+  };
+  error = signal('');
+  guardando = signal(false);
 
-        return anillos;
-      }),
-      catchError(() => of([] as Anillo[])),
+  constructor(
+    private conjuntoService: Conjuntoservice,
+    private ubicacionService: Ubicacionservice,
+    private errorService: Errorservice,
+    private toastService: Toastservice,
+    private cambios: ChangeDetectorRef,
+  ) {}
+
+  /** Carga los datos del conjunto cuando se está editando. */
+  ngOnInit(): void {
+    if (this.conjunto) {
+      this.datos = datosDeConjunto(this.conjunto);
+    }
+  }
+
+  /** Crea el mapa de Leaflet y coloca el marcador si ya hay ubicación. */
+  ngAfterViewInit(): void {
+    const posicion = this.posicionGuardada();
+    const mapa = leaflet().map(this.contenedorMapa.nativeElement).setView(
+      posicion ?? CENTRO_CUNDINAMARCA,
+      posicion ? ZOOM_CERCANO : ZOOM_GENERAL,
     );
+    leaflet().tileLayer(URL_TESELAS, OPCIONES_TESELAS).addTo(mapa);
+    mapa.on('click', (evento: EventoClicMapa) =>
+      this.ubicar([evento.latlng.lat, evento.latlng.lng]),
+    );
+    this.mapa = mapa;
+    if (posicion) {
+      this.ubicar(posicion);
+    }
+    setTimeout(() => mapa.invalidateSize());
+  }
+
+  /** Destruye el mapa al cerrar el formulario. */
+  ngOnDestroy(): void {
+    this.mapa?.remove();
+  }
+
+  get titulo(): string {
+    return this.conjunto ? 'Editar conjunto' : 'Nuevo conjunto';
+  }
+
+  get textoBoton(): string {
+    return this.conjunto ? 'Guardar cambios' : 'Crear conjunto';
+  }
+
+  /** Coloca el marcador en la ubicación actual del navegador. */
+  usarMiUbicacion(): void {
+    this.ubicacionService.obtenerUbicacion().subscribe({
+      next: (coordenadas) => {
+        const posicion: LatLngTuple = [coordenadas.latitud, coordenadas.longitud];
+        this.ubicar(posicion);
+        this.mapa?.setView(posicion, ZOOM_CERCANO);
+      },
+      error: (error: unknown) => this.error.set(this.errorService.obtenerMensaje(error)),
+    });
+  }
+
+  /** Mueve el marcador a las coordenadas escritas en los campos. */
+  actualizarMarcadorDesdeCampos(): void {
+    const posicion = this.posicionGuardada();
+    if (posicion) {
+      this.ubicar(posicion);
+      this.mapa?.setView(posicion, ZOOM_CERCANO);
+    }
+  }
+
+  /** Valida el formulario y envía el conjunto al back. */
+  guardar(): void {
+    const problema = primerError(REGLAS_CONJUNTO, this.datos);
+    this.error.set(problema);
+    if (problema) {
+      return;
+    }
+    this.guardando.set(true);
+    this.peticionGuardar(limpiarDatosConjunto(this.datos)).subscribe({
+      next: (mensaje) => {
+        this.guardando.set(false);
+        this.toastService.mostrar(mensaje || 'Conjunto guardado.');
+        this.guardado.emit();
+      },
+      error: (error: unknown) => {
+        this.guardando.set(false);
+        this.error.set(this.errorService.obtenerMensaje(error, 'No pudimos guardar el conjunto.'));
+      },
+    });
+  }
+
+  /** Elige entre crear o actualizar según si se está editando. */
+  private peticionGuardar(datos: DatosConjunto): Observable<string> {
+    return this.conjunto
+      ? this.conjuntoService.actualizar(this.conjunto.id, datos)
+      : this.conjuntoService.crear(datos);
+  }
+
+  /** Devuelve las coordenadas del formulario o null si faltan. */
+  private posicionGuardada(): LatLngTuple | null {
+    const { latitud, longitud } = this.datos;
+    return latitud !== null && longitud !== null ? [latitud, longitud] : null;
+  }
+
+  /** Guarda las coordenadas con 6 decimales y mueve o crea el marcador. */
+  private ubicar(posicion: LatLngTuple): void {
+    const [latitud, longitud] = posicion;
+    this.datos.latitud = Number(latitud.toFixed(DECIMALES_COORDENADA));
+    this.datos.longitud = Number(longitud.toFixed(DECIMALES_COORDENADA));
+    this.cambios.markForCheck();
+    if (this.marcador) {
+      this.marcador.setLatLng(posicion);
+      return;
+    }
+    if (this.mapa) {
+      this.marcador = leaflet().marker(posicion, { icon: crearIconoMarcador(true) }).addTo(this.mapa);
+    }
   }
 }

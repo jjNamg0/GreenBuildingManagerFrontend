@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { environment } from '../../environments/environment';
-import { configurarPruebas } from '../testing/pruebasutil';
-import { usuarioPrueba } from '../testing/pruebasutil';
+import { configurarPruebas, usuarioPrueba } from '../testing/pruebasutil';
 import { Usuarioservice } from './usuarioservice';
 
 describe('Usuarioservice', () => {
