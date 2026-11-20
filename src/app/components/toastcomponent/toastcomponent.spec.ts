@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas } from '../../testing/pruebasutil';
 import { Toastcomponent } from './toastcomponent';
 
 describe('Toastcomponent', () => {
@@ -6,16 +7,14 @@ describe('Toastcomponent', () => {
   let fixture: ComponentFixture<Toastcomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Toastcomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Toastcomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
   });
 });

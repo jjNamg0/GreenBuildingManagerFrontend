@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas, textoDe } from '../../testing/pruebasutil';
 import { Logincomponent } from './logincomponent';
 
 describe('Logincomponent', () => {
@@ -6,16 +7,18 @@ describe('Logincomponent', () => {
   let fixture: ComponentFixture<Logincomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Logincomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Logincomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('muestra "Iniciar sesión"', () => {
+    expect(textoDe(fixture)).toContain('Iniciar sesión');
   });
 });

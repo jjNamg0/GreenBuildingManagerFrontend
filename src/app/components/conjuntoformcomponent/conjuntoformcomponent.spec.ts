@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas, instalarLeafletFalso } from '../../testing/pruebasutil';
 import { Conjuntoformcomponent } from './conjuntoformcomponent';
 
 describe('Conjuntoformcomponent', () => {
@@ -6,16 +7,15 @@ describe('Conjuntoformcomponent', () => {
   let fixture: ComponentFixture<Conjuntoformcomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Conjuntoformcomponent],
-    }).compileComponents();
-
+    instalarLeafletFalso();
+    await configurarPruebas();
     fixture = TestBed.createComponent(Conjuntoformcomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
   });
 });

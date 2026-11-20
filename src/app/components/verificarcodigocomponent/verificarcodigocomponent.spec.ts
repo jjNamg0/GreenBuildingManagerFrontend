@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas, textoDe } from '../../testing/pruebasutil';
 import { Verificarcodigocomponent } from './verificarcodigocomponent';
 
 describe('Verificarcodigocomponent', () => {
@@ -6,16 +7,18 @@ describe('Verificarcodigocomponent', () => {
   let fixture: ComponentFixture<Verificarcodigocomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Verificarcodigocomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Verificarcodigocomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('muestra "Verifica tu correo"', () => {
+    expect(textoDe(fixture)).toContain('Verifica tu correo');
   });
 });

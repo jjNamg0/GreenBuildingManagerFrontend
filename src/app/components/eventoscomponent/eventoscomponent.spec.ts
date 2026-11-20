@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas, textoDe } from '../../testing/pruebasutil';
 import { Eventoscomponent } from './eventoscomponent';
 
 describe('Eventoscomponent', () => {
@@ -6,16 +7,18 @@ describe('Eventoscomponent', () => {
   let fixture: ComponentFixture<Eventoscomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Eventoscomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Eventoscomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('muestra "Eventos"', () => {
+    expect(textoDe(fixture)).toContain('Eventos');
   });
 });

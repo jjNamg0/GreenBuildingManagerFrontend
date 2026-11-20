@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas } from '../../testing/pruebasutil';
 import { Cambiotemacomponent } from './cambiotemacomponent';
 
 describe('Cambiotemacomponent', () => {
@@ -6,16 +7,21 @@ describe('Cambiotemacomponent', () => {
   let fixture: ComponentFixture<Cambiotemacomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Cambiotemacomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Cambiotemacomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('cambia entre modo claro y oscuro', () => {
+    const antes = component.esOscuro();
+    component.alternar();
+    expect(component.esOscuro()).toBe(!antes);
+    component.alternar();
   });
 });

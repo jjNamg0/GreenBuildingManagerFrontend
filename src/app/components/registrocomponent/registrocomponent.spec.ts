@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas, textoDe } from '../../testing/pruebasutil';
 import { Registrocomponent } from './registrocomponent';
 
 describe('Registrocomponent', () => {
@@ -6,16 +7,18 @@ describe('Registrocomponent', () => {
   let fixture: ComponentFixture<Registrocomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Registrocomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Registrocomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('muestra "Crear cuenta de residente"', () => {
+    expect(textoDe(fixture)).toContain('Crear cuenta de residente');
   });
 });

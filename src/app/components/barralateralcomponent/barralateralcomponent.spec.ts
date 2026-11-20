@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas } from '../../testing/pruebasutil';
 import { Barralateralcomponent } from './barralateralcomponent';
 
 describe('Barralateralcomponent', () => {
@@ -6,16 +7,14 @@ describe('Barralateralcomponent', () => {
   let fixture: ComponentFixture<Barralateralcomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Barralateralcomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Barralateralcomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
   });
 });

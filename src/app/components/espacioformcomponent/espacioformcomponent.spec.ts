@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas } from '../../testing/pruebasutil';
 import { Espacioformcomponent } from './espacioformcomponent';
 
 describe('Espacioformcomponent', () => {
@@ -6,16 +7,14 @@ describe('Espacioformcomponent', () => {
   let fixture: ComponentFixture<Espacioformcomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Espacioformcomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Espacioformcomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
   });
 });

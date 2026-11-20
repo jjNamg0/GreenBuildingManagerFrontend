@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { configurarPruebas } from '../../testing/pruebasutil';
 import { Miconjuntocomponent } from './miconjuntocomponent';
 
 describe('Miconjuntocomponent', () => {
@@ -6,16 +7,14 @@ describe('Miconjuntocomponent', () => {
   let fixture: ComponentFixture<Miconjuntocomponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [Miconjuntocomponent],
-    }).compileComponents();
-
+    await configurarPruebas();
     fixture = TestBed.createComponent(Miconjuntocomponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create', () => {
+  it('se crea', () => {
     expect(component).toBeTruthy();
   });
 });
