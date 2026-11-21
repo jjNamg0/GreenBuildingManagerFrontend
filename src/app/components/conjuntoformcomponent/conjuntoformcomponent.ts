@@ -25,6 +25,7 @@ import {
   OPCIONES_TESELAS,
   URL_TESELAS,
   crearIconoMarcador,
+  normalizarLongitud,
 } from '../../models/mapamodel';
 import {
   EventoClicMapa,
@@ -181,7 +182,7 @@ export class Conjuntoformcomponent implements OnInit, AfterViewInit, OnDestroy {
   private ubicar(posicion: LatLngTuple): void {
     const [latitud, longitud] = posicion;
     this.datos.latitud = Number(latitud.toFixed(DECIMALES_COORDENADA));
-    this.datos.longitud = Number(longitud.toFixed(DECIMALES_COORDENADA));
+    this.datos.longitud = Number(normalizarLongitud(longitud).toFixed(DECIMALES_COORDENADA));
     this.cambios.markForCheck();
     if (this.marcador) {
       this.marcador.setLatLng(posicion);

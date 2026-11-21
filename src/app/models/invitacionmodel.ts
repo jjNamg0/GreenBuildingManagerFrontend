@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Evento, PlantillaInvitacion, imagenPlantilla } from './eventomodel';
 import { Reserva } from './reservamodel';
-import { PATRON_CORREO } from './validacionmodel';
+import { esCorreoValido } from './validacionmodel';
 
 export type TipoInvitacion = 'EVENTO' | 'RESERVA';
 
@@ -62,9 +62,9 @@ export const separarCorreos = (texto: string): string[] =>
     .map((correo) => correo.trim().toLowerCase())
     .filter((correo, posicion, lista) => correo !== '' && lista.indexOf(correo) === posicion);
 
-/** Devuelve los correos que no tienen un formato válido. */
+/** Devuelve los correos sin formato válido o de un dominio que no está permitido. */
 export const correosInvalidos = (correos: string[]): string[] =>
-  correos.filter((correo) => !PATRON_CORREO.test(correo));
+  correos.filter((correo) => !esCorreoValido(correo));
 
 /** Revisa la lista de correos y devuelve el error, o vacío si está bien. */
 export const errorCorreos = (correos: string[]): string => {

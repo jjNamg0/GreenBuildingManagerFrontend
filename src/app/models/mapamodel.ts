@@ -39,3 +39,12 @@ export const crearIconoMarcador = (elegido: boolean): DivIcon => {
     tooltipAnchor: [tamano / 2, -tamano / 2],
   });
 };
+
+const VUELTA_COMPLETA = 360;
+
+const MEDIA_VUELTA = 180;
+
+/** Pasa la longitud al rango de -180 a 180 aunque el clic sea en otra copia del mundo. */
+export const normalizarLongitud = (longitud: number): number =>
+  ((((longitud + MEDIA_VUELTA) % VUELTA_COMPLETA) + VUELTA_COMPLETA) % VUELTA_COMPLETA) -
+  MEDIA_VUELTA;

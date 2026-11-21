@@ -1,7 +1,14 @@
 import { Rol } from './authmodel';
 import { OpcionesConfirmacion } from './confirmacionmodel';
 import { Insignia, Opcion } from './opcionmodel';
-import { MENSAJE_PASSWORD, ReglaValidacion, esPasswordInsegura, estaVacio } from './validacionmodel';
+import {
+  MENSAJE_PASSWORD,
+  MENSAJE_TELEFONO,
+  ReglaValidacion,
+  esPasswordInsegura,
+  esTelefonoInvalido,
+  estaVacio,
+} from './validacionmodel';
 
 export interface Usuario {
   id: number;
@@ -60,6 +67,7 @@ export const REGLAS_PERFIL: ReglaValidacion<DatosPerfil>[] = [
     mensaje: 'Completa tu nombre y apellido.',
   },
   { falla: (datos) => estaVacio(datos.telefono), mensaje: 'Completa tu teléfono.' },
+  { falla: (datos) => esTelefonoInvalido(datos.telefono), mensaje: MENSAJE_TELEFONO },
 ];
 
 export const REGLAS_CAMBIO_PASSWORD: ReglaValidacion<FormularioCambioPassword>[] = [

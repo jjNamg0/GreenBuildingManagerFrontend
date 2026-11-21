@@ -1,7 +1,12 @@
 import {
   LONGITUD_CODIGO,
+  MENSAJE_DOMINIO,
   MENSAJE_PASSWORD,
+  MENSAJE_TELEFONO,
+  dominioPermitido,
   esPasswordInsegura,
+  esTelefonoInvalido,
+  limpiarTelefono,
   PATRON_CORREO,
   ReglaValidacion,
   estaVacio,
@@ -75,6 +80,8 @@ export const REGLAS_REGISTRO: ReglaValidacion<FormularioRegistro>[] = [
     falla: ({ datos }) => !PATRON_CORREO.test(datos.username.trim()),
     mensaje: 'Escribe un correo electrónico válido.',
   },
+  { falla: ({ datos }) => !dominioPermitido(datos.username), mensaje: MENSAJE_DOMINIO },
+  { falla: ({ datos }) => esTelefonoInvalido(datos.telefono), mensaje: MENSAJE_TELEFONO },
   {
     falla: ({ datos }) => datos.conjuntoId === null || estaVacio(datos.unidadSolicitada),
     mensaje: 'Elige tu conjunto y escribe tu torre/bloque y número de unidad.',
@@ -129,6 +136,6 @@ export const limpiarDatosRegistro = (datos: DatosRegistro): DatosRegistro => ({
   nombre: datos.nombre.trim(),
   apellido: datos.apellido.trim(),
   username: datos.username.trim(),
-  telefono: datos.telefono.trim(),
+  telefono: limpiarTelefono(datos.telefono),
   unidadSolicitada: datos.unidadSolicitada.trim(),
 });

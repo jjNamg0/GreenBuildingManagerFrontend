@@ -8,7 +8,7 @@ import {
   inicialesUsuario,
   insigniaRol,
 } from '../../models/usuariomodel';
-import { primerError } from '../../models/validacionmodel';
+import { limpiarTelefono, primerError } from '../../models/validacionmodel';
 import { Authservice } from '../../services/authservice';
 import { Errorservice } from '../../services/errorservice';
 import { Toastservice } from '../../services/toastservice';
@@ -81,7 +81,7 @@ export class Perfilcomponent implements OnInit {
       .actualizarMiPerfil({
         nombre: this.datos.nombre.trim(),
         apellido: this.datos.apellido.trim(),
-        telefono: this.datos.telefono.trim(),
+        telefono: limpiarTelefono(this.datos.telefono),
       })
       .subscribe({
         next: (mensaje) => {
